@@ -31,6 +31,7 @@
       sunDir: new THREE.Vector3(0.75, 0.35, 0.2), sunColor: 0xffdca8, sunIntensity: 2.8,
       hemiSky: 0xd8b890, hemiGround: 0x7a5a3a,
     },
+    nature: { animals: 0, herbs: 0.5 },   // no deer wander a battle-line
     objectives: [
       { id: 'duel', text: 'Defeat Elara in single combat', marker: [0, 14] },
       { id: 'honor', text: 'Stand witness with King Dutugemunu', marker: [0, 0], hidden: true },

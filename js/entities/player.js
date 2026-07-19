@@ -37,24 +37,72 @@
         brc.position.set(0, -0.13, 0.2);
         const hand = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), skin);
         hand.position.set(0, -0.02, 0.02);
-        const sword = new THREE.Group();
-        const blade = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.014, 0.72), steel);
-        blade.position.z = -0.42;
-        const tipG = new THREE.ConeGeometry(0.02, 0.09, 4);
-        tipG.rotateX(-Math.PI / 2);
-        const tip = new THREE.Mesh(tipG, steel);
-        tip.position.z = -0.82;
-        const guard = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.03, 0.03), bronze);
-        guard.position.z = -0.05;
-        const gripM = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.023, 0.13, 6), grip);
-        gripM.rotation.x = Math.PI / 2;
-        gripM.position.z = 0.04;
-        const pommel = new THREE.Mesh(new THREE.SphereGeometry(0.028, 6, 6), bronze);
-        pommel.position.z = 0.12;
-        sword.add(blade, tip, guard, gripM, pommel);
-        sword.position.set(0, 0, 0);
-        this.sword = sword;
-        this.swordArm.add(fore, brc, hand, sword);
+        /* every melee weapon model, swapped by visibility (v0.2 Armoury) */
+        this.meleeModels = {};
+        const mk = (id, builder) => {
+          const w = new THREE.Group();
+          builder(w);
+          w.visible = id === 'sword';
+          this.meleeModels[id] = w;
+          this.swordArm.add(w);
+        };
+        mk('sword', (w) => {
+          const blade = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.014, 0.72), steel);
+          blade.position.z = -0.42;
+          const tipG = new THREE.ConeGeometry(0.02, 0.09, 4); tipG.rotateX(-Math.PI / 2);
+          const tip = new THREE.Mesh(tipG, steel); tip.position.z = -0.82;
+          const guard = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.03, 0.03), bronze); guard.position.z = -0.05;
+          const gripM = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.023, 0.13, 6), grip);
+          gripM.rotation.x = Math.PI / 2; gripM.position.z = 0.04;
+          const pommel = new THREE.Mesh(new THREE.SphereGeometry(0.028, 6, 6), bronze); pommel.position.z = 0.12;
+          w.add(blade, tip, guard, gripM, pommel);
+        });
+        mk('spear', (w) => {
+          const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.019, 1.6, 6), wood);
+          shaft.rotation.x = Math.PI / 2; shaft.position.z = -0.5;
+          const leafG = new THREE.ConeGeometry(0.045, 0.24, 6); leafG.rotateX(-Math.PI / 2);
+          const leaf = new THREE.Mesh(leafG, steel); leaf.position.z = -1.4;
+          const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 0.06, 6), bronze);
+          collar.rotation.x = Math.PI / 2; collar.position.z = -1.26;
+          w.add(shaft, leaf, collar);
+        });
+        mk('axe', (w) => {
+          const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.026, 0.85, 6), wood);
+          shaft.rotation.x = Math.PI / 2; shaft.position.z = -0.26;
+          const headG = new THREE.BoxGeometry(0.05, 0.2, 0.24);
+          const head = new THREE.Mesh(headG, steel);
+          head.position.set(0.1, 0, -0.62);
+          const edge = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.045, 10, 1, false, -0.7, 1.4), steel);
+          edge.rotation.z = Math.PI / 2; edge.position.set(0.2, 0, -0.62);
+          const butt = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.08, 5), bronze);
+          butt.rotation.x = Math.PI / 2; butt.position.z = 0.18;
+          w.add(shaft, head, edge, butt);
+        });
+        mk('mace', (w) => {
+          const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.7, 6), wood);
+          shaft.rotation.x = Math.PI / 2; shaft.position.z = -0.2;
+          const head = new THREE.Mesh(new THREE.SphereGeometry(0.085, 8, 6), bronze);
+          head.position.z = -0.58;
+          for (let i = 0; i < 4; i++) {
+            const fin = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.12, 0.1), steel);
+            fin.position.z = -0.58;
+            fin.rotation.z = (i / 4) * Math.PI * 2;
+            fin.translateY(0.09);
+            w.add(fin);
+          }
+          w.add(shaft, head);
+        });
+        mk('dagger', (w) => {
+          const blade = new THREE.Mesh(new THREE.BoxGeometry(0.028, 0.011, 0.34), steel);
+          blade.position.z = -0.2;
+          const tipG = new THREE.ConeGeometry(0.016, 0.07, 4); tipG.rotateX(-Math.PI / 2);
+          const tip = new THREE.Mesh(tipG, steel); tip.position.z = -0.4;
+          const guard = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.02, 0.025), bronze); guard.position.z = -0.02;
+          const gripM = new THREE.Mesh(new THREE.CylinderGeometry(0.017, 0.02, 0.1, 6), grip);
+          gripM.rotation.x = Math.PI / 2; gripM.position.z = 0.05;
+          w.add(blade, tip, guard, gripM);
+        });
+        this.swordArm.add(fore, brc, hand);
       }
       this.group.add(this.swordArm);
 
@@ -120,8 +168,11 @@
       this._pendingWeapon = weapon;
     }
     _applyWeaponVisibility(weapon) {
-      this.swordArm.visible = weapon === 'sword';
+      this.swordArm.visible = weapon !== 'bow';
       this.bowArms.visible = weapon === 'bow';
+      if (weapon !== 'bow' && this.meleeModels) {
+        for (const [id, m] of Object.entries(this.meleeModels)) m.visible = id === weapon;
+      }
     }
 
     playSwing() { /* swing driven directly from combat state each frame */ }
@@ -149,35 +200,42 @@
       const swayX = Math.sin(this.swayT * 1.7) * 0.004;
       const swayY = Math.cos(this.swayT * 1.3) * 0.004;
 
-      /* ------------------------ sword pose ------------------------ */
+      /* ---------------------- melee-arm pose ---------------------- */
       if (this.swordArm.visible) {
+        const cfg = combat.cfg || { dur: 0.42, style: 'slash' };
+        const style = cfg.style || 'slash';
         let px = 0.30, py = -0.26 - lower, pz = -0.5;
         let rx = 0.5, ry = -0.35, rz = 0.1;
+        if (style === 'thrust') { px = 0.26; py = -0.3 - lower; rx = 0.15; ry = -0.12; }  // spear carried level
         if (combat.attacking) {
-          const f = U.clamp(combat.attackT / 0.42, 0, 1);
+          const f = U.clamp(combat.attackT / cfg.dur, 0, 1);
           const wind = Math.min(1, f / 0.35);           // pull back
-          const sw = U.clamp((f - 0.35) / 0.4, 0, 1);   // slash through
+          const sw = U.clamp((f - 0.35) / 0.4, 0, 1);   // strike through
           const settle = U.clamp((f - 0.75) / 0.25, 0, 1);
           const variant = combat.combo;
-          if (variant === 0) {          // horizontal right→left
+          if (style === 'thrust') {                     // spear: straight jabs
+            px = 0.26 - wind * 0.02 + (variant === 1 ? -0.08 : 0);
+            pz = -0.5 + wind * 0.22 - sw * 0.55 + settle * 0.35;
+            rx = 0.15; ry = -0.12 + (variant === 2 ? -0.1 : 0); rz = 0;
+          } else if (style === 'chop' || variant === 2) { // axe/mace & 3rd combo: overhead
+            py = -0.26 + wind * 0.32 - sw * 0.38;
+            rx = 0.5 - wind * 1.6 + sw * 2.4 - settle * 0.8;
+            ry = -0.15 + (variant === 1 ? 0.25 : 0);
+            rz = 0.05;
+          } else if (variant === 0) {   // horizontal right→left
             px = 0.30 + wind * 0.12 - sw * 0.5 + settle * 0.35;
             ry = -0.35 - wind * 0.5 + sw * 1.7 - settle * 1.0;
             rz = 0.1 + sw * 0.5 - settle * 0.4;
             rx = 0.5 - sw * 0.35;
-          } else if (variant === 1) {   // backhand left→right
+          } else {                      // backhand left→right
             px = 0.30 - wind * 0.42 + sw * 0.55 - settle * 0.1;
             ry = -0.35 + wind * 1.15 - sw * 1.9 + settle * 0.9;
             rz = -0.15 - sw * 0.35 + settle * 0.4;
             rx = 0.45 - sw * 0.25;
-          } else {                      // overhead chop
-            py = -0.26 + wind * 0.3 - sw * 0.34;
-            rx = 0.5 - wind * 1.5 + sw * 2.3 - settle * 0.8;
-            ry = -0.15;
-            rz = 0.05;
           }
         } else if (player && player.blocking) {
           px = 0.1; py = -0.16; pz = -0.42;
-          rx = 0.25; ry = 0.9; rz = 1.25;   // blade held across the view
+          rx = 0.25; ry = 0.9; rz = 1.25;   // weapon held across the view
         }
         this.swordArm.position.set(px + swayX, py + swayY + bob, pz);
         this.swordArm.rotation.set(rx, ry, rz);

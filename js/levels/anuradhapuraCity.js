@@ -69,8 +69,8 @@
       B.brazier(engine, { pos: [3, 17], light: true, terrain: T });
       B.brazier(engine, { pos: [-3, 17], light: true, terrain: T });
 
-      // elephant stables west
-      B.elephant(engine, { pos: [-30, -10], yaw: 1.2 });
+      // elephant stables west — the young tusker can be ridden (F to mount)
+      G.Wildlife.rideable(engine, { pos: [-30, -10], yaw: 1.2, name: 'young tusker' });
       B.elephant(engine, { pos: [-36, -16], yaw: 0.4 });
       B.tower(engine, { pos: [-16, -40] });
       for (const [x, z, r] of [[-22, 6, 2.4], [-28, 0, 2.2], [-20, -14, 2.0]]) B.hut(engine, { pos: [x, z], r });

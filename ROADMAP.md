@@ -27,7 +27,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | Version | Codename | Theme | Headline features |
 |---|---|---|---|
 | v0.1 | *Ruwanwelisaya* | ✅ shipped | 6-level Dutugemunu campaign, FPS combat, AI, settings, procedural audio |
-| v0.2 | *Armoury* | Combat depth | New weapons, skill tree, health/vitality overhaul, enemy-nearby warning |
+| v0.2 | *Armoury* | ✅ shipped | Spear/axe/mace/dagger, 9-skill Renown tree, herb healing, threat ring, rally, rideable war elephants, wildlife & flora pass (pulled forward from v0.3 §2.4) |
 | v0.3 | *Kandula* | Presentation | Third-person mode, realism settings, day/night + day-by-day missions |
 | v0.4 | *Taprobane* | The map | Ancient-map campaign screen, kingdom/war selection, save slots |
 | v0.5 | *Shadows* | AC-style play | Climbing/parkour, stealth assassinations, warrior-sense, crowds/citizens |
@@ -43,21 +43,21 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 
 | Weapon | Class | Notes |
 |---|---|---|
-| ☐ War spear | Reach / thrust | Longer range, narrow arc, charge attack; throwable (heavy, retrievable) |
-| ☐ Battle axe | Heavy / cleave | Slow, breaks blocks & barricades faster, high stagger |
-| ☐ Mace / gada | Heavy / blunt | Bonus vs. armoured (Chola-era) enemies, shorter combo |
-| ☐ Dagger | Fast / stealth | Weak in open combat, enables silent takedowns (pairs with v0.5 stealth) |
+| ✅ War spear | Reach / thrust | Longer range, wide sweep, +20% vs. brutes (skill unlock, slot 2) |
+| ✅ Battle axe | Heavy / cleave | Slow, staggers, splits barricades & gates (skill unlock, slot 3) |
+| ✅ Mace / gada | Heavy / blunt | +50% vs. armoured brutes/champions (skill unlock, slot 4) |
+| ✅ Dagger | Fast / stealth | Quick and quiet; 3× damage from behind (skill unlock, slot 5) |
 | ☐ Shield (equippable) | Defense | Passive block arc without RMB-hold, shield-bash stagger move |
 | ☐ Javelin bundle | Ranged sidearm | 3-slot quick-throw between melee exchanges |
-| ☐ Fire arrows | Bow ammo type | Limited count; ignites thatch/barricades (siege objectives) |
+| ✅ Fire arrows | Bow upgrade | Skill unlock: +35% damage, 2× vs. wooden structures |
 
 Systems work: weapon wheel / number-key quick slots, per-weapon damage-type vs.
 armor-type table, per-weapon movesets on the existing rig (player FP + NPC),
 loot pickups from fallen elites, level-authored weapon racks.
 
-### 1.2 Skills & progression (◐ renown stat exists)
+### 1.2 Skills & progression (✅ shipped v0.2 — 9-skill tree, K key / pause / summary)
 
-- ☐ **Skill tree** fed by Renown (already earned per mission/civilian saved), 3 branches:
+- ✅ **Skill tree** fed by Renown (already earned per mission/civilian saved), 3 branches:
   - **Warrior** — combo extender (4th swing), parry window +, stagger damage +, dual-wield dagger.
   - **Hunter** — faster draw, breath-hold zoom, arrow recovery from corpses, fire/heavy arrows.
   - **Commander** — ally damage/health auras, rally shout (AI push), Kandula horn (elephant charge event, once per mission).
@@ -73,9 +73,9 @@ loot pickups from fallen elites, level-authored weapon racks.
   (slow auto-regen), standard (regen to 40% only), realistic (herbs/checkpoints only).
 - ☐ Bandaged/limping state under 25% HP in realistic mode (slower sprint, audible breathing).
 
-### 1.4 Enemy-nearby warning (☐ new)
+### 1.4 Enemy-nearby warning (✅ shipped v0.2 — toggle in Settings → Accessibility)
 
-- ☐ HUD **threat ring** around the crosshair/compass: directional pips for enemies in
+- ✅ HUD **threat ring** around the crosshair/compass: directional pips for enemies in
   detection states (grey = suspicious, orange = searching, red = engaged) — doubles as an
   accessibility aid for players who can't rely on audio cues.
 - ☐ Audio sting + controller-style screen-edge pulse when an unseen enemy enters 10 m.
@@ -115,13 +115,19 @@ settings screen and directly on the pause menu, driving individual toggles:
 - ☐ War-camp hub scene between missions: talk to the Ten Giants, spend skills, choose
   the next march on the field map.
 
-### 2.4 "Very ancient environment" density pass (◐ base kit exists)
+### 2.4 "Very ancient environment" density pass (◐ — flora & fauna shipped early in v0.2)
 
 - ☐ Populated settlements: civilian crowds with daily-routine schedules (market, wells,
   paddy work, temple worship — AC-style living streets).
 - ☐ More architecture: vatadage shrines, bodhigara, stone bridges, cave temples,
   irrigation canals & sluices (bisokotuwa), city walls with working gates.
-- ☐ Wildlife: peacocks, monkeys, water buffalo, crocodiles near tanks (ambient + hazard).
+- ✅ Wildlife (v0.2): peafowl that fan their tails and spotted deer that wander and
+  flee from battle; **rideable war elephants** (mount F, WASD drive, trample) in the
+  city, the siege and the stupa defense. ☐ Still to come: monkeys, buffalo, crocodiles.
+- ✅ Flora (v0.2): four tree archetypes (clustered rain-tree crowns, palms, flowering
+  temple trees, banyan landmarks with aerial roots), per-instance colour variation,
+  flowering shrubs, lotus pads & blooms on every tank, mossy stones & standing monoliths,
+  gatherable healing-herb plants.
 - ☐ Weather: monsoon rain fronts, heat haze, dust storms in the dry zone.
 
 ---

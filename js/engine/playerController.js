@@ -27,6 +27,9 @@
       this.alive = true;
       this.isPlayer = true;
       this.faction = 'ally';
+      // herb pouch (v0.2): field healing between checkpoints
+      this.herbs = 2;
+      this._healPool = 0;    // remaining heal-over-time from a chewed herb
 
       // ---- movement state ----
       this.yaw = spawn.yaw || 0;
@@ -100,12 +103,20 @@
         const K = G.Settings.data.controls.keys;
         if (e.code === K.pause) return;                 // app handles Esc
         if (!this.pointerLocked || eng.paused || !this.alive) return;
-        if (e.code === K.jump) { e.preventDefault(); this._tryJump(); }
-        else if (e.code === K.crouch || e.code === 'ControlLeft') this.crouching = true;
+        if (e.code === K.jump) { e.preventDefault(); if (!eng.riding) this._tryJump(); }
+        else if (e.code === K.crouch || e.code === 'ControlLeft') this.crouching = !eng.riding && true;
         else if (e.code === K.switchWeapon) eng.combat.switchWeapon();
         else if (e.code === K.nock) eng.combat.nockArrow();
-        else if (e.code === K.interact) eng.tryInteract();
+        else if (e.code === K.interact) { if (eng.riding) eng.riding.dismount(); else eng.tryInteract(); }
         else if (e.code === K.missionLog) { e.preventDefault(); eng.ui.toggleTracker(); }
+        else if (e.code === K.herb) this.useHerb();
+        else if (e.code === K.rally) eng.rally();
+        else if (e.code === K.skills) eng.bridge.openSkills && eng.bridge.openSkills();
+        else if (/^Digit[1-5]$/.test(e.code)) {
+          const slot = Number(e.code.slice(5));
+          const id = Object.keys(G.MELEE).find((k) => G.MELEE[k].slot === slot);
+          if (id) eng.combat.selectMelee(id);
+        }
       };
       this._onKeyUp = (e) => {
         this.keysDown.delete(e.code);
@@ -160,9 +171,45 @@
       return this.keysDown.has(G.Settings.data.controls.keys[action]);
     }
 
+    herbCap() { return (G.Skills && G.Skills.owned('herbalist')) ? 5 : 3; }
+    useHerb() {
+      if (!this.alive || this.herbs <= 0 || this._healPool > 0) return;
+      if (this.hp >= this.maxHp) { this.engine.ui.toast('UNHURT — SAVE THE HERBS'); return; }
+      this.herbs--;
+      this._healPool = (G.Skills && G.Skills.owned('herbalist')) ? 50 : 30;
+      G.audio.interact();
+      this.engine.ui.toast('🌿 HERBS — the pain dulls');
+    }
+
     /* --------------------------- update --------------------------- */
     update(dt) {
       const eng = this.engine;
+
+      // heal-over-time from herbs ticks even while mounted
+      if (this._healPool > 0 && this.alive) {
+        const tick = Math.min(this._healPool, 18 * dt);
+        this._healPool -= tick;
+        this.hp = Math.min(this.maxHp, this.hp + tick);
+      }
+
+      // riding: the elephant drives the body & camera; keep look + FOV logic
+      if (eng.riding) {
+        const g = eng.riding.group;
+        this.camera.position.set(g.position.x, 4.15 + Math.sin(eng.riding.phase * 2.6) * 0.06, g.position.z);
+        this._camEuler.set(this.pitch, this.yaw, 0);
+        this.camera.quaternion.setFromEuler(this._camEuler);
+        this._fwd.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
+        const baseFov = G.Settings.data.graphics.fov;
+        const target = baseFov + this.fovOffset;
+        if (Math.abs(this.camera.fov - target) > 0.05) {
+          this.camera.fov = U.damp(this.camera.fov, target, 10, dt);
+          this.camera.updateProjectionMatrix();
+        }
+        this.stamina = Math.min(this.maxStamina, this.stamina + 10 * dt);
+        this.blocking = false;
+        return;
+      }
+
       this._checkGrounded();
 
       // desired planar velocity from input
@@ -251,8 +298,8 @@
       // safety net: fell through the world
       if (p.y < -20) this.teleport(this.engine.lastCheckpoint?.pos?.[0] ?? 0, 0.5, this.engine.lastCheckpoint?.pos?.[2] ?? 0);
 
-      // track blocking state for the HUD & combat
-      this.blocking = this.engine.combat.weapon === 'sword' && this.engine.combat.secondaryHeld && this.alive;
+      // track blocking state for the HUD & combat (any melee weapon guards)
+      this.blocking = this.engine.combat.isMelee && this.engine.combat.secondaryHeld && this.alive;
     }
 
     _checkGrounded() {
@@ -289,6 +336,7 @@
       if (!this.alive || this.godMode) return { blocked: false };
       const eng = this.engine;
       const now = performance.now() / 1000;
+      if (eng.riding) amount *= 0.6;   // hard to reach a rider on a war elephant
 
       // facing check: are we looking (roughly) at the attacker?
       let facing = false;
@@ -297,9 +345,10 @@
         facing = this._fwd.dot(toA) > 0.35;
       }
 
+      const ironGuard = G.Skills && G.Skills.owned('iron_guard');
       if (opts.type !== 'arrow' && this.blocking && facing) {
         // PERFECT PARRY — block began inside the timing window just before impact
-        if (now - this.blockPressedAt < G.PARRY_WINDOW) {
+        if (now - this.blockPressedAt < G.PARRY_WINDOW * (ironGuard ? 1.5 : 1)) {
           G.audio.parry();
           this.viewShake = 0.5;
           eng.events.emit('parry', { attacker: opts.attacker });
@@ -308,9 +357,9 @@
           this.stamina = Math.min(this.maxStamina, this.stamina + 8);
           return { blocked: true, parried: true };
         }
-        // normal block: heavy mitigation, costs stamina
+        // normal block: heavy mitigation, costs stamina (less with Iron Guard)
         if (this.stamina > 4) {
-          this.stamina -= 13;
+          this.stamina -= ironGuard ? 8 : 13;
           this.staminaRegenDelay = 0.9;
           G.audio.block();
           this.viewShake = 0.4;

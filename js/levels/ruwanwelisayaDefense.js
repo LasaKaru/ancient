@@ -93,6 +93,9 @@
         level.defenders.push(engine.enemies.spawn({ faction: 'ally', type, pos: [x, z], hp: 90, guardRadius: 18 }));
       }
 
+      // a labour elephant hauls brick by day — and breaks raiders by need
+      G.Wildlife.rideable(engine, { pos: [-20, -22], yaw: 0.8, name: 'labour elephant' });
+
       // arrow resupply
       B.crate(engine, { pos: [3, -14], s: 1.1 });
       engine.addInteract({

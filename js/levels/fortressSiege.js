@@ -80,6 +80,8 @@
       T.scatterRocks(26, 60, [{ x: 0, z: 8, r: 24 }]);
 
       // ---- forces ----
+      // a war elephant waits with the baggage train — ride it at the walls
+      G.Wildlife.rideable(engine, { pos: [-14, -34], yaw: 0.3, name: 'war elephant' });
       // your squad
       level.squad = G.spawnGiants(engine, { center: [0, -38], count: 2, names: ['Nandhimitra', 'Suranimala'] });
       for (let i = 0; i < 4; i++) {

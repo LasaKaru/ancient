@@ -92,94 +92,166 @@
       }
     }
 
-    /* Instanced dry-zone jungle trees; `exclude` = [{x,z,r}] keep-clear zones */
+    /* Instanced dry-zone jungle trees; `exclude` = [{x,z,r}] keep-clear zones.
+       Four archetypes for a richer canopy line:
+         A rain-tree (clustered multi-lobe crown, per-instance green variation)
+         B tall palm
+         C flowering tree (araliya-style: green crown + blossom shell tinted
+           per instance — white / pink / gold)
+         D banyan landmark (huge crown, aerial roots) — a few per level        */
     scatterTrees(count, radius, exclude = [], seed = 77) {
       count = Math.round(count * G.Settings.data.graphics.foliage);
       if (count <= 0) return;
       const lib = M.library();
-      // archetype A: umbrella canopy ("rain tree" silhouette)
-      const tA = [];
-      { const t = new THREE.CylinderGeometry(0.22, 0.4, 3.4, 6); t.translate(0, 1.7, 0); tA.push(t);
-        const c = new THREE.SphereGeometry(2.6, 7, 5); c.scale(1, 0.55, 1); c.translate(0, 4.1, 0); tA.push(c); }
-      // archetype B: tall palm-ish
-      const tB = [];
-      { const t = new THREE.CylinderGeometry(0.14, 0.26, 6.4, 6); t.translate(0, 3.2, 0); tB.push(t);
-        for (let i = 0; i < 6; i++) {
-          const leaf = new THREE.ConeGeometry(0.5, 3.2, 4);
-          leaf.rotateX(Math.PI / 2 + 0.7);
-          leaf.rotateY((i / 6) * Math.PI * 2);
-          leaf.translate(0, 6.5, 0);
-          tB.push(leaf);
-        } }
-      const build = (parts, trunkCount, mat) => {
-        const merged = BGU.mergeGeometries(parts.map((p, i) => {
-          const g2 = p.toNonIndexed ? p.toNonIndexed() : p;
-          // groups not needed — color whole trees; trunk gets own instanced mesh below
-          return g2;
-        }), false);
-        return merged;
-      };
-      const rng = U.mulberry(seed);
-      const place = (inst, n, minR) => {
-        const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), eu = new THREE.Euler();
-        let placed = 0, guard = 0;
-        while (placed < n && guard++ < n * 30) {
-          const a = rng() * Math.PI * 2, r = minR + Math.sqrt(rng()) * (radius - minR);
-          const x = Math.sin(a) * r, z = Math.cos(a) * r;
-          if (exclude.some((e) => Math.hypot(x - e.x, z - e.z) < e.r)) continue;
-          const s = 0.75 + rng() * 0.8;
-          eu.set(0, rng() * Math.PI * 2, (rng() - 0.5) * 0.08);
-          q.setFromEuler(eu);
-          m4.compose(new THREE.Vector3(x, 0, z), q, new THREE.Vector3(s, s * (0.9 + rng() * 0.3), s));
-          inst.setMatrixAt(placed++, m4);
+
+      // clustered crown: several offset spheres merged (nicer than one blob)
+      const crown = (r, lobes, yBase) => {
+        const parts = [];
+        const rng0 = U.mulberry(seed * 7 + lobes);
+        for (let i = 0; i < lobes; i++) {
+          const s = new THREE.SphereGeometry(r * (0.55 + rng0() * 0.4), 6, 5);
+          s.scale(1, 0.72, 1);
+          const a = (i / lobes) * Math.PI * 2;
+          s.translate(Math.sin(a) * r * 0.55, yBase + rng0() * r * 0.5, Math.cos(a) * r * 0.55);
+          parts.push(s);
         }
-        inst.count = placed;
-        inst.castShadow = true;
-        inst.receiveShadow = true;
-        this.engine.scene.add(inst);
+        const top = new THREE.SphereGeometry(r * 0.7, 6, 5); top.scale(1, 0.7, 1);
+        top.translate(0, yBase + r * 0.45, 0);
+        parts.push(top);
+        return BGU.mergeGeometries(parts);
       };
-      // trunk & canopy split so materials differ
-      const trunkA = new THREE.CylinderGeometry(0.22, 0.4, 3.4, 6); trunkA.translate(0, 1.7, 0);
-      const canA = new THREE.SphereGeometry(2.6, 7, 5); canA.scale(1, 0.55, 1); canA.translate(0, 4.1, 0);
-      const nA = Math.round(count * 0.6);
-      const trunkInstA = new THREE.InstancedMesh(trunkA, lib.trunk, nA);
-      const canInstA = new THREE.InstancedMesh(canA, lib.foliage, nA);
-      const trunkB = new THREE.CylinderGeometry(0.14, 0.26, 6.4, 6); trunkB.translate(0, 3.2, 0);
-      const leafParts = [];
-      for (let i = 0; i < 6; i++) {
-        const leaf = new THREE.ConeGeometry(0.5, 3.2, 4);
-        leaf.rotateX(Math.PI / 2 + 0.7);
-        leaf.rotateY((i / 6) * Math.PI * 2);
-        leaf.translate(0, 6.5, 0);
-        leafParts.push(leaf);
-      }
-      const leavesB = BGU.mergeGeometries(leafParts);
-      const nB = count - nA;
-      const trunkInstB = new THREE.InstancedMesh(trunkB, lib.trunk, nB);
-      const leafInstB = new THREE.InstancedMesh(leavesB, lib.foliageDry, nB);
-      // share transforms between trunk & canopy by re-seeding placement
-      const seedPlace = (instPair, n, s0) => {
+
+      /* shared placement: all meshes in `layers` get identical transforms;
+         `tint` optionally sets a per-instance color on a layer */
+      const seedPlace = (layers, n, s0, minR = 12, scaleMul = 1, tints = null) => {
         const rng2 = U.mulberry(s0);
         const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), eu = new THREE.Euler();
+        const col = new THREE.Color();
         let placed = 0, guard = 0;
         while (placed < n && guard++ < n * 40) {
-          const a = rng2() * Math.PI * 2, r = 12 + Math.sqrt(rng2()) * (radius - 12);
+          const a = rng2() * Math.PI * 2, r = minR + Math.sqrt(rng2()) * (radius - minR);
           const x = Math.sin(a) * r, z = Math.cos(a) * r;
-          const s = 0.75 + rng2() * 0.8, sy = s * (0.9 + rng2() * 0.3), rot = rng2() * Math.PI * 2;
+          const s = (0.75 + rng2() * 0.8) * scaleMul, sy = s * (0.9 + rng2() * 0.3), rot = rng2() * Math.PI * 2;
           if (exclude.some((e) => Math.hypot(x - e.x, z - e.z) < e.r)) continue;
           eu.set(0, rot, 0); q.setFromEuler(eu);
           m4.compose(new THREE.Vector3(x, 0, z), q, new THREE.Vector3(s, sy, s));
-          for (const inst of instPair) inst.setMatrixAt(placed, m4);
+          for (let li = 0; li < layers.length; li++) {
+            layers[li].setMatrixAt(placed, m4);
+            if (tints && tints[li]) {
+              tints[li](col, rng2);
+              layers[li].setColorAt(placed, col);
+            }
+          }
           placed++;
         }
-        for (const inst of instPair) {
+        for (const inst of layers) {
           inst.count = placed;
           inst.castShadow = inst.receiveShadow = true;
+          if (inst.instanceColor) inst.instanceColor.needsUpdate = true;
           this.engine.scene.add(inst);
         }
       };
-      seedPlace([trunkInstA, canInstA], nA, seed);
-      seedPlace([trunkInstB, leafInstB], nB, seed + 99);
+
+      const greenJitter = (col, rng2) => col.setHSL(0.24 + rng2() * 0.08, 0.42 + rng2() * 0.18, 0.28 + rng2() * 0.1);
+      const blossomTint = (col, rng2) => {
+        const pick = rng2();
+        if (pick < 0.4) col.setHSL(0.95, 0.55, 0.78);        // temple-tree pink
+        else if (pick < 0.75) col.setHSL(0.13, 0.65, 0.82);  // golden
+        else col.setHSL(0.1, 0.12, 0.94);                    // araliya white
+      };
+
+      const nA = Math.round(count * 0.45);
+      const nB = Math.round(count * 0.25);
+      const nC = Math.round(count * 0.22);
+      const nD = Math.max(2, Math.round(count * 0.08));
+
+      // A — rain tree
+      const trunkA = new THREE.CylinderGeometry(0.22, 0.42, 3.4, 6); trunkA.translate(0, 1.7, 0);
+      const canMatA = M.std({ color: 0xffffff, rough: 0.95, flat: true });
+      seedPlace([
+        new THREE.InstancedMesh(trunkA, lib.trunk, nA),
+        new THREE.InstancedMesh(crown(2.4, 4, 4.0), canMatA, nA),
+      ], nA, seed, 12, 1, [null, greenJitter]);
+
+      // B — palm
+      const trunkB = new THREE.CylinderGeometry(0.14, 0.26, 6.4, 6); trunkB.translate(0, 3.2, 0);
+      const leafParts = [];
+      for (let i = 0; i < 7; i++) {
+        const leaf = new THREE.ConeGeometry(0.5, 3.4, 4);
+        leaf.rotateX(Math.PI / 2 + 0.68);
+        leaf.rotateY((i / 7) * Math.PI * 2);
+        leaf.translate(0, 6.5, 0);
+        leafParts.push(leaf);
+      }
+      seedPlace([
+        new THREE.InstancedMesh(trunkB, lib.trunk, nB),
+        new THREE.InstancedMesh(BGU.mergeGeometries(leafParts), lib.foliageDry, nB),
+      ], nB, seed + 99);
+
+      // C — flowering temple tree: smaller crown + blossom cap tinted per tree
+      const trunkC = new THREE.CylinderGeometry(0.16, 0.3, 2.6, 6); trunkC.translate(0, 1.3, 0);
+      const blossomCap = crown(1.5, 3, 3.6);
+      const blossomMat = M.std({ color: 0xffffff, rough: 0.85, flat: true });
+      seedPlace([
+        new THREE.InstancedMesh(trunkC, lib.trunk, nC),
+        new THREE.InstancedMesh(crown(1.7, 3, 2.9), canMatA, nC),
+        new THREE.InstancedMesh(blossomCap, blossomMat, nC),
+      ], nC, seed + 41, 12, 0.9, [null, greenJitter, blossomTint]);
+
+      // D — banyan landmarks: broad crown + aerial roots
+      const banyanParts = [new THREE.CylinderGeometry(0.55, 0.95, 4.4, 8)];
+      banyanParts[0].translate(0, 2.2, 0);
+      for (let i = 0; i < 5; i++) {
+        const root = new THREE.CylinderGeometry(0.07, 0.12, 3.6, 5);
+        const a = (i / 5) * Math.PI * 2 + 0.4;
+        root.rotateZ(0.16);
+        root.rotateY(a);
+        root.translate(Math.sin(a) * 1.6, 1.8, Math.cos(a) * 1.6);
+        banyanParts.push(root);
+      }
+      seedPlace([
+        new THREE.InstancedMesh(BGU.mergeGeometries(banyanParts), lib.trunk, nD),
+        new THREE.InstancedMesh(crown(3.6, 5, 5.2), canMatA, nD),
+      ], nD, seed + 173, 18, 1.25, [null, greenJitter]);
+    }
+
+    /* Flowering shrubs: dark bush tuft + blossom cluster tinted per instance */
+    scatterFlowers(count, radius, exclude = [], seed = 21) {
+      count = Math.round(count * G.Settings.data.graphics.foliage);
+      if (count <= 0) return;
+      const bushGeo = new THREE.SphereGeometry(0.22, 6, 5);
+      bushGeo.scale(1, 0.65, 1); bushGeo.translate(0, 0.13, 0);
+      const petalParts = [];
+      const rng0 = U.mulberry(seed);
+      for (let i = 0; i < 6; i++) {
+        const p = new THREE.SphereGeometry(0.05, 5, 4);
+        p.translate((rng0() - 0.5) * 0.34, 0.22 + rng0() * 0.12, (rng0() - 0.5) * 0.34);
+        petalParts.push(p);
+      }
+      const bush = new THREE.InstancedMesh(bushGeo, M.std({ color: 0x2e4a20, rough: 1, flat: true }), count);
+      const bloom = new THREE.InstancedMesh(BGU.mergeGeometries(petalParts), M.std({ color: 0xffffff, rough: 0.8, flat: true }), count);
+      const rng = U.mulberry(seed + 5);
+      const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), eu = new THREE.Euler();
+      const col = new THREE.Color();
+      const palette = [[0.98, 0.62, 0.72], [0.13, 0.72, 0.75], [0.02, 0.78, 0.62], [0.1, 0.1, 0.95], [0.78, 0.45, 0.75]];
+      let placed = 0, guard = 0;
+      while (placed < count && guard++ < count * 20) {
+        const a = rng() * Math.PI * 2, r = 4 + Math.sqrt(rng()) * (radius - 4);
+        const x = Math.sin(a) * r, z = Math.cos(a) * r;
+        if (exclude.some((e) => Math.hypot(x - e.x, z - e.z) < e.r)) continue;
+        const s = 0.7 + rng() * 1.0;
+        eu.set(0, rng() * Math.PI * 2, 0); q.setFromEuler(eu);
+        m4.compose(new THREE.Vector3(x, 0, z), q, new THREE.Vector3(s, s, s));
+        bush.setMatrixAt(placed, m4);
+        bloom.setMatrixAt(placed, m4);
+        const [hh, ss, ll] = palette[Math.floor(rng() * palette.length)];
+        bloom.setColorAt(placed, col.setHSL(hh, ss, ll));
+        placed++;
+      }
+      bush.count = bloom.count = placed;
+      bush.receiveShadow = true;
+      if (bloom.instanceColor) bloom.instanceColor.needsUpdate = true;
+      this.engine.scene.add(bush, bloom);
     }
 
     /* Instanced grass tufts (no shadows — cheap density) */
@@ -209,20 +281,31 @@
 
     scatterRocks(count, radius, exclude = [], seed = 31) {
       const geo = new THREE.IcosahedronGeometry(1, 0);
-      const inst = new THREE.InstancedMesh(geo, M.library().rock, count);
+      const mat = M.std({ map: M.tex.rock([3, 3]), color: 0xffffff, rough: 0.97, bump: 0.08, flat: true });
+      const inst = new THREE.InstancedMesh(geo, mat, count);
       const rng = U.mulberry(seed);
       const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), eu = new THREE.Euler();
+      const col = new THREE.Color();
       let placed = 0, guard = 0;
       while (placed < count && guard++ < count * 20) {
         const a = rng() * Math.PI * 2, r = Math.sqrt(rng()) * radius;
         const x = Math.sin(a) * r, z = Math.cos(a) * r;
         if (exclude.some((e) => Math.hypot(x - e.x, z - e.z) < e.r)) continue;
-        eu.set(rng() * Math.PI, rng() * Math.PI, 0); q.setFromEuler(eu);
-        const s = 0.3 + rng() * rng() * 1.4;
-        m4.compose(new THREE.Vector3(x, s * 0.2, z), q, new THREE.Vector3(s, s * 0.7, s));
-        inst.setMatrixAt(placed++, m4);
+        const mono = rng() < 0.06;   // occasional tilted standing stone
+        eu.set(mono ? (rng() - 0.5) * 0.3 : rng() * Math.PI, rng() * Math.PI, mono ? (rng() - 0.5) * 0.3 : 0);
+        q.setFromEuler(eu);
+        const s = mono ? 1.2 + rng() * 1.6 : 0.3 + rng() * rng() * 1.4;
+        m4.compose(new THREE.Vector3(x, s * (mono ? 0.8 : 0.2), z), q,
+          new THREE.Vector3(s * (mono ? 0.5 : 1), s * (mono ? 2.0 : 0.7), s * (mono ? 0.4 : 1)));
+        inst.setMatrixAt(placed, m4);
+        // grey stone with an occasional mossy tint
+        if (rng() < 0.35) col.setHSL(0.26, 0.25, 0.32 + rng() * 0.1);
+        else col.setHSL(0.08, 0.06, 0.38 + rng() * 0.18);
+        inst.setColorAt(placed, col);
+        placed++;
       }
       inst.count = placed;
+      if (inst.instanceColor) inst.instanceColor.needsUpdate = true;
       inst.castShadow = inst.receiveShadow = true;
       this.engine.scene.add(inst);
     }
@@ -246,6 +329,31 @@
         w.position.y = 0.06 + Math.sin(t * 0.9) * 0.02;
         mat.color.setHSL(0.53, 0.42, 0.28 + Math.sin(t * 0.6) * 0.02);
       });
+
+      // lotus pads + pink blooms drifting near the banks
+      const nPads = Math.min(26, Math.round(radius * 1.4 * G.Settings.data.graphics.foliage));
+      if (nPads > 2) {
+        const padGeo = new THREE.CylinderGeometry(0.26, 0.26, 0.02, 8);
+        const pads = new THREE.InstancedMesh(padGeo, M.std({ color: 0x3d6e35, rough: 0.6 }), nPads);
+        const bloomGeo = new THREE.ConeGeometry(0.1, 0.16, 6);
+        const blooms = new THREE.InstancedMesh(bloomGeo, M.std({ color: 0xe88ab0, rough: 0.7, flat: true }), nPads);
+        const rng = U.mulberry(Math.round(x * 13 + z * 7) + 3);
+        const m4 = new THREE.Matrix4();
+        let bi = 0;
+        for (let i = 0; i < nPads; i++) {
+          const a = rng() * Math.PI * 2, rr = radius * (0.45 + rng() * 0.42);
+          const px = x + Math.sin(a) * rr, pz = z + Math.cos(a) * rr;
+          m4.makeTranslation(px, 0.085, pz);
+          pads.setMatrixAt(i, m4);
+          if (rng() < 0.4) { m4.makeTranslation(px, 0.16, pz); blooms.setMatrixAt(bi++, m4); }
+        }
+        blooms.count = bi;
+        this.engine.scene.add(pads, blooms);
+        this.updatables.push((dt, t) => {
+          pads.position.y = Math.sin(t * 0.9) * 0.02;
+          blooms.position.y = Math.sin(t * 0.9) * 0.02;
+        });
+      }
       return w;
     }
 
@@ -822,8 +930,9 @@
     return grp;
   };
 
-  /* --- war elephant (Kandula & stable elephants) --- */
-  Build.elephant = function (engine, { pos = [0, 0], yaw = 0, armored = false, scale = 1 } = {}) {
+  /* --- war elephant (Kandula, stable elephants, rideable mounts) ---
+     mobile:true skips the static physics block (the mount manages its own) */
+  Build.elephant = function (engine, { pos = [0, 0], yaw = 0, armored = false, scale = 1, mobile = false } = {}) {
     const grp = new THREE.Group();
     const hide = M.std({ color: 0x6f6a66, rough: 0.9 });
     const body = new THREE.Mesh(new THREE.SphereGeometry(1.5, 12, 10), hide);
@@ -878,7 +987,7 @@
     grp.rotation.y = yaw;
     grp.position.set(pos[0], 0, pos[1]);
     engine.scene.add(grp);
-    engine.addStaticBox([pos[0], 1.5 * scale, pos[1]], [1.6 * scale, 1.5 * scale, 2 * scale], yaw);
+    if (!mobile) engine.addStaticBox([pos[0], 1.5 * scale, pos[1]], [1.6 * scale, 1.5 * scale, 2 * scale], yaw);
     return grp;
   };
 

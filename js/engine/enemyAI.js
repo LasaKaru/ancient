@@ -281,7 +281,9 @@
           this._loose();
         } else {
           npc.rig.playStrike();
-          this.engine.combat.npcStrike(npc, this.target, this.cfg.dmg * U.rand(0.85, 1.15));
+          // Rally Cry: allies under the horn fight half again as hard
+          const rallied = npc.faction === 'ally' && this.engine.rallyT > 0 ? 1.5 : 1;
+          this.engine.combat.npcStrike(npc, this.target, this.cfg.dmg * U.rand(0.85, 1.15) * rallied);
         }
         this.cooldown = U.rand(this.cfg.recover[0], this.cfg.recover[1]);
         this.engine.enemies.releaseAttackToken(this);

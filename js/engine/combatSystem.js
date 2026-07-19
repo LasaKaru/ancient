@@ -12,7 +12,16 @@
   const { THREE, CANNON } = window.__MODULES__;
   const U = G.util;
 
-  const SWING = { dur: 0.42, hitAt: 0.19, cost: 12, dmg: [22, 25, 34], range: 2.5, arc: 0.72 };
+  /* Melee arsenal (v0.2 "Armoury"). Slots 1–5; spear/axe/mace/dagger are
+     unlocked through the skill tree (see ui/skillsMenu.jsx). */
+  const MELEE = {
+    sword:  { slot: 1, name: 'War Sword', icon: '⚔️', dmg: [22, 25, 34], dur: 0.42, hitAt: 0.19, cost: 12, range: 2.5, arc: 0.72, style: 'slash' },
+    spear:  { slot: 2, name: 'War Spear', icon: '🔱', dmg: [20, 22, 30], dur: 0.5, hitAt: 0.24, cost: 11, range: 3.5, arc: 0.85, style: 'thrust', vsBrute: 1.2, skill: 'spear' },
+    axe:    { slot: 3, name: 'Battle Axe', icon: '🪓', dmg: [30, 34, 46], dur: 0.62, hitAt: 0.32, cost: 17, range: 2.4, arc: 0.6, style: 'chop', staggerChance: 0.5, structDmg: 2.4, skill: 'axe' },
+    mace:   { slot: 4, name: 'War Mace', icon: '🔨', dmg: [26, 30, 40], dur: 0.55, hitAt: 0.27, cost: 15, range: 2.2, arc: 0.65, style: 'chop', vsArmor: 1.5, skill: 'mace' },
+    dagger: { slot: 5, name: "Hunter's Knife", icon: '🗡️', dmg: [14, 15, 20], dur: 0.26, hitAt: 0.12, cost: 7, range: 1.9, arc: 0.62, style: 'slash', backstab: 3, skill: 'dagger' },
+  };
+  G.MELEE = MELEE;
   const DRAW_TIME = 0.85;
   const ARROW_POOL = 44;
   const ARROW_G = 11.5;
@@ -20,7 +29,8 @@
   class CombatSystem {
     constructor(engine) {
       this.engine = engine;
-      this.weapon = 'sword';
+      this.weapon = 'sword';       // any MELEE key, or 'bow'
+      this.lastMelee = 'sword';
       this.arrows = 12;
       this.quiverMax = 24;
 
@@ -54,6 +64,16 @@
       const fletchGeo = new THREE.PlaneGeometry(0.09, 0.05);
       const shaftMat = G.Mats.std({ color: 0xa8813f, rough: 0.8 });
       const fletchMat = G.Mats.std({ color: 0xd8d2bd, rough: 0.95, side: THREE.DoubleSide });
+      const flameMat = new THREE.SpriteMaterial({
+        map: G.Mats.canvasTex('arrowflame', 32, (c, s) => {
+          const g2 = c.createRadialGradient(s / 2, s / 2, 1, s / 2, s / 2, s / 2);
+          g2.addColorStop(0, 'rgba(255,240,170,1)');
+          g2.addColorStop(0.5, 'rgba(255,140,30,0.8)');
+          g2.addColorStop(1, 'rgba(200,40,0,0)');
+          c.fillStyle = g2; c.fillRect(0, 0, s, s);
+        }),
+        blending: THREE.AdditiveBlending, depthWrite: false, transparent: true,
+      });
       for (let i = 0; i < ARROW_POOL; i++) {
         const grp = new THREE.Group();
         const shaft = new THREE.Mesh(shaftGeo, shaftMat);
@@ -65,11 +85,16 @@
           f.rotation.z = a;
           grp.add(f);
         }
+        const flame = new THREE.Sprite(flameMat);
+        flame.scale.set(0.28, 0.34, 1);
+        flame.position.z = 0.05;
+        flame.visible = false;
+        grp.add(flame);
         grp.visible = false;
         grp.castShadow = false;
         this.engine.scene.add(grp);
         this.pool.push({
-          mesh: grp, alive: false, stuck: false,
+          mesh: grp, flame, alive: false, stuck: false, flaming: false,
           pos: new THREE.Vector3(), prev: new THREE.Vector3(), vel: new THREE.Vector3(),
           owner: null, damage: 0, life: 0, stickParent: null, stickLocal: new THREE.Vector3(),
         });
@@ -99,14 +124,34 @@
     }
 
     /* ----------------------- input handlers ----------------------- */
+    get cfg() { return MELEE[this.weapon] || MELEE.sword; }
+    get isMelee() { return this.weapon !== 'bow'; }
+
     isBlockingOrDrawing() {
-      return (this.weapon === 'sword' && this.secondaryHeld) || (this.weapon === 'bow' && this.drawing);
+      return (this.isMelee && this.secondaryHeld) || (this.weapon === 'bow' && this.drawing);
+    }
+
+    /** Direct slot selection (keys 1–5). Locked weapons prompt their skill. */
+    selectMelee(id) {
+      const def = MELEE[id];
+      if (!def || this.attacking) return;
+      if (def.skill && !(G.Skills && G.Skills.owned(def.skill))) {
+        this.engine.ui.toast('LEARN "' + def.name.toUpperCase() + '" IN THE SKILLS PAGE (K)');
+        G.audio.ui();
+        return;
+      }
+      if (this.weapon === id) return;
+      this.drawing = false; this.drawPct = 0; this.secondaryHeld = false;
+      this.weapon = id;
+      this.lastMelee = id;
+      G.audio.interact();
+      this.engine.playerRig?.onWeaponSwitch(id);
     }
 
     primaryDown() {
       const player = this.engine.player;
       if (!player.alive) return;
-      if (this.weapon === 'sword') {
+      if (this.isMelee) {
         if (this.secondaryHeld) return; // can't swing while guarding
         this._trySwing();
       } else if (this.weapon === 'bow') {
@@ -139,7 +184,7 @@
     switchWeapon() {
       if (this.attacking) return;
       this.drawing = false; this.drawPct = 0; this.secondaryHeld = false;
-      this.weapon = this.weapon === 'sword' ? 'bow' : 'sword';
+      this.weapon = this.isMelee ? 'bow' : this.lastMelee;
       G.audio.interact();
       this.engine.playerRig?.onWeaponSwitch(this.weapon);
     }
@@ -159,14 +204,15 @@
     /* -------------------------- melee -------------------------- */
     _trySwing() {
       const player = this.engine.player;
+      const cfg = this.cfg;
       if (this.attacking || player.exhausted) return;
-      if (player.stamina < SWING.cost * 0.5) { this.engine.ui.toast('EXHAUSTED'); return; }
+      if (player.stamina < cfg.cost * 0.5) { this.engine.ui.toast('EXHAUSTED'); return; }
       // combo chaining
       this.combo = this.comboWindow > 0 ? (this.combo + 1) % 3 : 0;
       this.attacking = true;
       this.attackT = 0;
       this._didHit = false;
-      player.stamina -= SWING.cost;
+      player.stamina -= cfg.cost;
       player.staminaRegenDelay = 0.8;
       G.audio.swordSwing();
       this.engine.noiseEvent(player.pos, 9);
@@ -175,32 +221,46 @@
 
     _applyMeleeHit() {
       const eng = this.engine, player = eng.player;
+      const cfg = this.cfg;
       const origin = player.pos;
       const fwd = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
-      const dmg = SWING.dmg[this.combo];
       let hitSomething = false;
 
-      const tryHit = (t) => {
+      const tryHit = (t, isStruct) => {
         if (!t || t.alive === false) return;
         const tp = t.pos;
         const to = new THREE.Vector3().subVectors(tp, origin);
         const dist = Math.hypot(to.x, to.z);
-        if (dist > SWING.range + (t.radius || 0)) return;
+        if (dist > cfg.range + (t.radius || 0)) return;
         to.setY(0).normalize();
-        if (to.dot(fwd) < SWING.arc) return;
+        if (to.dot(fwd) < cfg.arc) return;
         hitSomething = true;
+        let dmg = cfg.dmg[this.combo];
+        if (isStruct && cfg.structDmg) dmg *= cfg.structDmg;
+        if (!isStruct && t.type) {
+          if (cfg.vsBrute && t.type === 'brute') dmg *= cfg.vsBrute;
+          if (cfg.vsArmor && (t.type === 'brute' || t.type === 'elite')) dmg *= cfg.vsArmor;
+        }
+        // knife in the back — three-fold, as the hunters teach
+        if (!isStruct && cfg.backstab && t.yaw !== undefined) {
+          const tFwd = new THREE.Vector3(Math.sin(t.yaw), 0, Math.cos(t.yaw));
+          const fromT = new THREE.Vector3().subVectors(origin, tp).setY(0).normalize();
+          if (tFwd.dot(fromT) < -0.35) {
+            dmg *= cfg.backstab;
+            eng.ui.toast('BACKSTAB');
+          }
+        }
         t.takeDamage(dmg, { dir: fwd.clone(), type: 'melee', from: player, attackerPos: origin });
+        if (!isStruct && cfg.staggerChance && t.stagger && Math.random() < cfg.staggerChance) t.stagger(1.0);
       };
 
-      for (const e of eng.enemies.combatants()) if (e.faction !== 'ally') tryHit(e);
-      for (const t of eng.targets) tryHit(t);
-      for (const d of eng.attackables) tryHit(d);
-      for (const d of eng.destructibles) if (!d.broken) tryHit(d);
+      for (const e of eng.enemies.combatants()) if (e.faction !== 'ally') tryHit(e, false);
+      for (const t of eng.targets) tryHit(t, false);
+      for (const d of eng.attackables) tryHit(d, true);
+      for (const d of eng.destructibles) if (!d.broken) tryHit(d, true);
 
       if (hitSomething) {
         player.viewShake = Math.max(player.viewShake, 0.25);
-      } else {
-        // whiff — air whoosh already played on swing
       }
     }
 
@@ -217,6 +277,7 @@
       this.engine.noiseEvent(player.pos, 14);
       this.engine.playerRig?.playRelease();
 
+      const flaming = G.Skills && G.Skills.owned('fire_arrows');
       const dir = new THREE.Vector3();
       this.engine.camera.getWorldDirection(dir);
       const from = this.engine.camera.position.clone().addScaledVector(dir, 0.55);
@@ -225,7 +286,8 @@
         from, dir,
         speed: 16 + power * 26,
         owner: player,
-        damage: 18 + power * 26,
+        damage: (18 + power * 26) * (flaming ? 1.35 : 1),
+        flaming,
       });
     }
 
@@ -233,13 +295,15 @@
      * Shared projectile spawn — used by player and enemy archers.
      * opts: { from:V3, dir:V3, speed, owner (entity with .faction), damage }
      */
-    fireArrow({ from, dir, speed, owner, damage }) {
+    fireArrow({ from, dir, speed, owner, damage, flaming = false }) {
       const a = this._getArrow();
       a.pos.copy(from);
       a.prev.copy(from);
       a.vel.copy(dir).normalize().multiplyScalar(speed);
       a.owner = owner;
       a.damage = damage;
+      a.flaming = flaming;
+      a.flame.visible = flaming;
       a.mesh.position.copy(from);
       a.mesh.lookAt(from.clone().add(a.vel));
     }
@@ -248,14 +312,15 @@
     update(dt) {
       const eng = this.engine, player = eng.player;
 
-      // melee swing lifecycle
+      // melee swing lifecycle (timings come from the equipped weapon)
       if (this.attacking) {
+        const cfg = this.cfg;
         this.attackT += dt;
-        if (!this._didHit && this.attackT >= SWING.hitAt) {
+        if (!this._didHit && this.attackT >= cfg.hitAt) {
           this._didHit = true;
           this._applyMeleeHit();
         }
-        if (this.attackT >= SWING.dur) {
+        if (this.attackT >= cfg.dur) {
           this.attacking = false;
           this.comboWindow = 0.55;
         }
@@ -263,9 +328,10 @@
         this.comboWindow -= dt;   // once it expires, _trySwing restarts the combo at 0
       }
 
-      // bow draw
+      // bow draw (Quick Draw skill shortens it)
       if (this.weapon === 'bow' && this.drawing && player.alive) {
-        this.drawPct = Math.min(1, this.drawPct + dt / DRAW_TIME);
+        const drawTime = DRAW_TIME / ((G.Skills && G.Skills.owned('quick_draw')) ? 1.3 : 1);
+        this.drawPct = Math.min(1, this.drawPct + dt / drawTime);
       }
       // aim-down zoom once drawing (deeper when fully drawn — the "hold" reward)
       const zoom = this.weapon === 'bow' ? -(this.drawPct * 9 + (this.drawPct >= 1 ? 4 : 0)) : 0;
@@ -276,6 +342,7 @@
         const a = this.active[i];
         a.life += dt;
         if (a.stuck) {
+          if (a.flaming && a.flame.visible && a.life > 2.5) a.flame.visible = false;
           if (a.life > 14) this._retire(a);
           continue;
         }
@@ -339,12 +406,14 @@
       }
       // stuck in the world (ground / walls / props)
       G.audio.arrowHit(hitBody && hitBody.userData && hitBody.userData.surface ? hitBody.userData.surface : 'wood');
-      // nearby attackable structures (gate, barricades) take chip damage
+      // nearby attackable structures (gate, barricades) take chip damage;
+      // fire arrows bite wood twice as hard
+      const structMul = a.flaming ? 2 : 1;
       for (const d of eng.attackables) {
-        if (d.pos && hitPoint.distanceTo(d.pos) < (d.radius || 2.5) + 0.6 && d.takeDamage) d.takeDamage(a.damage * 0.4, { type: 'arrow' });
+        if (d.pos && hitPoint.distanceTo(d.pos) < (d.radius || 2.5) + 0.6 && d.takeDamage) d.takeDamage(a.damage * 0.4 * structMul, { type: 'arrow' });
       }
       for (const d of eng.destructibles) {
-        if (!d.broken && d.pos && hitPoint.distanceTo(d.pos) < 1.6 && d.takeDamage) d.takeDamage(a.damage * 0.5, { type: 'arrow' });
+        if (!d.broken && d.pos && hitPoint.distanceTo(d.pos) < 1.6 && d.takeDamage) d.takeDamage(a.damage * 0.5 * structMul, { type: 'arrow' });
       }
     }
 
@@ -362,8 +431,11 @@
     }
 
     hudInfo() {
+      const def = this.isMelee ? this.cfg : null;
       return {
         weapon: this.weapon,
+        weaponName: def ? def.name : 'Longbow',
+        weaponIcon: def ? def.icon : '🏹',
         arrows: this.arrows,
         quiverMax: this.quiverMax,
         drawPct: this.drawPct,

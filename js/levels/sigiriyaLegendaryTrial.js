@@ -56,6 +56,7 @@
       sunDir: new THREE.Vector3(0.8, 0.28, -0.3), sunColor: 0xffc890, sunIntensity: 2.5,
       hemiSky: 0x8a90c0, hemiGround: 0x6a5038, hemiIntensity: 0.5,
     },
+    nature: { animals: 0, flowers: 0.5, herbs: 0.6 },   // the rock is a bare place
     objectives: [
       { id: 'gallery', text: 'Climb to the fresco gallery', marker: [27, 18] },
       { id: 'shades1', text: 'Banish the gallery shades', count: 3, hidden: true, marker: [27, 18] },

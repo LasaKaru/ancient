@@ -65,6 +65,27 @@
       h('div', { className: 'hud-compass-strip' }, ticks));
   }
 
+  /* enemy-nearby warning (v0.2): directional pips orbiting the crosshair */
+  function ThreatRing({ threats }) {
+    if (!threats || !threats.length) return null;
+    const R = 52;
+    return h('div', { className: 'hud-crosshair', style: { pointerEvents: 'none' } },
+      threats.map((t, i) => {
+        const a = (t.diff * Math.PI) / 180;
+        return h('div', {
+          key: i,
+          style: {
+            position: 'absolute',
+            left: Math.sin(a) * R - 4,
+            top: -Math.cos(a) * R - 4,
+            width: 8, height: 8, borderRadius: '50%',
+            background: t.hot ? 'rgba(220,60,40,0.95)' : 'rgba(230,180,80,0.8)',
+            boxShadow: t.hot ? '0 0 8px rgba(220,60,40,0.9)' : '0 0 5px rgba(0,0,0,0.6)',
+          },
+        });
+      }));
+  }
+
   function Crosshair({ mode }) {
     if (mode === 'none') return null;
     if (mode === 'bow' || mode === 'bowfull') {
@@ -128,13 +149,21 @@
           h('div', { className: 'hud-bar-label' }, h('span', null, 'Stamina')),
           h('div', { className: 'hud-bar slim' },
             h('div', { className: 'fill stamina', style: { width: (stFrac * 100) + '%', opacity: snap.exhausted ? 0.45 : 1 } }))),
-        snap.repute > 0 ? h('div', { className: 'hud-repute' }, `Renown ${snap.repute}`) : null,
+        h('div', { className: 'hud-repute' },
+          (snap.herbs > 0 ? `🌿 ${snap.herbs}   ` : '') +
+          (snap.repute > 0 ? `Renown ${snap.repute}` : '') +
+          (snap.skillPts > 0 ? `  ·  ${snap.skillPts} to spend (K)` : '')),
       ) : null,
 
-      // weapon panel
+      // weapon panel + slot strip
       !cine ? h('div', { className: 'hud-weapon' },
-        h('div', { className: 'hud-weapon-icon' }, snap.weapon === 'bow' ? '🏹' : '⚔️'),
-        h('div', { className: 'hud-weapon-name' }, snap.weapon === 'bow' ? 'Longbow' : 'War Sword'),
+        snap.slots ? h('div', { style: { fontSize: 13, letterSpacing: 4, opacity: 0.85, marginBottom: 3 } },
+          snap.slots.map((s, i) => h('span', {
+            key: i,
+            style: { opacity: s.current ? 1 : s.unlocked ? 0.55 : 0.2, textShadow: s.current ? '0 0 6px rgba(243,205,122,0.9)' : 'none' },
+          }, s.icon))) : null,
+        h('div', { className: 'hud-weapon-icon' }, snap.weaponIcon),
+        h('div', { className: 'hud-weapon-name' }, snap.weaponName),
         snap.weapon === 'bow'
           ? h('div', { className: 'hud-arrows' }, `${snap.arrows} `, h('span', { className: 'cap' }, `/ ${snap.quiverMax}`))
           : null,
@@ -163,8 +192,10 @@
               o.text + (o.count ? ` (${Math.min(o.progress, o.count)}/${o.count})` : '') + (o.note ? ` — ${o.note}` : '')))) : null,
       ) : null,
 
-      // crosshair + interact prompt
+      // crosshair + threat ring + interact prompt
       !cine && snap.alive ? h(Crosshair, { mode: snap.crosshair }) : null,
+      !cine && snap.alive && G.Settings.data.access.threatRing !== false
+        ? h(ThreatRing, { threats: snap.threats }) : null,
       !cine && snap.prompt ? h('div', { className: 'hud-interact-tip' },
         h('b', null, prettyKey(G.Settings.data.controls.keys.interact)), ' — ' + snap.prompt) : null,
 

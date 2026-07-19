@@ -13,8 +13,9 @@
 
   const KEY_LABELS = {
     forward: 'Move forward', back: 'Move back', left: 'Strafe left', right: 'Strafe right',
-    sprint: 'Sprint', jump: 'Jump', crouch: 'Crouch', switchWeapon: 'Switch weapon',
-    nock: 'Nock arrow', interact: 'Interact', missionLog: 'Mission log', pause: 'Pause',
+    sprint: 'Sprint', jump: 'Jump', crouch: 'Crouch', switchWeapon: 'Sword ⇄ bow',
+    nock: 'Nock arrow', interact: 'Interact / mount', missionLog: 'Mission log', pause: 'Pause',
+    herb: 'Use healing herbs', rally: 'Rally cry (skill)', skills: 'Skills page',
   };
 
   function Row({ label, children, val }) {
@@ -114,6 +115,7 @@
       body = h(React.Fragment, null,
         h(Row, { label: 'Subtitles & objective text' }, h(Toggle, { path: 'access.subtitles' })),
         h(Row, { label: 'High-contrast HUD outline' }, h(Toggle, { path: 'access.colorblind' })),
+        h(Row, { label: 'Enemy-nearby warning ring' }, h(Toggle, { path: 'access.threatRing' })),
         h('div', { className: 'settings-note' },
           'High-contrast mode recolours the vitality and stamina bars (orange / blue) and strengthens HUD outlines for colour-blind visibility.'));
     }

@@ -32,10 +32,11 @@
         sprint: 'ShiftLeft', jump: 'Space', crouch: 'KeyC',
         switchWeapon: 'KeyQ', nock: 'KeyR', interact: 'KeyF',
         missionLog: 'Tab', pause: 'Escape',
+        herb: 'KeyG', rally: 'KeyT', skills: 'KeyK',
       },
     },
     audio: { master: 0.8, music: 0.65, sfx: 0.9, ambience: 0.7 },
-    access: { subtitles: true, colorblind: false },
+    access: { subtitles: true, colorblind: false, threatRing: true },
   });
   const PRESETS = {
     low: { drawDistance: 120, foliage: 0.4, pixelRatio: 1, postFX: false },
@@ -93,13 +94,14 @@
     bonusUnlocked: false,
     completed: {},            // levelId → summary
     reputation: 0,
+    skills: [],               // learned skill ids (v0.2)
     get completedCount() { return Object.keys(this.completed).length; },
     save() {
       try {
         localStorage.setItem('rajarata_save', JSON.stringify({
           profile: this.profile, unlocked: this.unlocked,
           bonusUnlocked: this.bonusUnlocked, completed: this.completed,
-          reputation: this.reputation,
+          reputation: this.reputation, skills: this.skills,
         }));
       } catch (_) {}
     },
@@ -115,6 +117,7 @@
       this.bonusUnlocked = false;
       this.completed = {};
       this.reputation = 0;
+      this.skills = [];
       this.save();
     },
   };
@@ -251,10 +254,22 @@
       this.enemies = new G.EnemyManager(this);
       this.combat = new G.CombatSystem(this);
       this.missions = new MissionSystem(this, this.def.objectives || []);
+      this.riding = null;          // active ElephantMount, if any
+      this.rallyT = 0;             // Commander "Rally Cry" timers
+      this.rallyCd = 0;
+      this.mounts = [];
+      this.critters = [];
       this.def.build(this);
       this.player = new G.PlayerController(this, this.def.spawn || { pos: [0, 0], yaw: 0 });
       this.playerRig = new G.PlayerRig(this, { armorColor: G.GameState.profile.armorColor });
       if (!this.terrain) this.terrain = new G.Terrain(this, {});
+      // battle-hardened: learned skills toughen the body
+      if (G.Skills) {
+        this.player.maxHp = 100 + 5 * G.Skills.ownedCount();
+        this.player.hp = this.player.maxHp;
+      }
+      // living-world layer: flowers, wandering animals, herb plants
+      if (G.Wildlife) G.Wildlife.autoPopulate(this, this.def.nature || {});
 
       // ---- audio scene ----
       G.audio.setAmbience(this.def.ambience || 'jungle');
@@ -327,6 +342,17 @@
     }
     setCombatIntensity(x) { this._musicFloor = x; }
 
+    /* Commander skill: Rally Cry (T) — allies fight harder for a spell */
+    rally() {
+      if (!(G.Skills && G.Skills.owned('rally'))) return;
+      if (this.rallyCd > 0) { this.ui.toast(`RALLY RESTS — ${Math.ceil(this.rallyCd)}s`); return; }
+      this.rallyT = 12;
+      this.rallyCd = 45;
+      G.audio.warHorn();
+      this.ui.toast('RALLY! THE LINE SURGES FORWARD');
+      for (const n of this.enemies.npcs) if (n.alive && n.faction === 'ally') n.rig.playCheer();
+    }
+
     tryInteract() {
       const it = this.currentPrompt;
       if (!it) return;
@@ -351,11 +377,16 @@
         missions: this.missions.serialize(),
         data: opts.data || null,
       };
-      if (this.player) { G.audio.checkpoint(); this.ui.toast('CHECKPOINT — ' + (opts.note || 'saved')); }
+      if (this.player) {
+        G.audio.checkpoint();
+        this.ui.toast('CHECKPOINT — ' + (opts.note || 'saved'));
+        this.player.herbs = Math.min(this.player.herbCap(), this.player.herbs + 1);
+      }
     }
     restoreCheckpoint(opts = {}) {
       const cp = this.lastCheckpoint;
       if (!cp) return;
+      if (this.riding) this.riding.dismount();
       const pos = cp.pos.length === 3 ? cp.pos : [cp.pos[0], 0, cp.pos[1]];
       this.player.teleport(pos[0], pos[1], pos[2], cp.yaw);
       if (!opts.keepHp) this.player.revive();
@@ -372,6 +403,7 @@
     onPlayerDeath() {
       if (this._deadShown) return;
       this._deadShown = true;
+      if (this.riding) this.riding.dismount();
       G.audio.setIntensity(0);
       this.after(1.6, () => {
         this.player.releaseLock();
@@ -459,10 +491,15 @@
         this._updateCinematic(dt);
       }
 
+      this.rallyT = Math.max(0, this.rallyT - dt);
+      this.rallyCd = Math.max(0, this.rallyCd - dt);
+
       this.physics.step(1 / 60, dt, 3);
       if (!this.cinematic.active) {
         this.player.update(dt);
       }
+      for (const m of this.mounts) m.update(dt);
+      for (const c of this.critters) c.update(dt);
       this.playerRig.update(dt);
       this.combat.update(dt);
       this.enemies.update(dt);
@@ -544,14 +581,40 @@
         const bearing = (Math.atan2(marker[0] - fp.x, -(marker[1] - fp.z)) * 180 / Math.PI + 360) % 360;
         objDiff = ((bearing - facingDeg + 540) % 360) - 180;
       }
+      // enemy-nearby warning pips (direction + heat)
+      const threats = [];
+      if (G.Settings.data.access.threatRing !== false) {
+        const fp = p.feetPos;
+        for (const n of this.enemies.npcs) {
+          if (!n.alive || n.faction !== 'enemy' || !n.ai) continue;
+          const st = n.ai.state;
+          const sus = st === 'investigate';
+          const hot = st === 'engage' || st === 'windup' || st === 'recover' || st === 'flee';
+          if (!sus && !hot) continue;
+          if (U.flatDist(n.pos, fp) > 30) continue;
+          const bearing = (Math.atan2(n.pos.x - fp.x, -(n.pos.z - fp.z)) * 180 / Math.PI + 360) % 360;
+          threats.push({ diff: ((bearing - facingDeg + 540) % 360) - 180, hot });
+          if (threats.length >= 10) break;
+        }
+      }
+      const info = c.hudInfo();
+      const slots = Object.values(G.MELEE).map((d) => ({
+        icon: d.icon,
+        unlocked: !d.skill || (G.Skills && G.Skills.owned(d.skill)),
+        current: c.weapon !== 'bow' && c.cfg === d,
+      }));
+      slots.push({ icon: '🏹', unlocked: true, current: c.weapon === 'bow' });
       return {
         hp: p.hp, maxHp: p.maxHp, stamina: p.stamina, maxStamina: p.maxStamina,
         exhausted: p.exhausted, alive: p.alive,
-        weapon: c.weapon, arrows: c.arrows, quiverMax: c.quiverMax,
-        drawPct: c.drawPct,
+        weapon: c.weapon, weaponName: info.weaponName, weaponIcon: info.weaponIcon,
+        arrows: c.arrows, quiverMax: c.quiverMax,
+        drawPct: c.drawPct, slots,
+        herbs: p.herbs,
+        skillPts: G.Skills ? G.Skills.points() : 0,
         crosshair: c.weapon === 'bow' ? (c.drawPct >= 1 ? 'bowfull' : c.drawing ? 'bow' : 'melee') : 'melee',
-        facingDeg, objDiff,
-        prompt: this.currentPrompt ? this.currentPrompt.prompt : null,
+        facingDeg, objDiff, threats,
+        prompt: this.riding ? 'Dismount' : (this.currentPrompt ? this.currentPrompt.prompt : null),
         repute: G.GameState.reputation + this.stats.saved,
         levelTitle: this.def.title,
         cinematic: this.cinematic.active,
@@ -618,7 +681,7 @@
   }
 
   /* ========================= AUX SCREENS ========================= */
-  function SummaryScreen({ summary, onNext, onMenu, isLast, isBonus }) {
+  function SummaryScreen({ summary, onNext, onMenu, onSkills, isLast, isBonus }) {
     const mm = Math.floor(summary.time / 60), ss = Math.floor(summary.time % 60);
     return h('div', { className: 'screen dim fade-in' },
       h('div', { className: 'panel', style: { minWidth: 440 } },
@@ -637,6 +700,9 @@
         h('div', { className: 'menu-rule' }),
         h('button', { className: 'menu-btn primary', onClick: () => { G.audio.uiConfirm(); onNext(); } },
           isBonus ? 'The Legend Ends' : isLast ? 'Witness the Triumph' : 'Continue the Campaign'),
+        G.Skills && G.Skills.points() > 0
+          ? h('button', { className: 'menu-btn', onClick: () => { G.audio.ui(); onSkills(); } }, `Spend Renown — Skills (${G.Skills.points()})`)
+          : null,
         h('button', { className: 'menu-btn small', onClick: () => { G.audio.ui(); onMenu(); } }, 'Return to Menu')));
   }
 
@@ -675,17 +741,19 @@
     const [session, setSession] = React.useState(0);
     const [paused, setPaused] = React.useState(false);
     const [showSettings, setShowSettings] = React.useState(false);
+    const [showSkills, setShowSkills] = React.useState(false);
     const [death, setDeath] = React.useState(null);
     const [summary, setSummary] = React.useState(null);
     const [, force] = React.useReducer((x) => x + 1, 0);
     const engineRef = React.useRef(null);
 
     const stateRef = React.useRef({});
-    stateRef.current = { screen, paused, showSettings, death };
+    stateRef.current = { screen, paused, showSettings, showSkills, death };
 
     const bridge = React.useMemo(() => ({
       onEngineReady: () => force(),
       requestPause: () => setPaused(true),
+      openSkills: () => setShowSkills(true),
       onDeath: (reason) => setDeath(reason),
       onSummary: (s) => {
         // record progress
@@ -709,6 +777,7 @@
         if (e.code !== 'Escape') return;
         if (st.screen !== 'game') return;
         if (st.showSettings) { setShowSettings(false); return; }
+        if (st.showSkills) { setShowSkills(false); return; }
         if (st.death) return;
         setPaused((p) => {
           const np = !p;
@@ -724,11 +793,12 @@
     React.useEffect(() => {
       const eng = engineRef.current;
       if (!eng) return;
-      eng.paused = paused || !!death || showSettings;
-      if (screen === 'game' && !paused && !death && !showSettings && eng.player) {
+      eng.paused = paused || !!death || showSettings || showSkills;
+      if (showSkills && eng.player) eng.player.releaseLock();
+      if (screen === 'game' && !paused && !death && !showSettings && !showSkills && eng.player) {
         eng.player.requestLock();
       }
-    }, [paused, death, showSettings, screen, session]);
+    }, [paused, death, showSettings, showSkills, screen, session]);
 
     const startLevel = (id) => {
       setLevelId(id);
@@ -754,12 +824,13 @@
     }
     if (screen === 'game') {
       if (engineRef.current) children.push(h(G.UI.HUD, { key: 'hud', engine: engineRef.current }));
-      if (paused && !showSettings) {
+      if (paused && !showSettings && !showSkills) {
         children.push(h(G.UI.PauseMenu, {
           key: 'pause',
           levelTitle: G.Levels.defs[levelId]?.title,
           onResume: () => setPaused(false),
           onSettings: () => setShowSettings(true),
+          onSkills: () => setShowSkills(true),
           onRestart: () => { setSession((s) => s + 1); setPaused(false); setDeath(null); },
           onQuit: quitToMenu,
         }));
@@ -812,6 +883,7 @@
       children.push(h(SummaryScreen, {
         key: 'summary', summary,
         isLast, isBonus: !!def.bonus,
+        onSkills: () => setShowSkills(true),
         onNext: () => {
           if (def.bonus) { quitToMenu(); return; }
           if (isLast) { setScreen('victory'); setLevelId(null); return; }
@@ -834,6 +906,9 @@
 
     if (showSettings) {
       children.push(h(G.UI.SettingsMenu, { key: 'settings', onBack: () => setShowSettings(false) }));
+    }
+    if (showSkills) {
+      children.push(h(G.UI.SkillsMenu, { key: 'skills', onBack: () => setShowSkills(false) }));
     }
 
     return h(React.Fragment, null, children);
