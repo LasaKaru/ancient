@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  RAJARATA: DUTUGEMUNU'S WAR
+  A first-person historical action game set in ancient Ceylon (2nd c. BCE).
+  ============================================================================
+  HOW TO RUN:
+    Open this file directly in Chrome / Edge / Firefox - no server or build
+    step required. (First launch needs an internet connection so the browser
+    can fetch the Three.js / React libraries from the CDN import map below;
+    after that they are cached by the browser.)
+
+  TECH NOTES:
+    - Local game code is loaded as classic scripts (a deliberate choice so the
+      game works from the file:// protocol, where browsers block *local* ES
+      module imports). CDN libraries ARE loaded as real ES modules through the
+      <script type="importmap"> below, then handed to the game code via a
+      single shared registry (window.__MODULES__).
+    - UI files use the .jsx extension per project convention but contain no
+      JSX syntax (React.createElement only), so no transpiler is needed.
+    - Visual fidelity target: the best achievable real-time browser WebGL
+      look (stylized-realistic indie-AAA), NOT literal photorealism.
+  ============================================================================
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rajarata: Dutugemunu's War</title>
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/settings.css" />
+
+  <!-- ===== ES module import map: all third-party libraries via CDN ===== -->
+  <script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.3.1",
+      "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+      "react-dom": "https://esm.sh/react-dom@18.3.1",
+      "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+      "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/",
+      "cannon-es": "https://esm.sh/cannon-es@0.20.0",
+      "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.17.10?external=react,react-dom,three",
+      "@react-three/drei": "https://esm.sh/@react-three/drei@9.114.3?external=react,react-dom,three,@react-three/fiber"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- React mounts everything (menus, HUD, the R3F <Canvas>) in here -->
+  <div id="root"></div>
+
+  <!-- ===== Loading screen (plain HTML so it shows before any JS runs) ===== -->
+  <div id="loading-screen">
+    <div class="load-inner">
+      <div class="load-sigil">ᱛ</div>
+      <h1 class="load-title">RAJARATA</h1>
+      <h2 class="load-subtitle">Dutugemunu's War</h2>
+      <div class="load-bar-outer"><div id="load-bar" class="load-bar-inner"></div></div>
+      <div id="load-status" class="load-status">Summoning the ancient world&hellip;</div>
+      <div id="load-error" class="load-error" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ===== Bootstrap: import CDN modules, then load local game scripts ===== -->
+  <script type="module">
+    const statusEl = document.getElementById('load-status');
+    const barEl = document.getElementById('load-bar');
+    const errEl = document.getElementById('load-error');
+    const setStatus = (t) => { if (statusEl) statusEl.textContent = t; };
+    const setBar = (f) => { if (barEl) barEl.style.width = Math.round(f * 100) + '%'; };
+    const fail = (msg, e) => {
+      console.error(msg, e);
+      if (errEl) {
+        errEl.style.display = 'block';
+        errEl.innerHTML =
+          '<b>Failed to start:</b> ' + msg +
+          '<br/><small>The first launch needs an internet connection to fetch the ' +
+          'Three.js / React libraries from the CDN. Check your connection and reload.</small>';
+      }
+    };
+
+    try {
+      setStatus('Fetching libraries from CDN…'); setBar(0.05);
+      const [React, ReactDOMClient, THREE, CANNON, R3F] = await Promise.all([
+        import('react'),
+        import('react-dom/client'),
+        import('three'),
+        import('cannon-es'),
+        import('@react-three/fiber'),
+      ]);
+      setBar(0.35);
+
+      setStatus('Loading post-processing & helpers…');
+      const [
+        { EffectComposer },
+        { RenderPass },
+        { UnrealBloomPass },
+        { ShaderPass },
+        { OutputPass },
+        BGU,
+        { RoomEnvironment },
+      ] = await Promise.all([
+        import('three/addons/postprocessing/EffectComposer.js'),
+        import('three/addons/postprocessing/RenderPass.js'),
+        import('three/addons/postprocessing/UnrealBloomPass.js'),
+        import('three/addons/postprocessing/ShaderPass.js'),
+        import('three/addons/postprocessing/OutputPass.js'),
+        import('three/addons/utils/BufferGeometryUtils.js'),
+        import('three/addons/environments/RoomEnvironment.js'),
+      ]);
+      setBar(0.5);
+
+      // drei is used for menu-scene garnish only; the game must survive
+      // without it, so its failure is non-fatal.
+      let drei = null;
+      try { drei = await import('@react-three/drei'); }
+      catch (e) { console.warn('[boot] drei unavailable (menu garnish disabled)', e); }
+      setBar(0.55);
+
+      window.__MODULES__ = {
+        React: React.default ?? React,
+        ReactDOMClient,
+        THREE,
+        CANNON,
+        R3F,
+        drei,
+        BGU,
+        RoomEnvironment,
+        POST: { EffectComposer, RenderPass, UnrealBloomPass, ShaderPass, OutputPass },
+      };
+
+      // ---- Local game code, as classic scripts (file:// friendly) ----
+      const files = [
+        'js/audio/audioEngine.js',
+        'js/engine/world.js',
+        'js/engine/terrain.js',
+        'js/engine/playerController.js',
+        'js/engine/combatSystem.js',
+        'js/engine/enemyAI.js',
+        'js/entities/soldierNPC.js',
+        'js/entities/player.js',
+        'js/entities/kingDutugemunu.js',
+        'js/levels/anuradhapuraCity.js',
+        'js/levels/villageLiberation.js',
+        'js/levels/fortressSiege.js',
+        'js/levels/finalDuel.js',
+        'js/levels/ruwanwelisayaDefense.js',
+        'js/levels/sigiriyaLegendaryTrial.js',
+        'js/ui/hud.jsx',
+        'js/ui/missionBrief.jsx',
+        'js/ui/mainMenu.jsx',
+        'js/ui/settingsMenu.jsx',
+        'js/ui/pauseMenu.jsx',
+        'js/app.js',
+      ];
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        setStatus('Loading ' + f + '…');
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = f;
+          s.onload = resolve;
+          s.onerror = () => reject(new Error('Could not load ' + f));
+          document.head.appendChild(s);
+        });
+        setBar(0.55 + 0.4 * ((i + 1) / files.length));
+      }
+
+      setStatus('Raising the banners…'); setBar(1);
+      if (!window.RAJARATA || !window.RAJARATA.boot) throw new Error('Game namespace missing after load');
+      window.RAJARATA.boot();
+      const ls = document.getElementById('loading-screen');
+      if (ls) { ls.classList.add('done'); setTimeout(() => ls.remove(), 900); }
+    } catch (e) {
+      fail(e && e.message ? e.message : String(e), e);
+    }
+  </script>
+</body>
+</html>
