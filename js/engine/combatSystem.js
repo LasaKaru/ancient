@@ -235,7 +235,7 @@
         to.setY(0).normalize();
         if (to.dot(fwd) < cfg.arc) return;
         hitSomething = true;
-        let dmg = cfg.dmg[this.combo];
+        let dmg = cfg.dmg[this.combo] * (G.Realism ? G.Realism().damageDealt : 1);
         if (isStruct && cfg.structDmg) dmg *= cfg.structDmg;
         if (!isStruct && t.type) {
           if (cfg.vsBrute && t.type === 'brute') dmg *= cfg.vsBrute;
@@ -280,13 +280,16 @@
       const flaming = G.Skills && G.Skills.owned('fire_arrows');
       const dir = new THREE.Vector3();
       this.engine.camera.getWorldDirection(dir);
-      const from = this.engine.camera.position.clone().addScaledVector(dir, 0.55);
+      // third person: loose from the body, not from a camera floating behind it
+      const from = this.engine.tpMode
+        ? player.pos.clone().addScaledVector(dir, 0.7)
+        : this.engine.camera.position.clone().addScaledVector(dir, 0.55);
       from.y -= 0.06;
       this.fireArrow({
         from, dir,
         speed: 16 + power * 26,
         owner: player,
-        damage: (18 + power * 26) * (flaming ? 1.35 : 1),
+        damage: (18 + power * 26) * (flaming ? 1.35 : 1) * (G.Realism ? G.Realism().damageDealt : 1),
         flaming,
       });
     }
@@ -348,7 +351,7 @@
         }
         if (a.life > 8) { this._retire(a); continue; }
         a.prev.copy(a.pos);
-        a.vel.y -= ARROW_G * dt;
+        a.vel.y -= ARROW_G * (G.Realism ? G.Realism().arrowDrop : 1) * dt;
         a.pos.addScaledVector(a.vel, dt);
 
         // swept collision test via cannon raycast (prev → pos)

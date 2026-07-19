@@ -32,6 +32,7 @@
       'a mountain of brick and merit. But scattered war-bands still prowl the ' +
       'countryside, and they have smelled the treasure of a king. The builders ' +
       'hold trowels, not swords. Yours must be enough for all of them.',
+    timeLine: 'high noon, years after the war', marchDays: 1,
     ambience: 'construction',
     music: 'duel',
     atmosphere: {

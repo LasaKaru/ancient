@@ -112,6 +112,10 @@
         else if (e.code === K.herb) this.useHerb();
         else if (e.code === K.rally) eng.rally();
         else if (e.code === K.skills) eng.bridge.openSkills && eng.bridge.openSkills();
+        else if (e.code === K.camera) {
+          G.Settings.set('graphics.camera', eng.tpMode ? 'first' : 'third');
+          eng.ui.toast(eng.tpMode ? 'THIRD-PERSON VIEW' : 'FIRST-PERSON VIEW');
+        }
         else if (/^Digit[1-5]$/.test(e.code)) {
           const slot = Number(e.code.slice(5));
           const id = Object.keys(G.MELEE).find((k) => G.MELEE[k].slot === slot);
@@ -192,6 +196,14 @@
         this.hp = Math.min(this.maxHp, this.hp + tick);
       }
 
+      // realism: natural recovery (arcade regens fully, standard only to 40%,
+      // realistic not at all — herbs and checkpoints are your surgeons)
+      const R = G.Realism();
+      if (this.alive && R.regen !== 'none' && eng.time - (this.lastDamageT || -99) > 5) {
+        const cap = R.regen === 'arcade' ? this.maxHp : this.maxHp * 0.4;
+        if (this.hp < cap) this.hp = Math.min(cap, this.hp + (R.regen === 'arcade' ? 4 : 6) * dt);
+      }
+
       // riding: the elephant drives the body & camera; keep look + FOV logic
       if (eng.riding) {
         const g = eng.riding.group;
@@ -228,6 +240,8 @@
       if (this.sprinting) speed = 7.2;
       if (this.crouching) speed = 2.2;
       if (this.engine.combat.isBlockingOrDrawing()) speed *= 0.55;
+      // realistic preset: deep wounds slow the legs
+      if (R.preset === 'realistic' && this.hp < this.maxHp * 0.25) speed *= 0.8;
 
       // stamina economy
       if (this.sprinting) {
@@ -273,19 +287,23 @@
         }
       }
 
-      // camera transform
+      // camera transform (first-person head, or third-person shoulder rig)
       const p = this.body.position;
       const bobY = Math.sin(this.bobT * 2) * 0.045 * this.bobAmp;
       const bobX = Math.cos(this.bobT) * 0.025 * this.bobAmp;
       this.viewShake = Math.max(0, this.viewShake - dt * 3);
       const shX = (Math.random() - 0.5) * this.viewShake * 0.05;
       const shY = (Math.random() - 0.5) * this.viewShake * 0.05;
-      this.camera.position.set(
-        p.x + this._right.x * bobX + shX,
-        p.y - BODY_R + this.eyeHeight + bobY + shY,
-        p.z + this._right.z * bobX);
-      this._camEuler.set(this.pitch, this.yaw, Math.sin(this.bobT) * 0.002 * this.bobAmp);
-      this.camera.quaternion.setFromEuler(this._camEuler);
+      if (eng.tpMode) {
+        this._thirdPersonCamera(dt, p, shX, shY);
+      } else {
+        this.camera.position.set(
+          p.x + this._right.x * bobX + shX,
+          p.y - BODY_R + this.eyeHeight + bobY + shY,
+          p.z + this._right.z * bobX);
+        this._camEuler.set(this.pitch, this.yaw, Math.sin(this.bobT) * 0.002 * this.bobAmp);
+        this.camera.quaternion.setFromEuler(this._camEuler);
+      }
 
       // FOV: settings base + bow-zoom offset
       const baseFov = G.Settings.data.graphics.fov;
@@ -300,6 +318,34 @@
 
       // track blocking state for the HUD & combat (any melee weapon guards)
       this.blocking = this.engine.combat.isMelee && this.engine.combat.secondaryHeld && this.alive;
+    }
+
+    /* over-the-shoulder camera with wall-collision probe (v0.3) */
+    _thirdPersonCamera(dt, p, shX, shY) {
+      const eng = this.engine;
+      const drawing = eng.combat.drawing || eng.combat.secondaryHeld;
+      const dist = drawing ? 2.0 : 3.3;
+      const side = drawing ? 0.7 : 0.5;
+      // view direction from yaw/pitch
+      const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
+      const dir = new THREE.Vector3(-Math.sin(this.yaw) * cp, sp, -Math.cos(this.yaw) * cp);
+      const anchor = new THREE.Vector3(p.x, p.y - BODY_R + this.eyeHeight + 0.15, p.z);
+      anchor.addScaledVector(this._right, side);
+      const desired = anchor.clone().addScaledVector(dir, -dist);
+      desired.y = Math.max(desired.y, 0.25);
+      // don't clip through walls: probe from the head to the desired position
+      const from = new CANNON.Vec3(anchor.x, anchor.y, anchor.z);
+      const to = new CANNON.Vec3(desired.x, desired.y, desired.z);
+      const res = eng.aiRayResult;
+      res.reset();
+      eng.physics.raycastClosest(from, to, { collisionFilterMask: G.COL.STATIC, skipBackfaces: true }, res);
+      if (res.hasHit) {
+        const hp = res.hitPointWorld;
+        desired.set(hp.x, hp.y, hp.z).lerp(anchor, 0.12);
+      }
+      this.camera.position.set(desired.x + shX, desired.y + shY, desired.z);
+      this._camEuler.set(this.pitch, this.yaw, 0);
+      this.camera.quaternion.setFromEuler(this._camEuler);
     }
 
     _checkGrounded() {
@@ -336,6 +382,8 @@
       if (!this.alive || this.godMode) return { blocked: false };
       const eng = this.engine;
       const now = performance.now() / 1000;
+      amount *= G.Realism ? G.Realism().damageTaken : 1;
+      this.lastDamageT = eng.time;
       if (eng.riding) amount *= 0.6;   // hard to reach a rider on a war elephant
 
       // facing check: are we looking (roughly) at the attacker?

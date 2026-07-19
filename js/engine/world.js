@@ -319,6 +319,7 @@
       this.sky = new THREE.Mesh(skyGeo, skyMat);
       this.sky.frustumCulled = false;
       scene.add(this.sky);
+      this._baseSunDir = o.sunDir.clone().normalize();
 
       /* --- lighting rig: key sun + hemisphere fill + faint bounce --- */
       this.hemi = new THREE.HemisphereLight(o.hemiSky, o.hemiGround, o.hemiIntensity);
@@ -409,6 +410,13 @@
 
     update(dt, playerPos) {
       this.time += dt;
+      // the day wears on: the sun drifts slowly across the sky during a mission
+      if (this.opts.sunDrift !== false) {
+        const a = this.time * (this.opts.sunDriftRate || 0.0006);
+        const b = this._baseSunDir, cs = Math.cos(a), sn = Math.sin(a);
+        this.opts.sunDir.set(b.x * cs - b.z * sn, b.y + Math.sin(this.time * 0.0004) * 0.06, b.x * sn + b.z * cs).normalize();
+        this.sky.material.uniforms.sunDir.value.copy(this.opts.sunDir);
+      }
       if (playerPos) {
         // shadow frustum follows the player (quantized to reduce shimmer)
         const q = 2;

@@ -23,6 +23,7 @@
       'the dark of their homes. Slip in with the dawn mist. Free the captured ' +
       'soldiers, drive out the garrison — and if you can, see the villagers safe. ' +
       'An army that saves its people is an army the island will follow.',
+    timeLine: 'first light, under mist', marchDays: 5,
     ambience: 'village',
     music: 'explore',
     atmosphere: {

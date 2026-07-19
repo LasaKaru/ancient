@@ -156,6 +156,15 @@
 
       this.group.traverse((c) => { if (c.isMesh) { c.castShadow = false; c.frustumCulled = false; } });
 
+      /* third-person body (v0.3): the same humanoid rig everyone else uses,
+         wearing the player's chosen sash colour */
+      this.tpBody = new G.HumanoidRig({
+        palette: 'ally', tintCloth: armorColor, weapon: 'sword', shield: true, plume: true,
+      });
+      this.tpBody.root.visible = false;
+      engine.scene.add(this.tpBody.root);
+      this._tpPrev = { attacking: false, drawing: false };
+
       // anim state
       this.switchT = 1;         // weapon raise/lower blend
       this.releaseT = 1;        // bow release snap
@@ -176,11 +185,17 @@
     }
 
     playSwing() { /* swing driven directly from combat state each frame */ }
-    playRelease() { this.releaseT = 0; }
+    playRelease() { this.releaseT = 0; if (this.engine.tpMode) this.tpBody.playRelease(); }
 
     update(dt) {
       const eng = this.engine, combat = eng.combat, player = eng.player;
       this.swayT += dt;
+
+      // ---- first vs third person visibility ----
+      const tp = eng.tpMode && !eng.cinematic.active;
+      this.group.visible = !tp && !eng.cinematic.active;
+      this.tpBody.root.visible = tp && player.alive;
+      if (tp) this._updateThirdPersonBody(dt);
 
       // weapon switch raise/lower
       if (this.switchT < 1) {
@@ -269,8 +284,42 @@
       }
     }
 
+    /* drive the visible body from the controller + combat state */
+    _updateThirdPersonBody(dt) {
+      const eng = this.engine, player = eng.player, combat = eng.combat, body = this.tpBody;
+      // weapon mirror (axe/mace/dagger read as sword-class on the distant rig)
+      const want = combat.weapon === 'bow' ? 'bow' : combat.weapon === 'spear' ? 'spear' : 'sword';
+      if (body.currentWeapon !== want) body.setWeapon(want);
+
+      if (eng.riding) {
+        // perched on the howdah
+        const g = eng.riding.group.position;
+        body.root.position.set(g.x, 3.15, g.z);
+        body.root.rotation.y = player.yaw + Math.PI;
+        body.speedPct = 0;
+        body.posture = 'kneel';
+        body.animate(dt);
+        return;
+      }
+      const feet = player.feetPos;
+      body.root.position.set(feet.x, Math.max(0, feet.y), feet.z);
+      body.root.rotation.y = player.yaw + Math.PI;
+      const planar = Math.hypot(player.body.velocity.x, player.body.velocity.z);
+      body.speedPct = G.util.clamp(planar / 7, 0, 1);
+      body.posture = (player.blocking || combat.drawing || combat.attacking || eng.combatIntensity > 0.3) ? 'combat' : 'relaxed';
+      // action mirroring
+      if (combat.attacking && !this._tpPrev.attacking) body.playStrike();
+      if (combat.drawing && !this._tpPrev.drawing) body.playBowDraw();
+      this._tpPrev.attacking = combat.attacking;
+      this._tpPrev.drawing = combat.drawing;
+      if (player.crouching) body.hips.position.y = 0.66;
+      body.animate(dt);
+      if (player.crouching) body.hips.position.y = Math.min(body.hips.position.y, 0.7);
+    }
+
     dispose() {
       if (this.group.parent) this.group.parent.remove(this.group);
+      if (this.tpBody && this.tpBody.root.parent) this.tpBody.root.parent.remove(this.tpBody.root);
     }
   }
   G.PlayerRig = PlayerRig;

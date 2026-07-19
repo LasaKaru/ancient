@@ -24,6 +24,15 @@
     graphics: {
       preset: 'medium', postFX: true, fov: 75, fpsCap: 60,
       drawDistance: 180, foliage: 0.8, pixelRatio: 1.5,
+      camera: 'first',            // 'first' | 'third' (V toggles in the field)
+    },
+    realism: {                    // v0.3: one dial for how punishing the war is
+      preset: 'standard',
+      damageTaken: 1, damageDealt: 1,
+      regen: 'standard',          // 'arcade' | 'standard' | 'none'
+      enemyAwareness: 1,
+      arrowDrop: 1,
+      hudMinimal: false,
     },
     controls: {
       sensitivity: 1.0, invertY: false,
@@ -32,7 +41,7 @@
         sprint: 'ShiftLeft', jump: 'Space', crouch: 'KeyC',
         switchWeapon: 'KeyQ', nock: 'KeyR', interact: 'KeyF',
         missionLog: 'Tab', pause: 'Escape',
-        herb: 'KeyG', rally: 'KeyT', skills: 'KeyK',
+        herb: 'KeyG', rally: 'KeyT', skills: 'KeyK', camera: 'KeyV',
       },
     },
     audio: { master: 0.8, music: 0.65, sfx: 0.9, ambience: 0.7 },
@@ -44,6 +53,14 @@
     high: { drawDistance: 250, foliage: 1.0, pixelRatio: 2, postFX: true },
     ultra: { drawDistance: 330, foliage: 1.3, pixelRatio: 2, postFX: true },
   };
+  const REALISM_PRESETS = {
+    arcade: { damageTaken: 0.6, damageDealt: 1.25, regen: 'arcade', enemyAwareness: 0.8, arrowDrop: 0.7, hudMinimal: false },
+    standard: { damageTaken: 1, damageDealt: 1, regen: 'standard', enemyAwareness: 1, arrowDrop: 1, hudMinimal: false },
+    realistic: { damageTaken: 1.5, damageDealt: 1, regen: 'none', enemyAwareness: 1.25, arrowDrop: 1.3, hudMinimal: true },
+  };
+  G.REALISM_PRESETS = REALISM_PRESETS;
+  /* live accessor used by combat / AI / player each frame */
+  G.Realism = () => G.Settings.data.realism;
 
   G.Settings = {
     data: DEFAULT_SETTINGS(),
@@ -56,11 +73,18 @@
       let o = this.data;
       for (let i = 0; i < keys.length - 1; i++) o = o[keys[i]];
       o[keys[keys.length - 1]] = value;
+      // hand-tuning any realism dial drops the preset to "custom"
+      if (path.startsWith('realism.') && path !== 'realism.preset') this.data.realism.preset = 'custom';
       this._notify();
     },
     applyPreset(name) {
       this.data.graphics.preset = name;
       Object.assign(this.data.graphics, PRESETS[name]);
+      this._notify();
+    },
+    applyRealism(name) {
+      if (!REALISM_PRESETS[name]) return;
+      Object.assign(this.data.realism, REALISM_PRESETS[name], { preset: name });
       this._notify();
     },
     resetDefaults() { this.data = DEFAULT_SETTINGS(); this._notify(); },
@@ -75,6 +99,7 @@
           const base = DEFAULT_SETTINGS();
           this.data = {
             graphics: { ...base.graphics, ...saved.graphics },
+            realism: { ...base.realism, ...saved.realism },
             controls: { ...base.controls, ...saved.controls, keys: { ...base.controls.keys, ...(saved.controls || {}).keys } },
             audio: { ...base.audio, ...saved.audio },
             access: { ...base.access, ...saved.access },
@@ -95,13 +120,14 @@
     completed: {},            // levelId → summary
     reputation: 0,
     skills: [],               // learned skill ids (v0.2)
+    day: 1,                   // campaign calendar (v0.3): days since the muster
     get completedCount() { return Object.keys(this.completed).length; },
     save() {
       try {
         localStorage.setItem('rajarata_save', JSON.stringify({
           profile: this.profile, unlocked: this.unlocked,
           bonusUnlocked: this.bonusUnlocked, completed: this.completed,
-          reputation: this.reputation, skills: this.skills,
+          reputation: this.reputation, skills: this.skills, day: this.day,
         }));
       } catch (_) {}
     },
@@ -118,6 +144,7 @@
       this.completed = {};
       this.reputation = 0;
       this.skills = [];
+      this.day = 1;
       this.save();
     },
   };
@@ -285,6 +312,9 @@
       this.checkpoint({ note: 'Mission start' });
       if (this.def.start) this.def.start(this);
     }
+
+    /* third-person mode is just a settings read — V toggles it live */
+    get tpMode() { return G.Settings.data.graphics.camera === 'third'; }
 
     /* ---------------- static-body helpers for builders ---------------- */
     addStaticPlane() {
@@ -760,6 +790,7 @@
         const def = G.Levels.defs[s.levelId];
         G.GameState.completed[s.levelId] = { kills: s.kills, saved: s.saved, time: s.time };
         G.GameState.reputation += 1 + s.saved;
+        if (!def.bonus) G.GameState.day += def.marchDays || 3;   // the campaign marches on
         if (!def.bonus) G.GameState.unlocked = Math.max(G.GameState.unlocked, def.order + 1);
         if (def.order >= 5) G.GameState.bonusUnlocked = true;
         G.GameState.save();

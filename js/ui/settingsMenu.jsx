@@ -16,7 +16,22 @@
     sprint: 'Sprint', jump: 'Jump', crouch: 'Crouch', switchWeapon: 'Sword ⇄ bow',
     nock: 'Nock arrow', interact: 'Interact / mount', missionLog: 'Mission log', pause: 'Pause',
     herb: 'Use healing herbs', rally: 'Rally cry (skill)', skills: 'Skills page',
+    camera: 'First ⇄ third person',
   };
+
+  function RealismPresetRow({ onChanged }) {
+    const [, self] = React.useReducer((x) => x + 1, 0);
+    const cur = G.Settings.data.realism.preset;
+    return h('div', { className: 'seg' },
+      ['arcade', 'standard', 'realistic'].map((p) => h('button', {
+        key: p,
+        className: cur === p ? 'on' : '',
+        onClick: () => { G.audio.ui(); G.Settings.applyRealism(p); self(); onChanged && onChanged(); },
+      }, p)),
+      h('button', { className: cur === 'custom' ? 'on' : '', disabled: true }, 'custom'));
+  }
+  G.UI = G.UI || {};
+  G.UI.RealismPresetRow = RealismPresetRow;
 
   function Row({ label, children, val }) {
     return h('div', { className: 'set-row' },
@@ -82,7 +97,7 @@
   function SettingsMenu({ onBack }) {
     const [tab, setTab] = React.useState('graphics');
     const [, force] = React.useReducer((x) => x + 1, 0);
-    const tabs = [['graphics', 'Graphics'], ['controls', 'Controls'], ['audio', 'Audio'], ['access', 'Accessibility']];
+    const tabs = [['graphics', 'Graphics'], ['realism', 'Realism'], ['controls', 'Controls'], ['audio', 'Audio'], ['access', 'Accessibility']];
 
     let body;
     if (tab === 'graphics') {
@@ -99,8 +114,20 @@
         h(Row, { label: 'Target FPS cap' }, h(Seg, { path: 'graphics.fpsCap', options: [30, 60, 120, 0], labels: ['30', '60', '120', 'Off'] })),
         h(Row, { label: 'Draw distance / fog' }, h(Slider, { path: 'graphics.drawDistance', min: 100, max: 350, step: 10, fmt: (v) => v + 'm' })),
         h(Row, { label: 'Foliage density' }, h(Slider, { path: 'graphics.foliage', min: 0.2, max: 1.5, step: 0.05, fmt: (v) => Math.round(v * 100) + '%' })),
+        h(Row, { label: 'Camera' }, h(Seg, { path: 'graphics.camera', options: ['first', 'third'], labels: ['1st person', '3rd person'] })),
         h('div', { className: 'settings-note' },
-          'Preset changes shadow resolution and render scale immediately; foliage density takes effect when a mission (re)loads.'));
+          'Preset changes shadow resolution and render scale immediately; foliage density takes effect when a mission (re)loads. V swaps the camera in the field.'));
+    } else if (tab === 'realism') {
+      body = h(React.Fragment, null,
+        h(Row, { label: 'Realism preset' }, h(RealismPresetRow, { onChanged: force })),
+        h(Row, { label: 'Damage you take', key: 'rt' + G.Settings.data.realism.preset }, h(Slider, { path: 'realism.damageTaken', min: 0.5, max: 2, step: 0.05, fmt: (v) => '×' + v.toFixed(2) })),
+        h(Row, { label: 'Damage you deal', key: 'rd' + G.Settings.data.realism.preset }, h(Slider, { path: 'realism.damageDealt', min: 0.5, max: 2, step: 0.05, fmt: (v) => '×' + v.toFixed(2) })),
+        h(Row, { label: 'Natural healing', key: 'rg' + G.Settings.data.realism.preset }, h(Seg, { path: 'realism.regen', options: ['arcade', 'standard', 'none'], labels: ['Full', 'To 40%', 'None'] })),
+        h(Row, { label: 'Enemy awareness', key: 'ra' + G.Settings.data.realism.preset }, h(Slider, { path: 'realism.enemyAwareness', min: 0.5, max: 1.5, step: 0.05, fmt: (v) => '×' + v.toFixed(2) })),
+        h(Row, { label: 'Arrow drop (gravity)', key: 'rr' + G.Settings.data.realism.preset }, h(Slider, { path: 'realism.arrowDrop', min: 0.5, max: 1.6, step: 0.05, fmt: (v) => '×' + v.toFixed(2) })),
+        h(Row, { label: 'Minimal HUD (diegetic)', key: 'rh' + G.Settings.data.realism.preset }, h(Toggle, { path: 'realism.hudMinimal' })),
+        h('div', { className: 'settings-note' },
+          'Applies instantly, mid-fight if you like. Realistic mode also slows your legs below a quarter vitality — chew your herbs. Hand-tuning any dial switches the preset to "custom".'));
     } else if (tab === 'controls') {
       body = h(ControlsTab);
     } else if (tab === 'audio') {

@@ -114,6 +114,7 @@
     const now = UIBus.now();
     const cb = G.Settings.data.access.colorblind ? ' cb-outline' : '';
     const subsOn = G.Settings.data.access.subtitles;
+    const minimal = G.Settings.data.realism.hudMinimal;   // diegetic mode
 
     // full-screen title card outranks everything
     if (S.titleCard && S.titleCard.until > now) {
@@ -140,7 +141,7 @@
       cine ? h('div', { className: 'hud-letterbox-bot' }) : null,
 
       // vitals
-      !cine ? h('div', { className: 'hud-vitals' },
+      !cine ? h('div', { className: 'hud-vitals', style: minimal ? { opacity: 0.72, width: 200 } : null },
         h('div', { className: 'hud-bar-wrap' },
           h('div', { className: 'hud-bar-label' }, h('span', null, 'Vitality'), h('span', null, `${Math.ceil(snap.hp)} / ${snap.maxHp}`)),
           h('div', { className: 'hud-bar' },
@@ -172,16 +173,16 @@
           : null,
       ) : null,
 
-      // compass + boss bar
-      !cine ? h(Compass, { facingDeg: snap.facingDeg, objDiff: snap.objDiff }) : null,
-      !cine ? h('div', { className: 'hud-compass-center' }) : null,
+      // compass + boss bar (minimal HUD trusts the sun and the land instead)
+      !cine && !minimal ? h(Compass, { facingDeg: snap.facingDeg, objDiff: snap.objDiff }) : null,
+      !cine && !minimal ? h('div', { className: 'hud-compass-center' }) : null,
       S.boss && !cine ? h('div', { className: 'hud-boss' },
         h('div', { className: 'hud-boss-name' }, S.boss.name),
         h('div', { className: 'hud-boss-bar' },
           h('div', { className: 'fill', style: { width: (S.boss.frac * 100) + '%' } }))) : null,
 
       // mission tracker
-      !cine && subsOn !== 'off' ? h('div', { className: 'hud-tracker' },
+      !cine && !minimal && subsOn !== 'off' ? h('div', { className: 'hud-tracker' },
         h('div', { className: 'hud-tracker-h', onClick: () => UIBus.toggleTracker() },
           h('span', null, snap.levelTitle || 'Objectives'),
           h('span', { className: 'caret' }, S.trackerOpen ? '▾' : '▸ (TAB)')),
@@ -194,7 +195,7 @@
 
       // crosshair + threat ring + interact prompt
       !cine && snap.alive ? h(Crosshair, { mode: snap.crosshair }) : null,
-      !cine && snap.alive && G.Settings.data.access.threatRing !== false
+      !cine && !minimal && snap.alive && G.Settings.data.access.threatRing !== false
         ? h(ThreatRing, { threats: snap.threats }) : null,
       !cine && snap.prompt ? h('div', { className: 'hud-interact-tip' },
         h('b', null, prettyKey(G.Settings.data.controls.keys.interact)), ' — ' + snap.prompt) : null,

@@ -28,7 +28,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 |---|---|---|---|
 | v0.1 | *Ruwanwelisaya* | ✅ shipped | 6-level Dutugemunu campaign, FPS combat, AI, settings, procedural audio |
 | v0.2 | *Armoury* | ✅ shipped | Spear/axe/mace/dagger, 9-skill Renown tree, herb healing, threat ring, rally, rideable war elephants, wildlife & flora pass (pulled forward from v0.3 §2.4) |
-| v0.3 | *Kandula* | Presentation | Third-person mode, realism settings, day/night + day-by-day missions |
+| v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun; ☐ full day/night cycle, war-camp hub, crowds, weather |
 | v0.4 | *Taprobane* | The map | Ancient-map campaign screen, kingdom/war selection, save slots |
 | v0.5 | *Shadows* | AC-style play | Climbing/parkour, stealth assassinations, warrior-sense, crowds/citizens |
 | v0.6–0.9 | *Chronicles I–IV* | Era campaigns | Chola, Polonnaruwa, Kurunegala/transitional, Portuguese→Kandy→British wars |
@@ -85,33 +85,33 @@ loot pickups from fallen elites, level-authored weapon racks.
 
 ## 2 · v0.3 — "Kandula": realism, third person, living days
 
-### 2.1 Realism controls on Settings **and** Pause pages (☐ new)
+### 2.1 Realism controls on Settings **and** Pause pages (✅ shipped v0.3)
 
 A single **Realism preset** (Arcade / Standard / Realistic / Custom) exposed in both the
-settings screen and directly on the pause menu, driving individual toggles:
+settings screen (new Realism tab) and directly on the pause menu, driving live dials:
 
-- damage taken/dealt multipliers, health regeneration mode (§1.3)
-- HUD minimalism (hide crosshair/compass/tracker for diegetic play)
-- arrow physics drop severity, limited-quiver strictness
-- enemy awareness sharpness (vision range, alert speed)
-- friendly fire on/off, herb scarcity
+- ✅ damage taken/dealt multipliers, health regeneration mode (full / to-40% / none)
+- ✅ HUD minimalism (hides compass/tracker/threat-ring for diegetic play)
+- ✅ arrow physics drop severity, ✅ enemy awareness sharpness, ✅ low-vitality limp
+  (realistic preset)
+- ☐ friendly fire on/off, herb scarcity dial
 
-### 2.2 Third-person mode (☐ new)
+### 2.2 Third-person mode (✅ shipped v0.3 — core)
 
-- ☐ Shoulder camera (toggle key `V` + settings default), reusing the existing
-  `HumanoidRig` as the player body with the FP arms hidden; camera collision probe
-  against the physics world; aim-over-shoulder bow mode.
-- ☐ Player rig gets the full NPC animation set + new traversal animations (§4).
-- ☐ All cinematics/executions authored to work in both cameras.
+- ✅ Shoulder camera (toggle key `V` + settings default), reusing the existing
+  `HumanoidRig` as the player body (player's sash colour) with the FP arms hidden;
+  camera collision probe against the physics world; tighter over-shoulder framing
+  while drawing the bow; body rides the howdah when mounted.
+- ☐ Player rig full traversal animations (§4) and finishers in both cameras.
 
-### 2.3 Day/night & day-by-day campaign structure (☐ new)
+### 2.3 Day/night & day-by-day campaign structure (◐ shipped v0.3 — calendar + drifting sun)
 
-- ☐ **Time-of-day system** in `world.js`: sun/moon arc, sky gradient keyframes, torch
-  lighting at night, ambient audio beds per time slot.
-- ☐ **Campaign calendar**: missions advance a visible day counter ("Day 12 of the march
-  on Vijithapura"); briefing cards show date + camp scene between missions.
-- ☐ Some missions locked to time (night infiltration, dawn siege); optional side
-  missions consume days (strategic choice — more renown vs. story urgency).
+- ◐ **Time-of-day**: the sun now drifts visibly across the sky during a mission
+  (sky dome + shadows follow). ☐ Full day/night arc, moon, torch-lit night missions.
+- ✅ **Campaign calendar**: mission briefs show "Day N of the campaign · time of day";
+  each victory advances the calendar by that chapter's march (stored in the save).
+- ☐ Missions locked to time (night infiltration, dawn siege); optional side
+  missions consume days.
 - ☐ War-camp hub scene between missions: talk to the Ten Giants, spend skills, choose
   the next march on the field map.
 

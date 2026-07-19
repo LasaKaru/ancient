@@ -68,7 +68,7 @@
       const eng = this.engine;
       const myPos = this.npc.pos;
       const tPos = t.pos;
-      let view = this.cfg.view;
+      let view = this.cfg.view * (G.Realism ? G.Realism().enemyAwareness : 1);
       if (t.isPlayer && t.crouching) view *= 0.55;
       const d = U.flatDist(myPos, tPos);
       if (d > view) return { seen: false, d };

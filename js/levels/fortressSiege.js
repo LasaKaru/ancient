@@ -23,6 +23,7 @@
       'Anuradhapura. Its walls have swallowed four assaults whole. Nandhimitra ' +
       'and Suranimala of the Ten march at your shoulder; the war-drums of Ruhuna ' +
       'thunder behind. Today the wall breaks, or the campaign does.',
+    timeLine: 'late afternoon', marchDays: 7,
     ambience: 'battlefield',
     music: 'combat',
     atmosphere: {

@@ -17,6 +17,10 @@
         h('div', { className: 'menu-subtitle' }, levelTitle || ''),
         h('div', { className: 'menu-rule' }),
         h('button', { className: 'menu-btn primary', onClick: click(onResume) }, 'Resume'),
+        // quick realism switch, right where a losing (or bored) player needs it
+        h('div', { className: 'set-row', style: { border: 'none', padding: '4px 0 10px' } },
+          h('label', { className: 'name', style: { flexBasis: 90 } }, 'Realism'),
+          h(G.UI.RealismPresetRow)),
         onSkills ? h('button', { className: 'menu-btn', onClick: click(onSkills) }, 'Skills' + (pts > 0 ? ` (${pts} to spend)` : '')) : null,
         h('button', { className: 'menu-btn', onClick: click(onSettings) }, 'Settings'),
         h('button', { className: 'menu-btn', onClick: click(onRestart) }, 'Restart Mission'),

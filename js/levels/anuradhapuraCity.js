@@ -22,6 +22,7 @@
       'has marched north to unite the island under one banner and end the long rule ' +
       'of King Elara. In the shadow of the great dagobas of Anuradhapura, his army ' +
       'gathers. You are a young warrior come to join the muster. Prove yourself.',
+    timeLine: 'morning of the muster', marchDays: 4,
     ambience: 'jungle',
     music: 'explore',
     atmosphere: {

@@ -14,6 +14,10 @@
         h('div', { className: 'brief-chapter' }, level.chapter || ''),
         h('div', { className: 'brief-title' }, level.title),
         h('div', { className: 'brief-location' }, level.location || ''),
+        h('div', { className: 'brief-location', style: { marginTop: 3, color: '#b49b6c' } },
+          level.bonus
+            ? '⋆ a legend outside the campaign\'s calendar ⋆'
+            : `Day ${G.GameState.day} of the campaign · ${level.timeLine || 'morning'}`),
         h('div', { className: 'menu-rule' }),
         h('div', { className: 'brief-framing' }, level.framing),
         h('div', { className: 'brief-objectives-h' }, 'Objectives'),
