@@ -29,7 +29,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.1 | *Ruwanwelisaya* | ✅ shipped | 6-level Dutugemunu campaign, FPS combat, AI, settings, procedural audio |
 | v0.2 | *Armoury* | ✅ shipped | Spear/axe/mace/dagger, 9-skill Renown tree, herb healing, threat ring, rally, rideable war elephants, wildlife & flora pass (pulled forward from v0.3 §2.4) |
 | v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun; ☐ full day/night cycle, war-camp hub, crowds, weather |
-| v0.4 | *Taprobane* | The map | Ancient-map campaign screen, kingdom/war selection, save slots |
+| v0.4 | *Taprobane* | ◐ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch); ☐ save slots, in-game M map |
 | v0.5 | *Shadows* | AC-style play | Climbing/parkour, stealth assassinations, warrior-sense, crowds/citizens |
 | v0.6–0.9 | *Chronicles I–IV* | Era campaigns | Chola, Polonnaruwa, Kurunegala/transitional, Portuguese→Kandy→British wars |
 | v1.0 | *One Island* | Full release | All campaigns + Legends of the King mode, polish, performance |
@@ -134,22 +134,23 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
 
 ## 3 · v0.4 — "Taprobane": the ancient map & war selection
 
-### 3.1 Campaign map screen (☐ new — the roadmap's centrepiece)
+### 3.1 Campaign map screen (✅ shipped v0.4 — "Campaign Map — Taprobane" on the main menu)
 
-- ☐ Full-screen **ancient Taprobane chart** in the style of the classical/early-modern
-  maps of Ceylon (compass rose, sea-monster flourishes, aged parchment, "TAPROBANE"
-  cartouche). Implemented as a procedural canvas painting so it ships asset-free, with
-  an asset slot `assets/map/taprobane.jpg` for a real public-domain scan (e.g. the 1686
-  Mallet *"Ancienne Isle Taprobane"* engraving) to replace it.
-- ☐ Kingdom regions drawn and labelled: **Rajarata/Anuradhapura, Ruhuna, Polonnaruwa,
-  Dambadeniya–Kurunegala, Gampola, Kotte, Sitawaka, Jaffna, Kandy**, plus sea-lane
-  arrows for invading powers (Chola, Pandya, Portuguese, Dutch, British).
-- ☐ **Select-a-war UI**: hovering a region/era reveals its conflicts (from §6) with a
-  chronicle-page brief (combatants, date, historical outcome); click to launch that
-  campaign or battle. Completed wars gain a wax-seal marker.
-- ☐ Era slider along the map's edge (543 BCE → 1818 CE) filtering visible conflicts —
-  the pasted period chronology (Anuradhapura → Polonnaruwa → Transitional → Kandyan →
-  British) becomes the literal UI.
+- ✅ Full-screen **ancient Taprobane chart** in the style of the classical/early-modern
+  maps of Ceylon (compass rose, engraved sea, ships, sea-serpent, aged parchment,
+  "ANCIENNE ISLE TAPROBANE" cartouche, degree-tick plate border) — procedural canvas
+  painting, with the `assets/map/taprobane.jpg` slot auto-detected for a real
+  public-domain scan (e.g. the 1686 Mallet engraving).
+- ✅ Kingdom regions labelled: Rajarata/Anuradhapura, Ruhuna, Polonnaruwa, Jaffna,
+  Dambadeniya–Kurunegala, Sigiriya, Kandy, Kotte, Sitawaka + central highlands, rivers.
+  ☐ Sea-lane invasion arrows.
+- ✅ **Select-a-war UI**: 16 conflicts pinned on the chart, each with a chronicle-page
+  brief (date, combatants, historical outcome, summary) sourced from the List of wars
+  involving Sri Lanka; the Dutugemunu pin launches the playable campaign chapters, the
+  Lion Rock pin the bonus legend; future Chronicles wars appear as chronicle records.
+  Completed chapters show ✓ seals.
+- ✅ Era rail (543 BCE → 1818 CE) filtering conflicts by chronicle period —
+  Anuradhapura → Polonnaruwa → Transitional → Kandyan → British.
 - ☐ Multiple **save slots** + per-campaign progress tracking.
 
 ### 3.2 In-game map (☐ new)

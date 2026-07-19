@@ -879,6 +879,19 @@
       }
     }
 
+    if (screen === 'map') {
+      children.push(h(G.UI.CampaignMap, {
+        key: 'map',
+        progress: {
+          unlocked: G.GameState.unlocked,
+          bonusUnlocked: G.GameState.bonusUnlocked,
+          completed: G.GameState.completed,
+        },
+        onPlay: (id) => startLevel(id),
+        onBack: () => setScreen('menu'),
+      }));
+    }
+
     if (screen === 'menu') {
       children.push(h(G.UI.MainMenu, {
         key: 'menu',
@@ -888,6 +901,7 @@
           bonusUnlocked: G.GameState.bonusUnlocked,
           completedCount: G.GameState.completedCount,
         },
+        onMap: () => setScreen('map'),
         onNewGame: (profile) => { G.GameState.resetCampaign(profile); startLevel(G.Levels.order[0]); },
         onContinue: () => {
           const idx = Math.min(G.GameState.unlocked, 5) - 1;

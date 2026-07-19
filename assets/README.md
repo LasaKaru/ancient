@@ -65,6 +65,12 @@ substitute glTF models (via `GLTFLoader` from `three/addons`):
 - `G.Build.moonstone` / `G.Build.guardStones` — museum-quality scans exist as CC0
 - `G.HumanoidRig` — any humanoid glTF with idle/walk/attack clips
 
+## Campaign map (v0.4)
+
+| Slot | Path | Notes |
+|---|---|---|
+| Antique chart | `assets/map/taprobane.jpg` | Auto-detected by `js/ui/campaignMap.jsx`; a public-domain scan such as the 1686 Mallet *"Ancienne Isle Taprobane"* engraving drops in perfectly. Portrait orientation ≈ 900×1150. Without it, a procedurally engraved chart is painted at runtime. |
+
 ## HDRI / environment
 
 The sky is a procedural gradient dome (`js/engine/world.js`). For image-based
