@@ -61,6 +61,7 @@
       name: "Gajabahu's Crossing", sides: 'Anuradhapura Kingdom (Gajabahu I) vs. Early Cholas',
       result: 'Victory — the twelve thousand brought home',
       desc: 'King Gajabahu I crossed to the Chola country and returned with the captives taken in his father\'s day — one of the great sea-tales of the chronicle age.',
+      playable: 'gajabahu',
     },
     {
       id: 'pandya846', era: 'anuradhapura', at: [0.44, 0.26], year: '846 CE',
@@ -85,6 +86,7 @@
       name: "Vijayabahu's Liberation", sides: 'Sinhalese resistance (Vijayabahu I) vs. Chola Empire',
       result: 'Victory — Polonnaruwa freed, the crown restored',
       desc: 'From Ruhuna\'s hills a fifty-year resistance grew into open war, until Vijayabahu I drove the Cholas from the island and was crowned in liberated Polonnaruwa.',
+      playable: 'vijayabahu',
     },
     {
       id: 'parakramabahu', era: 'polonnaruwa', at: [0.58, 0.44], year: '1153–1186',
@@ -323,16 +325,16 @@
 
     const selected = WARS.find((w) => w.id === sel) || null;
     const visible = WARS.filter((w) => era === 'all' || w.era === era);
-    const order = G.Levels.order.filter((id) => !G.Levels.defs[id].bonus);
+    const order = G.Levels.order.filter((id) => !G.Levels.defs[id].bonus && !G.Levels.defs[id].standalone);
 
     const pinState = (w) => {
       if (w.playable === 'campaign') {
         const allDone = order.every((id) => progress.completed[id]);
         return allDone ? 'done' : 'open';
       }
-      if (w.playable === 'sigiriya') {
-        if (!progress.bonusUnlocked) return 'locked';
-        return progress.completed.sigiriya ? 'done' : 'open';
+      if (w.playable) {
+        if (w.id === 'sigiriya' && !progress.bonusUnlocked) return 'locked';
+        return progress.completed[w.playable] ? 'done' : 'open';
       }
       return 'record';
     };
@@ -395,11 +397,12 @@
               className: 'menu-btn primary',
               disabled: pinState(selected) === 'locked',
               onClick: () => { G.audio.uiConfirm(); onPlay(selected.playable); },
-            }, pinState(selected) === 'locked' ? 'Finish the campaign to unlock' : 'Enter the Legend')
+            }, pinState(selected) === 'locked' ? 'Finish the campaign to unlock'
+              : selected.legend ? 'Enter the Legend' : 'March to War')
             : h('div', { className: 'map-panel-record' },
               'Recorded in the chronicles. This war becomes a playable Chronicles campaign in a later chapter of development — see ROADMAP.md.'),
       ) : h('div', { className: 'map-panel map-panel-empty' },
-        h('div', { className: 'map-panel-desc' }, 'Choose a war upon the chart. Gold pins are the Anuradhapura age; the blue pin is legend.')),
+        h('div', { className: 'map-panel-desc' }, 'Choose a war upon the chart. Pins bearing ⚔ are playable now; ◆ marks are chronicle records awaiting their campaign.')),
     );
   }
 

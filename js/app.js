@@ -780,7 +780,7 @@
   }
 
   /* ========================= AUX SCREENS ========================= */
-  function SummaryScreen({ summary, onNext, onMenu, onSkills, isLast, isBonus }) {
+  function SummaryScreen({ summary, onNext, onMenu, onSkills, isLast, isBonus, isStandalone }) {
     const mm = Math.floor(summary.time / 60), ss = Math.floor(summary.time % 60);
     return h('div', { className: 'screen dim fade-in' },
       h('div', { className: 'panel', style: { minWidth: 440 } },
@@ -798,7 +798,7 @@
           h('div', { className: 'k' }, 'Renown earned'), h('div', { className: 'v' }, '+' + (1 + summary.saved))),
         h('div', { className: 'menu-rule' }),
         h('button', { className: 'menu-btn primary', onClick: () => { G.audio.uiConfirm(); onNext(); } },
-          isBonus ? 'The Legend Ends' : isLast ? 'Witness the Triumph' : 'Continue the Campaign'),
+          isStandalone ? 'Return to the Chart' : isBonus ? 'The Legend Ends' : isLast ? 'Witness the Triumph' : 'Continue the Campaign'),
         G.Skills && G.Skills.points() > 0
           ? h('button', { className: 'menu-btn', onClick: () => { G.audio.ui(); onSkills(); } }, `Spend Renown — Skills (${G.Skills.points()})`)
           : null,
@@ -859,9 +859,10 @@
         const def = G.Levels.defs[s.levelId];
         G.GameState.completed[s.levelId] = { kills: s.kills, saved: s.saved, time: s.time };
         G.GameState.reputation += 1 + s.saved;
-        if (!def.bonus) G.GameState.day += def.marchDays || 3;   // the campaign marches on
-        if (!def.bonus) G.GameState.unlocked = Math.max(G.GameState.unlocked, def.order + 1);
-        if (def.order >= 5) G.GameState.bonusUnlocked = true;
+        const mainline = !def.bonus && !def.standalone;
+        if (mainline) G.GameState.day += def.marchDays || 3;   // the campaign marches on
+        if (mainline) G.GameState.unlocked = Math.max(G.GameState.unlocked, def.order + 1);
+        if (mainline && def.order >= 5) G.GameState.bonusUnlocked = true;
         G.GameState.save();
         setSummary(s);
         setScreen('summary');
@@ -996,9 +997,10 @@
       const isLast = def.order === 5;
       children.push(h(SummaryScreen, {
         key: 'summary', summary,
-        isLast, isBonus: !!def.bonus,
+        isLast, isBonus: !!def.bonus, isStandalone: !!def.standalone,
         onSkills: () => setShowSkills(true),
         onNext: () => {
+          if (def.standalone) { setScreen('map'); setLevelId(null); setSummary(null); return; }
           if (def.bonus) { quitToMenu(); return; }
           if (isLast) { setScreen('victory'); setLevelId(null); return; }
           const next = G.Levels.next(summary.levelId);

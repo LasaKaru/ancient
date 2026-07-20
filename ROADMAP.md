@@ -31,7 +31,8 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun; ☐ full day/night cycle, war-camp hub, crowds, weather |
 | v0.4 | *Taprobane* | ◐ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch); ☐ save slots, in-game M map |
 | v0.5 | *Shadows* | ◐ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault; ☐ full ledge climbing, finisher animations, crowds |
-| v0.6–0.9 | *Chronicles I–IV* | Era campaigns | Chola, Polonnaruwa, Kurunegala/transitional, Portuguese→Kandy→British wars |
+| v0.6 | *Chronicles I* | ◐ shipped | ✅ Two playable era campaigns from the map: Gajabahu's Crossing (~120 CE) and the Liberation of Polonnaruwa (1070); ☐ remaining Chronicles I rows |
+| v0.7–0.9 | *Chronicles II–IV* | Era campaigns | Polonnaruwa ascendant, Kurunegala/transitional, Portuguese→Kandy→British wars |
 | v1.0 | *One Island* | Full release | All campaigns + Legends of the King mode, polish, performance |
 | v1.1+ | *Brothers-in-Arms* | Multiplayer | Async ghosts → P2P co-op → duel PvP |
 
@@ -186,10 +187,10 @@ chronicles (Dipavamsa/Mahavamsa/Culavamsa/Rajavaliya) and the Wikipedia war list
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
 | ☐ **Vijithapura** (162–161 BCE) | Dutugemunu *(extends shipped campaign)* | Four-month siege of Vijithapura, Kandula at the south gate |
-| ☐ **Gajabahu's Crossing** (c. 120 CE) | Gajabahu I | Naval landing, march into Chola country, freeing the 12,000 captives |
+| ✅ **Gajabahu's Crossing** (c. 120 CE) — *shipped v0.6* | Gajabahu I fights beside you | Beach landing among the war-canoes, storming the palisaded Chola camp, breaking the captive pens (freed captives run for the boats), slaying the camp commander, optional store-burning |
 | ☐ **The Pandyan Sack** (846 CE) | Defender of Anuradhapura under Sena I | Fighting withdrawal, Battle of Mahatalita, save the relics |
 | ☐ **Udaya's Counterstroke** (946 CE) | General Viduragga | Repel Parantaka I, cross-strait raid to recover the plunder |
-| ☐ **The Great Conquest & Resistance** (992–1070) | Ruhuna resistance → Vijayabahu I | Fall of Anuradhapura, guerrilla years, liberation of Polonnaruwa from the Chola Empire |
+| ◐ **The Great Conquest & Resistance** (992–1070) | Ruhuna resistance → Vijayabahu I | ✅ *Liberation of Polonnaruwa (1070) shipped v0.6*: stealth-or-steel patrol clearing, citadel gate breach with the resistance rising, the occupation governor, raising the lion banner. ☐ Fall-of-Anuradhapura + guerrilla-years missions |
 
 ### v0.7 — Chronicles II: Polonnaruwa Ascendant
 | Campaign | Playable era/hero | Key missions |

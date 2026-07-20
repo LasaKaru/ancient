@@ -108,7 +108,7 @@
         h('button', { className: 'menu-btn small', onClick: click(() => setView('root')) }, 'Back'));
     } else if (view === 'chapters') {
       body = h(React.Fragment, null,
-        order.map((id, i) => {
+        order.filter((id) => !G.Levels.defs[id].standalone).map((id, i) => {
           const def = G.Levels.defs[id];
           const locked = def.bonus ? !progress.bonusUnlocked : (i + 1) > progress.unlocked;
           return h('button', {

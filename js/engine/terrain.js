@@ -318,7 +318,7 @@
       this.engine.scene.add(rim);
       const geo = new THREE.CircleGeometry(radius, 40);
       const mat = new THREE.MeshStandardMaterial({
-        color: 0x2e5d6b, roughness: 0.12, metalness: 0.55,
+        color: 0x2e5d6b, roughness: 0.3, metalness: 0.35,
         transparent: true, opacity: 0.86,
       });
       const w = new THREE.Mesh(geo, mat);
@@ -1076,6 +1076,103 @@
     grp.position.set(pos[0], y, pos[1]);
     engine.scene.add(grp);
     return grp;
+  };
+
+  /* --- beached war-canoe / landing boat (v0.6 Chronicles) --- */
+  Build.boat = function (engine, { pos = [0, 0], yaw = 0, sail = true } = {}) {
+    const lib = M.library();
+    const grp = new THREE.Group();
+    const hull = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.55, 7.2, 8, 1), lib.woodDark);
+    hull.rotation.z = Math.PI / 2;
+    hull.scale.y = 0.6;
+    hull.position.y = 0.55;
+    grp.add(hull);
+    for (const s of [-1, 1]) {
+      const prowG = new THREE.ConeGeometry(0.5, 1.6, 8);
+      prowG.rotateZ(s * Math.PI / 2);
+      const prow = new THREE.Mesh(prowG, lib.woodDark);
+      prow.scale.y = 0.6;
+      prow.position.set(s * 4.2, 0.75, 0);
+      grp.add(prow);
+    }
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.1, 1.0), lib.wood);
+    deck.position.y = 0.95;
+    grp.add(deck);
+    if (sail) {
+      const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 4.6, 6), lib.woodDark);
+      mast.position.y = 3.2;
+      grp.add(mast);
+      const yard = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 3.2, 5), lib.woodDark);
+      yard.rotation.z = Math.PI / 2;
+      yard.position.y = 5.1;
+      grp.add(yard);
+      const furled = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 3.0, 6),
+        M.std({ map: M.canvasTex('sailcloth', 64, M.clothPainter('#cfc2a2')), rough: 0.95 }));
+      furled.rotation.z = Math.PI / 2;
+      furled.position.y = 4.85;
+      grp.add(furled);
+    }
+    grp.traverse((c) => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+    grp.rotation.y = yaw;
+    grp.position.set(pos[0], 0, pos[1]);
+    engine.scene.add(grp);
+    engine.addStaticBox([pos[0], 0.8, pos[1]], [3.6, 0.8, 0.9], yaw);
+    return grp;
+  };
+
+  /* --- burnable supply store (sacks + crates under thatch) --- */
+  Build.supplyStore = function (engine, { pos = [0, 0], yaw = 0, hp = 80, onDestroyed = null } = {}) {
+    const lib = M.library();
+    const grp = new THREE.Group();
+    for (let i = 0; i < 4; i++) {
+      const sack = new THREE.Mesh(new THREE.SphereGeometry(0.34, 7, 6),
+        M.std({ map: M.tex.thatch([1, 1]), color: 0xcbb689, rough: 1 }));
+      sack.scale.y = 0.75;
+      sack.position.set(U.rand(-0.5, 0.5), 0.26 + (i > 2 ? 0.45 : 0), U.rand(-0.4, 0.4));
+      grp.add(sack);
+    }
+    const crate = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), lib.wood);
+    crate.position.set(0.7, 0.4, -0.3);
+    grp.add(crate);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(1.6, 0.9, 6), M.std({ map: M.tex.thatch([3, 1]), rough: 1 }));
+    roof.position.y = 1.7;
+    grp.add(roof);
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + 0.4;
+      const poleM = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 1.4, 5), lib.woodDark);
+      poleM.position.set(Math.sin(a) * 1.0, 0.7, Math.cos(a) * 1.0);
+      grp.add(poleM);
+    }
+    grp.traverse((c) => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+    grp.rotation.y = yaw;
+    grp.position.set(pos[0], 0, pos[1]);
+    engine.scene.add(grp);
+    const body = engine.addStaticBox([pos[0], 0.6, pos[1]], [1.0, 0.6, 1.0], yaw);
+    const store = {
+      group: grp, hp, maxHp: hp, alive: true, broken: false,
+      pos: new THREE.Vector3(pos[0], 0.8, pos[1]), radius: 1.5,
+      takeDamage(amount) {
+        if (this.broken) return;
+        this.hp -= amount;
+        grp.rotation.z = (Math.random() - 0.5) * 0.04;
+        G.audio.arrowHit('wood');
+        if (this.hp <= 0) {
+          this.broken = true; this.alive = false;
+          grp.traverse((c) => {
+            if (c.isMesh) {
+              c.material = M.std({ color: 0x241c14, rough: 1 });
+              c.position.y *= 0.4;
+              c.rotation.x += U.rand(-0.4, 0.4);
+            }
+          });
+          engine.removeBody(body);
+          G.audio.enemyDie(); G.audio.arrowHit('wood');
+          if (onDestroyed) onDestroyed(this);
+        }
+      },
+    };
+    engine.attackables.push(store);
+    return store;
   };
 
   /* --- crates / urns clutter --- */
