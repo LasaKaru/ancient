@@ -26,10 +26,30 @@
   function LegendsMenu({ onPlay, onBack }) {
     const [faction, setFaction] = React.useState((G.Legend && G.Legend.faction) || 'chola');
     const [waves, setWaves] = React.useState((G.Legend && G.Legend.waves) || 5);
+    const [seedMode, setSeedMode] = React.useState('fresh');  // 'fresh' | 'daily' | 'code'
+    const [codeInput, setCodeInput] = React.useState('');
+    const [codeErr, setCodeErr] = React.useState('');
+    const [, force] = React.useReducer((x) => x + 1, 0);
     const click = (fn) => () => { G.audio.ensure(); G.audio.ui(); fn(); };
 
+    // build the Legend config to launch with, honouring the chosen seed source
+    const launch = () => {
+      let seed;
+      if (seedMode === 'daily') seed = G.Challenge.dailySeed();
+      else if (seedMode === 'code') {
+        const dec = G.Challenge.decode(codeInput);
+        if (!dec) { setCodeErr('That code is not a valid challenge.'); G.audio.ui(); return; }
+        G.Legend = { faction: dec.faction, waves: dec.waves, seed: dec.seed };
+        onPlay('warOfAges'); return;
+      } else seed = G.Challenge.newSeed();
+      G.Legend = { faction, waves, seed };
+      onPlay('warOfAges');
+    };
+
+    const top = G.Leaderboard ? G.Leaderboard.top(faction) : [];
+
     return h('div', { className: 'screen dim fade-in', style: { zIndex: 45 } },
-      h('div', { className: 'panel', style: { minWidth: 560, maxWidth: 640 } },
+      h('div', { className: 'panel', style: { minWidth: 560, maxWidth: 660 } },
         h('div', { className: 'brief-chapter' }, 'Legends of the King'),
         h('div', { className: 'menu-title', style: { fontSize: 34 } }, 'THE WAR OF AGES'),
         h('div', { className: 'menu-footnote', style: { marginTop: 4, marginBottom: 8 } },
@@ -49,6 +69,15 @@
           r.gun ? h('span', { title: 'gunpowder-era foe', style: { fontSize: 13 } }, '🔫') : null,
           r.historical ? h('span', { title: 'the one he truly fought', style: { fontSize: 13 } }, '⚔') : null)),
 
+        // leaderboard for the selected foe
+        top.length ? h('div', { className: 'lb-box' },
+          h('div', { className: 'lb-h' }, '⚑ Best against ' + (ROSTER.find((r) => r.id === faction) || {}).label),
+          top.slice(0, 5).map((e, i) => h('div', { key: i, className: 'lb-row' },
+            h('span', { className: 'lb-rank' }, '#' + (i + 1)),
+            h('span', { className: 'lb-name' }, e.name),
+            h('span', { className: 'lb-meta' }, `${e.cleared}/${e.waves} waves`),
+            h('span', { className: 'lb-score' }, e.score.toLocaleString())))) : null,
+
         h('div', { className: 'set-row', style: { border: 'none', marginTop: 10 } },
           h('label', { className: 'name' }, 'Length of the tale'),
           h('div', { className: 'seg' },
@@ -57,11 +86,34 @@
               onClick: click(() => setWaves(n)),
             }, `${lab} (${n})`)))),
 
+        // v1.1: seed source — fresh fight, the shared daily, or a friend's code
+        h('div', { className: 'set-row', style: { border: 'none' } },
+          h('label', { className: 'name' }, 'The fight'),
+          h('div', { className: 'seg' },
+            [['fresh', 'Fresh'], ['daily', "Today's"], ['code', 'From a code']].map(([m, lab]) => h('button', {
+              key: m, className: seedMode === m ? 'on' : '',
+              onClick: click(() => { setSeedMode(m); setCodeErr(''); }),
+            }, lab)))),
+        seedMode === 'code'
+          ? h('div', { className: 'field-row', style: { marginTop: 4 } },
+            h('input', {
+              type: 'text', placeholder: 'RAJ-…  (paste a friend\'s challenge)',
+              value: codeInput,
+              onChange: (e) => { setCodeInput(e.target.value); setCodeErr(''); },
+              onFocus: () => { G.uiTyping = true; }, onBlur: () => { G.uiTyping = false; },
+            }))
+          : null,
+        seedMode === 'daily'
+          ? h('div', { className: 'menu-footnote', style: { marginTop: 2 } },
+            'Today\'s challenge — the same fight for everyone, worldwide, until midnight UTC. Compare scores by sharing your code.')
+          : null,
+        codeErr ? h('div', { className: 'load-error', style: { padding: 8, fontSize: 13 } }, codeErr) : null,
+
         h('div', { className: 'menu-rule' }),
         h('button', {
           className: 'menu-btn primary',
-          onClick: click(() => { G.Legend = { faction, waves }; onPlay('warOfAges'); }),
-        }, 'Begin the Legend'),
+          onClick: () => { G.audio.ensure(); G.audio.uiConfirm(); launch(); },
+        }, seedMode === 'code' ? 'Take Up the Challenge' : 'Begin the Legend'),
         h('button', { className: 'menu-btn small', onClick: click(onBack) }, 'Back to Menu'),
         h('div', { className: 'menu-footnote' },
           'History note: Dutugemunu (2nd c. BCE) fought only the Cholas. The Pandyas, Kandy, the Portuguese and the British came generations to millennia after his death — they meet him here only in legend.')));

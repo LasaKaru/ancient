@@ -528,6 +528,8 @@
         kills: this.stats.kills,
         saved: this.stats.saved,
         time: t,
+        // levels may attach extra summary data (e.g. the arena score + code)
+        ...(this.def.summaryExtra ? this.def.summaryExtra(this, t) : {}),
       });
     }
 
@@ -780,22 +782,51 @@
   }
 
   /* ========================= AUX SCREENS ========================= */
+  function ChallengeShare({ summary }) {
+    const [copied, setCopied] = React.useState(false);
+    const copy = () => {
+      const text = `I held the arena against ${summary.factionName} — scored ${summary.score.toLocaleString()} in Rajarata: Dutugemunu's War. Match my fight: ${summary.code}`;
+      const done = () => { setCopied(true); G.audio.uiConfirm(); setTimeout(() => setCopied(false), 2000); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, done);
+      else done();
+    };
+    return h('div', { className: 'challenge-share' },
+      h('div', { className: 'cs-label' }, 'Challenge a friend to the same fight'),
+      h('div', { className: 'cs-code-row' },
+        h('code', { className: 'cs-code' }, summary.code),
+        h('button', { className: 'menu-btn small', style: { margin: 0, width: 'auto', flex: '0 0 auto', minWidth: 90 }, onClick: copy },
+          copied ? 'Copied ✓' : 'Copy')));
+  }
+
   function SummaryScreen({ summary, onNext, onMenu, onSkills, isLast, isBonus, isStandalone, isLegend }) {
     const mm = Math.floor(summary.time / 60), ss = Math.floor(summary.time % 60);
+    const arena = summary.arena;
     return h('div', { className: 'screen dim fade-in' },
       h('div', { className: 'panel', style: { minWidth: 440 } },
-        h('div', { className: 'brief-chapter' }, summary.chapter + ' — COMPLETE'),
+        h('div', { className: 'brief-chapter' }, (summary.chapter || '') + (arena ? ' — THE TALE ENDS' : ' — COMPLETE')),
         h('div', { className: 'brief-title' }, summary.title),
         h('div', { className: 'menu-rule' }),
         h('div', { className: 'summary-verdict' },
-          summary.saved > 0
-            ? `Word of your deeds spreads. ${summary.saved} villager${summary.saved > 1 ? 's' : ''} owe you their lives.`
-            : 'The bards will sing of this day.'),
-        h('div', { className: 'summary-grid' },
-          h('div', { className: 'k' }, 'Enemies defeated'), h('div', { className: 'v' }, String(summary.kills)),
-          h('div', { className: 'k' }, 'Civilians saved'), h('div', { className: 'v' }, String(summary.saved)),
-          h('div', { className: 'k' }, 'Time'), h('div', { className: 'v' }, `${mm}:${String(ss).padStart(2, '0')}`),
-          h('div', { className: 'k' }, 'Renown earned'), h('div', { className: 'v' }, '+' + (1 + summary.saved))),
+          arena
+            ? (summary.cleared >= summary.totalWaves
+              ? `Every age, and still the king stood. ${summary.factionName} broke upon your line.`
+              : `You held ${summary.cleared} of ${summary.totalWaves} ages against ${summary.factionName} before the song ended.`)
+            : summary.saved > 0
+              ? `Word of your deeds spreads. ${summary.saved} villager${summary.saved > 1 ? 's' : ''} owe you their lives.`
+              : 'The bards will sing of this day.'),
+        arena
+          ? h('div', { className: 'summary-grid' },
+            h('div', { className: 'k' }, 'Score'), h('div', { className: 'v', style: { fontSize: 20 } }, summary.score.toLocaleString() + (summary.isBest ? '  ★ NEW BEST' : '')),
+            h('div', { className: 'k' }, 'Ages held'), h('div', { className: 'v' }, `${summary.cleared} / ${summary.totalWaves}`),
+            h('div', { className: 'k' }, 'Enemies felled'), h('div', { className: 'v' }, String(summary.kills)),
+            h('div', { className: 'k' }, 'Time'), h('div', { className: 'v' }, `${mm}:${String(ss).padStart(2, '0')}`),
+            h('div', { className: 'k' }, 'Leaderboard'), h('div', { className: 'v' }, summary.rank ? `#${summary.rank} vs. ${summary.factionName}` : 'not ranked'))
+          : h('div', { className: 'summary-grid' },
+            h('div', { className: 'k' }, 'Enemies defeated'), h('div', { className: 'v' }, String(summary.kills)),
+            h('div', { className: 'k' }, 'Civilians saved'), h('div', { className: 'v' }, String(summary.saved)),
+            h('div', { className: 'k' }, 'Time'), h('div', { className: 'v' }, `${mm}:${String(ss).padStart(2, '0')}`),
+            h('div', { className: 'k' }, 'Renown earned'), h('div', { className: 'v' }, '+' + (1 + summary.saved))),
+        arena && summary.code ? h(ChallengeShare, { summary }) : null,
         h('div', { className: 'menu-rule' }),
         h('button', { className: 'menu-btn primary', onClick: () => { G.audio.uiConfirm(); onNext(); } },
           isLegend ? 'Tell Another Legend' : isStandalone ? 'Return to the Chart' : isBonus ? 'The Legend Ends' : isLast ? 'Witness the Triumph' : 'Continue the Campaign'),

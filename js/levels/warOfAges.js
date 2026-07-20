@@ -52,7 +52,9 @@
   };
   G.LEGEND_FACTIONS = FACTIONS;
 
-  /* the faction chosen on the Legends menu (defaults to the Cholas) */
+  /* the faction chosen on the Legends menu (defaults to the Cholas).
+     `seed` (v1.1) makes the wave composition reproducible so a shared
+     Challenge Code reproduces the exact same fight. */
   G.Legend = G.Legend || { faction: 'chola', waves: 5 };
   const cfg = () => FACTIONS[(G.Legend && G.Legend.faction) || 'chola'] || FACTIONS.chola;
   const waveCount = () => (G.Legend && G.Legend.waves) || 5;
@@ -98,6 +100,12 @@
       const level = this;
       level.cfg = cfg();
       level.totalWaves = waveCount();
+      // seeded RNG for wave composition so a Challenge Code = the same fight
+      level.seed = (G.Legend && G.Legend.seed) || (G.Challenge ? G.Challenge.newSeed() : 1);
+      if (G.Legend) G.Legend.seed = level.seed;
+      level.rng = U.mulberry(level.seed);
+      level.code = G.Challenge ? G.Challenge.encode({ faction: level.cfg.id, waves: level.totalWaves, seed: level.seed }) : '';
+      level.score = 0;
 
       // the sacred centre: a whitewashed stupa the king defends across time
       B.stupa(engine, { pos: [0, 10], radius: 6, whitewashed: true });
@@ -152,27 +160,58 @@
     },
 
     _spawnWave(engine) {
-      const level = this, c = level.cfg;
+      const level = this, c = level.cfg, rng = level.rng;
       level.wave++;
       level.raiders = [];
-      // wave size and toughness climb with the wave number
+      // wave size and toughness climb with the wave number. Everything random
+      // here is drawn from the SEEDED rng, so a Challenge Code reproduces the
+      // exact same wave sizes, troop types and spawn gates for every player.
       const n = 4 + level.wave * 2;
       const poolDepth = Math.min(c.mix.length, 2 + level.wave);   // later waves reach the elites/gunners
       for (let i = 0; i < n; i++) {
         const gate = GATES[i % GATES.length];
-        const type = c.mix[Math.min(c.mix.length - 1, Math.floor(Math.random() * poolDepth))];
+        const type = c.mix[Math.min(c.mix.length - 1, Math.floor(rng() * poolDepth))];
+        const sx = gate[0] + (rng() - 0.5) * 6, sz = gate[1] + (rng() - 0.5) * 4;
         const npc = engine.enemies.spawn({
           faction: 'enemy', type,
-          pos: [gate[0] + U.rand(-3, 3), gate[1] + U.rand(-2, 2)],
+          pos: [sx, sz],
           palette: c.palette, tintCloth: c.tint,
         });
+        npc._spawnPos = [+sx.toFixed(2), +sz.toFixed(2)];   // stable record (AI moves the live pos)
         // everyone converges on the king and the player both
-        npc.ai.alertTo(Math.random() < 0.5 ? engine.player : level.king.npc);
+        npc.ai.alertTo(rng() < 0.5 ? engine.player : level.king.npc);
         level.raiders.push(npc);
       }
       G.audio.warHorn();
       engine.ui.banner('WAVE ' + level.wave + ' / ' + level.totalWaves, 'The age of ' + c.name + ' comes on');
       engine.setCombatIntensity(0.85);
+    },
+
+    /* final score, leaderboard entry, and the shareable code — merged into
+       the mission-summary payload by the engine (v1.1) */
+    summaryExtra(engine, t) {
+      const level = this;
+      const cleared = level.wave >= level.totalWaves ? level.totalWaves : Math.max(0, level.wave - 1);
+      const timeBonus = Math.max(0, 1200 - Math.round(t));
+      const score = level.score + engine.stats.kills * 10 + timeBonus;
+      let rank = 0, isBest = false;
+      if (!level._recorded && cleared > 0 && G.Leaderboard) {
+        level._recorded = true;
+        const res = G.Leaderboard.record(level.cfg.id, {
+          name: G.GameState.profile.name, score,
+          waves: level.totalWaves, cleared, seed: level.seed, code: level.code,
+        });
+        rank = res.rank; isBest = res.isBest;
+      }
+      return {
+        arena: true,
+        faction: level.cfg.id,
+        factionName: level.cfg.name,
+        score, cleared, totalWaves: level.totalWaves,
+        code: level.code, seed: level.seed,
+        rank, isBest,
+        best: G.Leaderboard ? G.Leaderboard.best(level.cfg.id) : score,
+      };
     },
 
     start(engine) {
@@ -201,8 +240,12 @@
         const alive = level.raiders.filter((n) => n.alive).length;
         if (alive === 0) {
           engine.missions.bump('waves');
+          // score: cleared waves × the wave's own weight (later waves worth
+          // more) + a completion crown. Kills & time fold in at finish.
+          level.score += 500 + level.wave * 250;
           if (level.wave >= level.totalWaves) {
             level.state = 'done';
+            level.score += 3000;   // held every age — the crown of the run
             engine.missions.complete('survive');
             engine.setCombatIntensity(0);
             G.audio.victory(); G.audio.bell();

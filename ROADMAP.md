@@ -36,7 +36,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.8 | *Chronicles II* | ☐ planned | Parakramabahu's Wars, the Invasion of Kalinga Magha |
 | v0.9 | *Chronicles IV (early)* | ◐ shipped | ✅ **Battle of Mulleriyawa** (1559) — the first gunpowder enemies (`AI_TYPES.gunner`, telegraphed musket reload) and Portuguese armour; ✅ **The Passes of 1803** (First Anglo-Kandyan War) — a jungle ambush against British redcoat gunners; ☐ Kandyan–Dutch wars, the Uva Rising finale |
 | v1.0 | *One Island* | ◐ shipped | ✅ **Legends of the King** — the "War of Ages" arena where Dutugemunu faces any age's foe (Chola/Pandya/Kandy/Portuguese/British), explicitly framed as legend; ☐ full campaign polish, performance pass |
-| v1.1+ | *Brothers-in-Arms* | Multiplayer | Async ghosts → P2P co-op → duel PvP |
+| v1.1 | *Brothers-in-Arms* | ◐ shipped | ✅ **Phase M1** async multiplayer: seeded Challenge Codes (same fight for everyone) + per-faction leaderboards + daily-seed challenge; ☐ ghost replays, P2P co-op, duel PvP |
 
 ---
 
@@ -244,8 +244,13 @@ era, faction flag art, and era-specific music modes remain open.
 
 Browser + no-build-step makes this the hardest pillar; staged to keep each release real:
 
-1. ☐ **Phase M1 — Asynchronous (no server):** shareable challenge codes (seeded arena
-   runs), local ghost replays, per-browser leaderboards.
+1. ◐ **Phase M1 — Asynchronous (no server):** ✅ shipped — shareable **Challenge Codes**
+   (`js/challenge.js`) that pin down a War of Ages fight (faction · tale length · seed);
+   the seeded wave spawner reproduces the *exact same fight* for every player, so only
+   skill decides the score. ✅ A per-faction, localStorage **leaderboard** (shown on the
+   Legends menu and stamped on the run summary with rank + NEW-BEST), a **Fresh /
+   Today's (shared daily seed) / From-a-code** launcher, and a one-tap "copy challenge"
+   share on the summary. ☐ Ghost replays remain (record + replay a run's inputs).
 2. ☐ **Phase M2 — P2P co-op (WebRTC):** 2-player co-op in wave-defense and Chronicles
    missions via WebRTC DataChannels; manual copy-paste signalling keeps the no-server
    promise, an optional tiny signalling relay (documented, self-hostable) makes it
