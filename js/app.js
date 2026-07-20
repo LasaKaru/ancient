@@ -780,7 +780,7 @@
   }
 
   /* ========================= AUX SCREENS ========================= */
-  function SummaryScreen({ summary, onNext, onMenu, onSkills, isLast, isBonus, isStandalone }) {
+  function SummaryScreen({ summary, onNext, onMenu, onSkills, isLast, isBonus, isStandalone, isLegend }) {
     const mm = Math.floor(summary.time / 60), ss = Math.floor(summary.time % 60);
     return h('div', { className: 'screen dim fade-in' },
       h('div', { className: 'panel', style: { minWidth: 440 } },
@@ -798,7 +798,7 @@
           h('div', { className: 'k' }, 'Renown earned'), h('div', { className: 'v' }, '+' + (1 + summary.saved))),
         h('div', { className: 'menu-rule' }),
         h('button', { className: 'menu-btn primary', onClick: () => { G.audio.uiConfirm(); onNext(); } },
-          isStandalone ? 'Return to the Chart' : isBonus ? 'The Legend Ends' : isLast ? 'Witness the Triumph' : 'Continue the Campaign'),
+          isLegend ? 'Tell Another Legend' : isStandalone ? 'Return to the Chart' : isBonus ? 'The Legend Ends' : isLast ? 'Witness the Triumph' : 'Continue the Campaign'),
         G.Skills && G.Skills.points() > 0
           ? h('button', { className: 'menu-btn', onClick: () => { G.audio.ui(); onSkills(); } }, `Spend Renown — Skills (${G.Skills.points()})`)
           : null,
@@ -962,6 +962,14 @@
       }));
     }
 
+    if (screen === 'legends') {
+      children.push(h(G.UI.LegendsMenu, {
+        key: 'legends',
+        onPlay: (id) => startLevel(id),
+        onBack: () => setScreen('menu'),
+      }));
+    }
+
     if (screen === 'menu') {
       children.push(h(G.UI.MainMenu, {
         key: 'menu',
@@ -972,6 +980,7 @@
           completedCount: G.GameState.completedCount,
         },
         onMap: () => setScreen('map'),
+        onLegends: () => setScreen('legends'),
         onNewGame: (profile) => { G.GameState.resetCampaign(profile); startLevel(G.Levels.order[0]); },
         onContinue: () => {
           const idx = Math.min(G.GameState.unlocked, 5) - 1;
@@ -997,9 +1006,10 @@
       const isLast = def.order === 5;
       children.push(h(SummaryScreen, {
         key: 'summary', summary,
-        isLast, isBonus: !!def.bonus, isStandalone: !!def.standalone,
+        isLast, isBonus: !!def.bonus, isStandalone: !!def.standalone, isLegend: !!def.legend,
         onSkills: () => setShowSkills(true),
         onNext: () => {
+          if (def.legend) { setScreen('legends'); setLevelId(null); setSummary(null); return; }
           if (def.standalone) { setScreen('map'); setLevelId(null); setSummary(null); return; }
           if (def.bonus) { quitToMenu(); return; }
           if (isLast) { setScreen('victory'); setLevelId(null); return; }

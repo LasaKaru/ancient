@@ -77,7 +77,7 @@
   }
 
   /* ------------------------- menu panels ------------------------- */
-  function MainMenu({ progress, onNewGame, onContinue, onChapter, onSettings, onMap }) {
+  function MainMenu({ progress, onNewGame, onContinue, onChapter, onSettings, onMap, onLegends }) {
     const [view, setView] = React.useState('root'); // root | newgame | chapters | credits
     const [name, setName] = React.useState(progress.profile?.name || 'Abhaya');
     const [color, setColor] = React.useState(progress.profile?.armorColor || ARMOR_COLORS[0].hex);
@@ -133,6 +133,7 @@
         h('button', { className: 'menu-btn primary', onClick: click(() => setView('newgame')) }, 'New Game'),
         h('button', { className: 'menu-btn', disabled: !hasSave, onClick: click(onContinue) }, 'Continue'),
         onMap ? h('button', { className: 'menu-btn', onClick: click(onMap) }, 'Campaign Map — Taprobane') : null,
+        onLegends ? h('button', { className: 'menu-btn', onClick: click(onLegends) }, '✦ Legends of the King') : null,
         h('button', { className: 'menu-btn', disabled: !hasSave, onClick: click(() => setView('chapters')) }, 'Chapters'),
         h('button', { className: 'menu-btn', onClick: click(onSettings) }, 'Settings'),
         h('button', { className: 'menu-btn', onClick: click(() => setView('credits')) }, 'Credits'),

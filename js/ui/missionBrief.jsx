@@ -15,9 +15,11 @@
         h('div', { className: 'brief-title' }, level.title),
         h('div', { className: 'brief-location' }, level.location || ''),
         h('div', { className: 'brief-location', style: { marginTop: 3, color: '#b49b6c' } },
-          level.bonus
+          (level.bonus || level.legend)
             ? '⋆ a legend outside the campaign\'s calendar ⋆'
-            : `Day ${G.GameState.day} of the campaign · ${level.timeLine || 'morning'}`),
+            : level.standalone
+              ? `⋆ a chronicle war outside the campaign's calendar ⋆ ${level.timeLine || ''}`
+              : `Day ${G.GameState.day} of the campaign · ${level.timeLine || 'morning'}`),
         h('div', { className: 'menu-rule' }),
         h('div', { className: 'brief-framing' }, level.framing),
         h('div', { className: 'brief-objectives-h' }, 'Objectives'),

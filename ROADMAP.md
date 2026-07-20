@@ -35,7 +35,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.7 | *Chronicles III (early)* | ◐ shipped | ✅ **Yapahuwa & the Tooth** (1283, Kurunegala era) — a relic-escort defense up the rock stair; ☐ Dambadeniya Shield, Kotte Rising |
 | v0.8 | *Chronicles II* | ☐ planned | Parakramabahu's Wars, the Invasion of Kalinga Magha |
 | v0.9 | *Chronicles IV (early)* | ◐ shipped | ✅ **Battle of Mulleriyawa** (1559) — the first gunpowder enemies (`AI_TYPES.gunner`, telegraphed musket reload) and Portuguese armour; ✅ **The Passes of 1803** (First Anglo-Kandyan War) — a jungle ambush against British redcoat gunners; ☐ Kandyan–Dutch wars, the Uva Rising finale |
-| v1.0 | *One Island* | Full release | All campaigns + Legends of the King mode, polish, performance |
+| v1.0 | *One Island* | ◐ shipped | ✅ **Legends of the King** — the "War of Ages" arena where Dutugemunu faces any age's foe (Chola/Pandya/Kandy/Portuguese/British), explicitly framed as legend; ☐ full campaign polish, performance pass |
 | v1.1+ | *Brothers-in-Arms* | Multiplayer | Async ghosts → P2P co-op → duel PvP |
 
 ---
@@ -222,13 +222,21 @@ down before the second shot, near-hitscan ballistics, gunfire noise that carries
 alerts the whole field, and Portuguese/British armour palettes. Fort architecture per
 era, faction flag art, and era-specific music modes remain open.
 
-### v1.0 — "Legends of the King" (mythic crossover mode)
-- ☐ The user-requested fantasy — **Dutugemunu vs. Kandy, Kurunegala, Polonnaruwa, the
-  Cholas, the Portuguese, even the British** — shipped as an explicitly framed
-  dream-chronicle ("*In the bards' fireside telling, the great king strides across the
-  centuries…*"), title-carded exactly like the Sigiriya chapter so history and legend
-  never blur. Unlocked by finishing any two Chronicles.
-- ☐ Horde-style **War of Ages** arena: pick any faction matchup on the Taprobane map.
+### v1.0 — "Legends of the King" (mythic crossover mode) — ◐ shipped
+- ✅ The user-requested fantasy — **Dutugemunu vs. the Cholas, the Pandyas, Kandy, the
+  Portuguese, even the British** — shipped as an explicitly framed dream-chronicle
+  ("*In the bards' fireside telling, the great king strides across the centuries…*"),
+  title-carded exactly like the Sigiriya chapter so history and legend never blur.
+  Reached from a dedicated **"✦ Legends of the King"** main-menu entry, and its brief
+  is stamped "a legend outside the campaign's calendar". A history-note on the picker
+  states plainly that Dutugemunu historically fought only the Cholas.
+- ✅ Horde-style **War of Ages** arena (`js/levels/warOfAges.js`, `js/ui/legendsMenu.jsx`):
+  pick the age's foe and tale length (3/5/8 waves), then hold a sacred stupa arena
+  against escalating waves — the chosen faction sets the enemy palette, banners and
+  troop mix (including gunpowder `gunner` troops for the Portuguese/British).
+  King Dutugemunu (given a real combat brain, 600 HP) and three of the Ten Giants
+  fight at your side; the tale ends if the king falls.
+- ☐ Full-campaign polish + performance pass remain for the v1.0 release proper.
 
 ---
 
