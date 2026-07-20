@@ -111,6 +111,7 @@
       name: 'Yapahuwa & the Tooth', sides: 'Kurunegala-era kingdom (Bhuvanekabahu I) vs. Pandya dynasty (Arya Chakravarti)',
       result: 'Defeat — then the Relic recovered by embassy',
       desc: 'The Pandyan expedition plundered the rock-fortress of Yapahuwa and bore off the Sacred Tooth; Parakramabahu III went in person to the Pandyan court and persuaded its return — the Dambadeniya–Kurunegala age\'s strangest victory.',
+      playable: 'yapahuwa',
     },
     {
       id: 'kotteJaffna', era: 'transitional', at: [0.42, 0.10], year: '1449–1454',
@@ -123,6 +124,7 @@
       name: 'Battle of Mulleriyawa', sides: 'Kingdom of Sitawaka (Rajasinha I) vs. Portuguese Empire',
       result: 'Sitawaka victory — a musket line broken by swords',
       desc: 'In the marshes east of Colombo the Sitawaka host annihilated a Portuguese field army — remembered as one of the fiercest days of the Sinhalese–Portuguese wars.',
+      playable: 'mulleriyawa',
     },
     {
       id: 'kandyDutch', era: 'kandy', at: [0.48, 0.62], year: '1670–1766',
@@ -135,6 +137,7 @@
       name: 'First Anglo-Kandyan War', sides: 'Kingdom of Kandy (Sri Vikrama Rajasinha) vs. United Kingdom',
       result: 'Kandyan victory',
       desc: 'The first British march on Kandy ended in disaster in the passes — the mountain kingdom\'s last great victory.',
+      playable: 'angloKandyan',
     },
     {
       id: 'uva1818', era: 'british', at: [0.52, 0.68], year: '1815–1818',

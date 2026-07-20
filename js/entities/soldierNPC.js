@@ -41,6 +41,17 @@
       armor: 0x4a4e58, armorRough: 0.3, armorMetal: 0.95,
       helm: 0x3c4048, trim: 0xc89a3e, shield: 0x2e3240,
     },
+    /* v0.7: gunpowder-era European palettes for the Chronicles campaigns */
+    portuguese: {
+      skin: 0xd9ad82, cloth: 0x7a1f1f, clothAlt: 0x2a2a2a,
+      armor: 0x8a8d92, armorRough: 0.3, armorMetal: 0.9,
+      helm: 0x9a9da2, trim: 0xc9a13a, shield: 0x6a1616,
+    },
+    british: {
+      skin: 0xd9ad82, cloth: 0xa8241f, clothAlt: 0xf0ead6,
+      armor: 0xa8241f, armorRough: 0.85, armorMetal: 0.05,
+      helm: 0x241f18, trim: 0xf0ead6, shield: 0x3a1f1a,
+    },
   };
 
   /* ============================ HUMANOID RIG ============================ */
@@ -180,10 +191,13 @@
       this.weapons.sword = this._mkSword(trimMat);
       this.weapons.spear = this._mkSpear();
       this.weapons.bow = this._mkBow();
+      this.weapons.musket = this._mkMusket();
       for (const w of Object.values(this.weapons)) { w.visible = false; this.armR.hand.add(w); }
-      // bow is held in the LEFT hand
-      this.armR.hand.remove(this.weapons.bow);
-      this.armL.hand.add(this.weapons.bow);
+      // bow and musket are held two-handed, anchored in the LEFT hand
+      for (const key of ['bow', 'musket']) {
+        this.armR.hand.remove(this.weapons[key]);
+        this.armL.hand.add(this.weapons[key]);
+      }
       this.setWeapon(this.opts.weapon);
 
       if (this.opts.shield && P.shield) {
@@ -249,11 +263,24 @@
       g.rotation.x = Math.PI / 2;
       return g;
     }
+    /* v0.7: flintlock musket for the Portuguese/British Chronicles enemies */
+    _mkMusket() {
+      const g = new THREE.Group();
+      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.022, 1.0, 7), M.std({ color: 0x3a3632, rough: 0.4, metal: 0.75 }));
+      barrel.position.z = -0.28;
+      const stock = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.085, 0.5), M.std({ color: 0x5a3d22, rough: 0.75 }));
+      stock.position.set(0, -0.02, 0.32);
+      const lock = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.045, 0.11), M.std({ color: 0x9a8a52, rough: 0.4, metal: 0.6 }));
+      lock.position.set(0.028, 0, 0.02);
+      g.add(barrel, stock, lock);
+      g.rotation.x = Math.PI / 2;
+      return g;
+    }
 
     setWeapon(w) {
       this.currentWeapon = w;
       for (const [k, mesh] of Object.entries(this.weapons)) mesh.visible = (k === w);
-      if (this.shield) this.shield.visible = (w !== 'bow' && this.opts.shield);
+      if (this.shield) this.shield.visible = (w !== 'bow' && w !== 'musket' && this.opts.shield);
     }
 
     play(name, dur) { this.action = { name, t: 0, dur }; }
@@ -305,7 +332,7 @@
       let armLZ = 0.12, armRZ = -0.12;
       let elbL = -0.25, elbR = -0.25;
       if (this.posture === 'combat') {
-        if (this.currentWeapon === 'bow') { armLX = -0.5; armRX = -0.3; elbR = -1.1; }
+        if (this.currentWeapon === 'bow' || this.currentWeapon === 'musket') { armLX = -0.5; armRX = -0.3; elbR = -1.1; }
         else { armRX = -0.5; elbR = -1.35; armLX = -0.35; elbL = -0.9; } // weapon & shield up
       } else if (this.posture === 'kneel' || this.posture === 'captive') {
         this.hips.position.y = 0.55;
@@ -402,12 +429,12 @@
       this.hp = this.maxHp;
 
       const isCiv = this.type === 'civilian' || this.type === 'worker';
-      const weapon = opts.weapon || (this.type === 'archer' ? 'bow' : this.type === 'brute' ? 'spear' : isCiv ? 'none' : 'sword');
+      const weapon = opts.weapon || (this.type === 'archer' ? 'bow' : this.type === 'gunner' ? 'musket' : this.type === 'brute' ? 'spear' : isCiv ? 'none' : 'sword');
       const scale = opts.scale || (this.type === 'brute' ? 1.16 : this.type === 'elite' ? 1.1 : 1);
       this.rig = new HumanoidRig({
         palette: opts.palette || (isCiv ? 'civilian' : this.faction === 'ally' ? 'ally' : 'enemy'),
         weapon,
-        shield: !isCiv && this.type !== 'archer',
+        shield: !isCiv && this.type !== 'archer' && this.type !== 'gunner',
         helmet: !isCiv,
         plume: this.type === 'elite' || this.type === 'brute',
         cape: opts.cape || false,

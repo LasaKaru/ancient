@@ -1175,6 +1175,31 @@
     return store;
   };
 
+  /* --- period cannon (Portuguese/British Chronicles set-dressing) --- */
+  Build.cannon = function (engine, { pos = [0, 0], yaw = 0 } = {}) {
+    const grp = new THREE.Group();
+    const bronze = M.std({ color: 0x5a4a28, rough: 0.4, metal: 0.85 });
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.17, 2.0, 10), bronze);
+    barrel.rotation.z = Math.PI / 2;
+    barrel.position.set(0, 0.55, 0.2);
+    grp.add(barrel);
+    const carriage = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.14, 0.5), M.library().woodDark);
+    carriage.position.y = 0.32;
+    grp.add(carriage);
+    for (const s of [-1, 1]) {
+      const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.1, 12), M.library().woodDark);
+      wheel.rotation.x = Math.PI / 2;
+      wheel.position.set(0, 0.34, s * 0.32);
+      grp.add(wheel);
+    }
+    grp.traverse((c) => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+    grp.rotation.y = yaw;
+    grp.position.set(pos[0], 0, pos[1]);
+    engine.scene.add(grp);
+    engine.addStaticBox([pos[0], 0.4, pos[1]], [0.85, 0.4, 0.35], yaw);
+    return grp;
+  };
+
   /* --- crates / urns clutter --- */
   Build.crate = function (engine, { pos = [0, 0], s = 1, yaw = 0 } = {}) {
     const c = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), M.library().wood);

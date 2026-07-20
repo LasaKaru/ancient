@@ -32,7 +32,9 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.4 | *Taprobane* | ◐ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch); ☐ save slots, in-game M map |
 | v0.5 | *Shadows* | ◐ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault; ☐ full ledge climbing, finisher animations, crowds |
 | v0.6 | *Chronicles I* | ◐ shipped | ✅ Two playable era campaigns from the map: Gajabahu's Crossing (~120 CE) and the Liberation of Polonnaruwa (1070); ☐ remaining Chronicles I rows |
-| v0.7–0.9 | *Chronicles II–IV* | Era campaigns | Polonnaruwa ascendant, Kurunegala/transitional, Portuguese→Kandy→British wars |
+| v0.7 | *Chronicles III (early)* | ◐ shipped | ✅ **Yapahuwa & the Tooth** (1283, Kurunegala era) — a relic-escort defense up the rock stair; ☐ Dambadeniya Shield, Kotte Rising |
+| v0.8 | *Chronicles II* | ☐ planned | Parakramabahu's Wars, the Invasion of Kalinga Magha |
+| v0.9 | *Chronicles IV (early)* | ◐ shipped | ✅ **Battle of Mulleriyawa** (1559) — the first gunpowder enemies (`AI_TYPES.gunner`, telegraphed musket reload) and Portuguese armour; ✅ **The Passes of 1803** (First Anglo-Kandyan War) — a jungle ambush against British redcoat gunners; ☐ Kandyan–Dutch wars, the Uva Rising finale |
 | v1.0 | *One Island* | Full release | All campaigns + Legends of the King mode, polish, performance |
 | v1.1+ | *Brothers-in-Arms* | Multiplayer | Async ghosts → P2P co-op → duel PvP |
 
@@ -192,29 +194,33 @@ chronicles (Dipavamsa/Mahavamsa/Culavamsa/Rajavaliya) and the Wikipedia war list
 | ☐ **Udaya's Counterstroke** (946 CE) | General Viduragga | Repel Parantaka I, cross-strait raid to recover the plunder |
 | ◐ **The Great Conquest & Resistance** (992–1070) | Ruhuna resistance → Vijayabahu I | ✅ *Liberation of Polonnaruwa (1070) shipped v0.6*: stealth-or-steel patrol clearing, citadel gate breach with the resistance rising, the occupation governor, raising the lion banner. ☐ Fall-of-Anuradhapura + guerrilla-years missions |
 
-### v0.7 — Chronicles II: Polonnaruwa Ascendant
+### v0.7 — Chronicles III: The Transitional Kingdoms (incl. **Kurunegala**) — ◐ shipped
+| Campaign | Playable era/hero | Key missions |
+|---|---|---|
+| ☐ **Dambadeniya Shield** (1247–1270) | Parakramabahu II's guard | Repel Chandrabhanu's two Tambralinga invasions and the Pandyan expeditions |
+| ✅ **Yapahuwa & the Tooth** (1277–1288) — *shipped v0.7* | You escort Bhikkhu Ananda | The fortress is lost (history's own outcome, not rewritten) — you buy the time for the Relic-bearer to reach the sally-port: hold the gate, escort him up the great stair, hold the summit, rescue temple guards en route. Frames the historical embassy-recovery as the mission's epilogue. |
+| ☐ **Kotte Rising** (1411–1454) | Prince Sapumal / Parakramabahu VI's forces | Ming–Kotte war aftermath, defence against Vijayanagara raids, conquest of Jaffna |
+
+### v0.8 — Chronicles II: Polonnaruwa Ascendant — ☐ planned
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
 | ☐ **Parakramabahu's Wars** (1153–1186) | Parakramabahu the Great's champion | Unification of the three lands, overseas expeditions (Pagan war 1164, Pandyan intervention 1169–77) |
 | ☐ **The Broken Throne** (1202–1215) | Last guard of Polonnaruwa | Chola raids of 1202/1208/1210, Queen Lilavati's fall, stand against Kalinga Magha's invasion (1215) |
 
-### v0.8 — Chronicles III: The Transitional Kingdoms (incl. **Kurunegala**)
+### v0.9 — Chronicles IV: Muskets on the Shore (European wars & **Kandy**) — ◐ shipped
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
-| ☐ **Dambadeniya Shield** (1247–1270) | Parakramabahu II's guard | Repel Chandrabhanu's two Tambralinga invasions and the Pandyan expeditions |
-| ☐ **Yapahuwa & the Tooth** (1277–1288) | Kurunegala-era hero | Fall of Yapahuwa to Arya Chakravarti, embassy-quest to recover the Sacred Tooth Relic (Dambadeniya–**Kurunegala** period) |
-| ☐ **Kotte Rising** (1411–1454) | Prince Sapumal / Parakramabahu VI's forces | Ming–Kotte war aftermath, defence against Vijayanagara raids, conquest of Jaffna |
-
-### v0.9 — Chronicles IV: Muskets on the Shore (European wars & **Kandy**)
-| Campaign | Playable era/hero | Key missions |
-|---|---|---|
-| ☐ **Sitawaka Lion** (1551–1593) | Sitawaka/Kotte-era warrior | Sinhalese–**Portuguese** wars: Battle of Mulleriyawa (1559), sieges of Kotte, Danture — sword-and-shield vs. early muskets |
+| ◐ **Sitawaka Lion** (1551–1593) | Sitawaka/Kotte-era warrior | ✅ *Battle of Mulleriyawa (1559) shipped v0.7*: break a Portuguese musket skirmish line before it reloads, spike its two gun emplacements, rescue pinned soldiers, break the field commander. ☐ Sieges of Kotte, Danture |
 | ☐ **Kandyan Defiance** (1670–1766) | **Kandyan Kingdom** ranger | Kandyan–Dutch wars: forest ambush warfare, Rajasinha II's offensives |
-| ☐ **The Last Kingdom** (1803–1818) | Kandyan guerrilla under Keppetipola | Anglo-Kandyan wars: 1803 Kandyan victory, 1815 fall, 1818 Uva–Wellassa rising vs. the **British** — the series' solemn finale |
+| ◐ **The Last Kingdom** (1803–1818) | Kandyan guerrilla under Keppetipola | ✅ *The Passes of 1803 shipped v0.7*: ambush the British vanguard, burn the baggage train, cut down the column's officer, seal the pass, free pressed porters — the First Anglo-Kandyan War told as a retreat harried to pieces. ☐ 1815 fall, 1818 Uva–Wellassa rising (the series' solemn finale) |
 
-*New systems these require:* naval landing set pieces, elephant riding, early gunpowder
-enemies (arquebus/cannon with long telegraphed reloads so melee stays viable), fort
-architecture per era, faction armour/flag art sets, era-specific music modes.
+*New systems these require:* naval landing set pieces ✅ (`Build.boat`, shipped v0.6),
+elephant riding ✅ (shipped v0.2), early gunpowder enemies ✅ — `AI_TYPES.gunner`
+(shipped v0.7): matchlock muskets with a long, audible-and-visible telegraphed aim
+and a very long reload window so a rushed melee attacker can close and cut a gunner
+down before the second shot, near-hitscan ballistics, gunfire noise that carries and
+alerts the whole field, and Portuguese/British armour palettes. Fort architecture per
+era, faction flag art, and era-specific music modes remain open.
 
 ### v1.0 — "Legends of the King" (mythic crossover mode)
 - ☐ The user-requested fantasy — **Dutugemunu vs. Kandy, Kurunegala, Polonnaruwa, the

@@ -285,6 +285,19 @@
       this._burst({ dur: 0.1, gain: 0.22, filter: { type: 'bandpass', freq: 2200 }, sweep: 500, q: 2 });
       this._tone({ freq: 140, freqEnd: 60, dur: 0.16, gain: 0.28 });
     }
+
+    /* v0.7: gunpowder-era enemies (Portuguese/British muskets) */
+    musketCock() {
+      if (!this.ensure()) return;
+      this._tone({ freq: 1400, dur: 0.03, gain: 0.1, type: 'square' });
+      this._tone({ freq: 260, dur: 0.05, gain: 0.07, type: 'square', delay: 0.06 });
+    }
+    musketShot() {
+      if (!this.ensure()) return;
+      this._burst({ dur: 0.16, gain: 0.42, filter: { type: 'lowpass', freq: 3400 }, sweep: 700 });
+      this._tone({ freq: 95, freqEnd: 38, dur: 0.24, gain: 0.36, type: 'square' });
+      this._burst({ dur: 0.55, gain: 0.13, noise: 'pink', filter: { type: 'lowpass', freq: 550 }, delay: 0.03 }); // rolling report
+    }
     objectiveDone() {
       if (!this.ensure()) return;
       [523, 659, 784].forEach((f, i) => this._tone({ freq: f, dur: 0.28, gain: 0.14, type: 'triangle', delay: i * 0.1 }));

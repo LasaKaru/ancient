@@ -79,11 +79,13 @@
         const shaft = new THREE.Mesh(shaftGeo, shaftMat);
         const head = new THREE.Mesh(headGeo, lib.iron);
         grp.add(shaft, head);
+        const fletch = [];
         for (const a of [0, Math.PI / 2]) {
           const f = new THREE.Mesh(fletchGeo, fletchMat);
           f.position.z = -0.6;
           f.rotation.z = a;
           grp.add(f);
+          fletch.push(f);
         }
         const flame = new THREE.Sprite(flameMat);
         flame.scale.set(0.28, 0.34, 1);
@@ -94,7 +96,7 @@
         grp.castShadow = false;
         this.engine.scene.add(grp);
         this.pool.push({
-          mesh: grp, flame, alive: false, stuck: false, flaming: false,
+          mesh: grp, flame, fletch, bullet: false, alive: false, stuck: false, flaming: false,
           pos: new THREE.Vector3(), prev: new THREE.Vector3(), vel: new THREE.Vector3(),
           owner: null, damage: 0, life: 0, stickParent: null, stickLocal: new THREE.Vector3(),
         });
@@ -337,7 +339,7 @@
      * Shared projectile spawn — used by player and enemy archers.
      * opts: { from:V3, dir:V3, speed, owner (entity with .faction), damage }
      */
-    fireArrow({ from, dir, speed, owner, damage, flaming = false }) {
+    fireArrow({ from, dir, speed, owner, damage, flaming = false, bullet = false }) {
       const a = this._getArrow();
       a.pos.copy(from);
       a.prev.copy(from);
@@ -346,6 +348,8 @@
       a.damage = damage;
       a.flaming = flaming;
       a.flame.visible = flaming;
+      a.bullet = bullet;
+      for (const f of a.fletch) f.visible = !bullet;   // musket balls carry no fletching
       a.mesh.position.copy(from);
       a.mesh.lookAt(from.clone().add(a.vel));
     }

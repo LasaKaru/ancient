@@ -23,6 +23,11 @@
     brute: { hp: 110, speed: 2.9, dmg: 21, windup: 0.85, recover: [1.6, 2.6], range: 2.2, view: 24 },
     archer: { hp: 40, speed: 3.4, dmg: 10, windup: 0.85, recover: [2.2, 3.2], range: 24, view: 32 },
     elite: { hp: 90, speed: 4.1, dmg: 14, windup: 0.5, recover: [0.9, 1.6], range: 2.0, view: 30 },
+    /* v0.7: matchlock gunners (Portuguese/British Chronicles). The long,
+       visibly-telegraphed aim and especially the very long reload are the
+       whole point — a musket line is lethal at range but a rushed melee
+       attacker can close and cut a gunner down before he reloads. */
+    gunner: { hp: 48, speed: 2.9, dmg: 26, windup: 1.35, recover: [3.6, 4.8], range: 22, view: 30 },
   };
   G.AI_TYPES = TYPES;
 
@@ -266,15 +271,20 @@
       const d = U.flatDist(npc.pos, tPos);
       npc.faceToward(tPos, dt);
 
-      if (this.type === 'archer') {
-        // kite band: 9m … 22m
-        if (d < 8) { npc.setMove(this._awayPoint(tPos, 6), dt, this.cfg.speed); return; }
-        if (d > 23 && !this.holdPos) { npc.setMove(tPos, dt, this.cfg.speed); return; }
+      if (this.type === 'archer' || this.type === 'gunner') {
+        // kite band (gunners hold a touch further back — reloading is slow)
+        const kiteMin = this.type === 'gunner' ? 10 : 8;
+        const kiteMax = this.type === 'gunner' ? 26 : 23;
+        if (d < kiteMin) { npc.setMove(this._awayPoint(tPos, 6), dt, this.cfg.speed); return; }
+        if (d > kiteMax && !this.holdPos) { npc.setMove(tPos, dt, this.cfg.speed); return; }
         npc.setMove(null, dt);
         if (this.cooldown <= 0) {
           const { seen } = this._canSee(this.target);
-          if (seen) { this._setState('windup'); npc.rig.playBowDraw(); G.audio.bowDraw(); }
-          else if (!this.holdPos) npc.setMove(tPos, dt, this.cfg.speed * 0.8);
+          if (seen) {
+            this._setState('windup');
+            npc.rig.playBowDraw();
+            if (this.type === 'gunner') G.audio.musketCock(); else G.audio.bowDraw();
+          } else if (!this.holdPos) npc.setMove(tPos, dt, this.cfg.speed * 0.8);
         }
         return;
       }
@@ -302,7 +312,7 @@
       npc.faceToward(this.target.pos, dt, 6);
       npc.setMove(null, dt);
       if (this.stateT >= this.cfg.windup) {
-        if (this.type === 'archer') {
+        if (this.type === 'archer' || this.type === 'gunner') {
           this._loose();
         } else {
           npc.rig.playStrike();
@@ -318,18 +328,30 @@
 
     _loose() {
       const npc = this.npc, t = this.target;
+      const isGun = this.type === 'gunner';
       npc.rig.playRelease();
       const from = npc.pos.clone(); from.y += 0.35;
       const tp = t.pos.clone();
       // lead the target + gravity compensation + skill spread
-      if (t.body) tp.addScaledVector(new THREE.Vector3(t.body.velocity.x, 0, t.body.velocity.z), U.flatDist(from, tp) / 26);
+      if (t.body) tp.addScaledVector(new THREE.Vector3(t.body.velocity.x, 0, t.body.velocity.z), U.flatDist(from, tp) / (isGun ? 70 : 26));
       const dist = from.distanceTo(tp);
-      tp.y += dist * dist * 0.008;                       // arc up
-      tp.x += U.rand(-1, 1) * dist * 0.035;              // spread
-      tp.y += U.rand(-1, 1) * dist * 0.03;
-      tp.z += U.rand(-1, 1) * dist * 0.035;
-      const dir = tp.sub(from).normalize();
-      this.engine.combat.fireArrow({ from, dir, speed: 27, owner: npc, damage: this.cfg.dmg });
+      if (isGun) {
+        // near-flat, near-hitscan musket ball: tight spread, no lobbed arc
+        tp.x += U.rand(-1, 1) * dist * 0.02;
+        tp.y += U.rand(-1, 1) * dist * 0.015;
+        tp.z += U.rand(-1, 1) * dist * 0.02;
+        const dir = tp.sub(from).normalize();
+        G.audio.musketShot();
+        this.engine.combat.fireArrow({ from, dir, speed: 60, owner: npc, damage: this.cfg.dmg, bullet: true });
+        this.engine.noiseEvent(from, 34);   // a gunshot carries far — alerts the whole field
+      } else {
+        tp.y += dist * dist * 0.008;                       // arc up
+        tp.x += U.rand(-1, 1) * dist * 0.035;              // spread
+        tp.y += U.rand(-1, 1) * dist * 0.03;
+        tp.z += U.rand(-1, 1) * dist * 0.035;
+        const dir = tp.sub(from).normalize();
+        this.engine.combat.fireArrow({ from, dir, speed: 27, owner: npc, damage: this.cfg.dmg });
+      }
     }
 
     _recover(dt) {
@@ -337,7 +359,7 @@
       if (!this.target || this.target.alive === false) { this._setState('idle'); return; }
       npc.faceToward(this.target.pos, dt);
       const d = U.flatDist(npc.pos, this.target.pos);
-      if (this.type === 'archer') {
+      if (this.type === 'archer' || this.type === 'gunner') {
         npc.setMove(null, dt);
       } else {
         // circle-strafe
