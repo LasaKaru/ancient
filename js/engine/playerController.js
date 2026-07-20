@@ -116,6 +116,8 @@
           G.Settings.set('graphics.camera', eng.tpMode ? 'first' : 'third');
           eng.ui.toast(eng.tpMode ? 'THIRD-PERSON VIEW' : 'FIRST-PERSON VIEW');
         }
+        else if (e.code === K.lure) eng.whistle();
+        else if (e.code === K.sense) eng.warriorSense();
         else if (/^Digit[1-5]$/.test(e.code)) {
           const slot = Number(e.code.slice(5));
           const id = Object.keys(G.MELEE).find((k) => G.MELEE[k].slot === slot);
@@ -363,13 +365,57 @@
     }
 
     _tryJump() {
-      if (!this.grounded || this.crouching) return;
+      if (this.crouching) return;
+      // v0.5: mantle first — vault a barricade / ledge if one is at hand
+      if (this._tryMantle()) return;
+      if (!this.grounded) return;
       if (this.stamina < 6) return;
       this.stamina -= 6;
       this.staminaRegenDelay = 0.6;
       this.body.velocity.y = 7.6;
       this.grounded = false;
       G.audio.jump();
+    }
+
+    /* parkour-lite: if a low obstacle blocks the way and its top is within
+       reach, hoist over/onto it instead of jumping in place */
+    _tryMantle() {
+      if (this.stamina < 8) return false;
+      const eng = this.engine;
+      const feet = this.feetPos;
+      const fx = this._fwd.x, fz = this._fwd.z;
+      // 1) is something solid directly ahead? (probe knee & chest height so
+      //    low crates and barricades count too)
+      const res = new CANNON.RaycastResult();
+      let blocked = false;
+      for (const hy of [0.55, 1.15]) {
+        res.reset();
+        eng.physics.raycastClosest(
+          new CANNON.Vec3(feet.x, feet.y + hy, feet.z),
+          new CANNON.Vec3(feet.x + fx * 1.0, feet.y + hy, feet.z + fz * 1.0),
+          { collisionFilterMask: G.COL.STATIC, skipBackfaces: true }, res);
+        if (res.hasHit) { blocked = true; break; }
+      }
+      if (!blocked) return false;
+      // 2) find its top: probe down from above, just past the face
+      const px = feet.x + fx * 0.95, pz = feet.z + fz * 0.95;
+      const top = new CANNON.RaycastResult();
+      eng.physics.raycastClosest(
+        new CANNON.Vec3(px, feet.y + 2.3, pz),
+        new CANNON.Vec3(px, feet.y + 0.05, pz),
+        { collisionFilterMask: G.COL.STATIC, skipBackfaces: true }, top);
+      if (!top.hasHit) return false;
+      const topY = top.hitPointWorld.y;
+      const rise = topY - feet.y;
+      if (rise < 0.35 || rise > 1.9) return false;
+      // hoist!
+      this.stamina -= 8;
+      this.staminaRegenDelay = 0.6;
+      this.teleport(px, topY + 0.06, pz, undefined);
+      this.body.velocity.set(fx * 1.6, 1.2, fz * 1.6);
+      this.viewShake = Math.max(this.viewShake, 0.35);
+      G.audio.jump(); G.audio.footstep(true);
+      return true;
     }
 
     /* ------------------- damage / block / parry ------------------- */

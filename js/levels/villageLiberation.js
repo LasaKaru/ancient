@@ -99,6 +99,7 @@
           when: () => cap.alive,
           onUse: () => {
             cap.clearPosture();
+            cap.captive = false;      // a freed blade is a target — and a threat
             cap.ai.passive = false;
             cap.ai.followPlayer = true;
             G.audio.interact();
@@ -147,7 +148,7 @@
     },
 
     start(engine) {
-      engine.ui.subtitle(null, 'Dawn mist. Crouch (C) to move unseen — sprinting and swordplay carry far in the quiet.', 6);
+      engine.ui.subtitle(null, 'Dawn mist. Crouch (C) to move unseen; a knife from behind asks no questions. Whistle (B) to lure a sentry into the scrub.', 7);
       engine.checkpoint({ note: 'Village outskirts' });
     },
 

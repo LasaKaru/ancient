@@ -30,7 +30,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.2 | *Armoury* | ✅ shipped | Spear/axe/mace/dagger, 9-skill Renown tree, herb healing, threat ring, rally, rideable war elephants, wildlife & flora pass (pulled forward from v0.3 §2.4) |
 | v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun; ☐ full day/night cycle, war-camp hub, crowds, weather |
 | v0.4 | *Taprobane* | ◐ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch); ☐ save slots, in-game M map |
-| v0.5 | *Shadows* | AC-style play | Climbing/parkour, stealth assassinations, warrior-sense, crowds/citizens |
+| v0.5 | *Shadows* | ◐ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault; ☐ full ledge climbing, finisher animations, crowds |
 | v0.6–0.9 | *Chronicles I–IV* | Era campaigns | Chola, Polonnaruwa, Kurunegala/transitional, Portuguese→Kandy→British wars |
 | v1.0 | *One Island* | Full release | All campaigns + Legends of the King mode, polish, performance |
 | v1.1+ | *Brothers-in-Arms* | Multiplayer | Async ghosts → P2P co-op → duel PvP |
@@ -162,18 +162,17 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
 
 ## 4 · v0.5 — "Shadows": Assassin's-Creed-style traversal & stealth
 
-- ☐ **Climbing**: ledge-grab & climbable surfaces (city walls, rock faces, scaffolds,
-  Sigiriya retrofit) via tagged geometry + capsule probes.
-- ☐ **Parkour-lite**: vault barricades, mantle windows, rooftop runs across market
-  streets, hay-cart drops.
-- ☐ **Stealth kit**: crouch-takedowns with dagger (front fail / back success), body
-  awareness (patrols find corpses → search state already exists), foliage concealment,
-  whistle lure, social blend in civilian crowds (§2.4).
-- ☐ **Warrior Sense** (AC "eagle vision" analogue, framed as a hunter's focus):
-  brief pulse highlighting enemies/objectives through walls; costs stamina; honours the
-  realistic preset (disabled) and accessibility settings (stronger/longer variant).
+- ◐ **Climbing**: ✅ mantle/vault (SPACE hoists you over barricades, crates and onto
+  ledges up to ~1.9m when something blocks the way). ☐ Full ledge-grab wall climbing.
+- ✅ **Parkour-lite**: vaulting barricades & low walls via the mantle system.
+- ✅ **Stealth kit** (v0.5): crouch-takedowns from behind unaware enemies (knife kills
+  outright, heavier blades wound gravely — both silent), corpse awareness (patrols that
+  spot a fallen brother go searching), stone-still crouch concealment, whistle lure (B).
+  ☐ Social blend in civilian crowds (needs §2.4 crowds).
+- ✅ **Warrior Sense** (X): stamina-costed pulse marking enemies and the objective
+  through walls for 6s; disabled on the realistic preset by design.
 - ☐ Assassination/parry **finisher animations** (both cameras).
-- ☐ Mission design pass: every combat mission gains a viable stealth route.
+- ◐ Mission design pass: the village liberation is fully stealthable end-to-end.
 
 ---
 

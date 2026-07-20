@@ -195,6 +195,10 @@
 
       // crosshair + threat ring + interact prompt
       !cine && snap.alive ? h(Crosshair, { mode: snap.crosshair }) : null,
+      !cine && snap.takedown ? h('div', {
+        className: 'hud-interact-tip',
+        style: { top: '44%', borderColor: 'rgba(220,80,50,0.7)', color: '#f0c0a8' },
+      }, '🗡 TAKEDOWN — strike') : null,
       !cine && !minimal && snap.alive && G.Settings.data.access.threatRing !== false
         ? h(ThreatRing, { threats: snap.threats }) : null,
       !cine && snap.prompt ? h('div', { className: 'hud-interact-tip' },

@@ -42,6 +42,7 @@
         switchWeapon: 'KeyQ', nock: 'KeyR', interact: 'KeyF',
         missionLog: 'Tab', pause: 'Escape',
         herb: 'KeyG', rally: 'KeyT', skills: 'KeyK', camera: 'KeyV',
+        lure: 'KeyB', sense: 'KeyX',
       },
     },
     audio: { master: 0.8, music: 0.65, sfx: 0.9, ambience: 0.7 },
@@ -372,6 +373,72 @@
     }
     setCombatIntensity(x) { this._musicFloor = x; }
 
+    /* v0.5 Shadows: whistle lure — draw a patrol to your hiding place */
+    whistle() {
+      if (this._whistleCd > this.time) return;
+      this._whistleCd = this.time + 4;
+      G.audio.whistle();
+      this.noiseEvent(this.player.pos, 17);
+      this.ui.toast('…a low whistle');
+    }
+
+    /* v0.5 Shadows: Warrior Sense — a hunter's focus marks foes through walls */
+    warriorSense() {
+      if (G.Realism().preset === 'realistic') { this.ui.toast('A REALIST TRUSTS HIS EYES'); return; }
+      if (this._senseCd > this.time) { this.ui.toast(`FOCUS RESTS — ${Math.ceil(this._senseCd - this.time)}s`); return; }
+      if (this.player.stamina < 20) { this.ui.toast('TOO WINDED TO FOCUS'); return; }
+      this.player.stamina -= 20;
+      this._senseCd = this.time + 12;
+      G.audio.sense();
+      this._senseMarkers = this._senseMarkers || [];
+      // clear stale markers
+      for (const m of this._senseMarkers) this.scene.remove(m.obj);
+      this._senseMarkers.length = 0;
+      const mkMat = (color) => new THREE.SpriteMaterial({
+        map: G.Mats.canvasTex('senseglow', 32, (c, s) => {
+          const g2 = c.createRadialGradient(s / 2, s / 2, 1, s / 2, s / 2, s / 2);
+          g2.addColorStop(0, 'rgba(255,255,255,1)'); g2.addColorStop(0.4, 'rgba(255,255,255,0.5)'); g2.addColorStop(1, 'rgba(255,255,255,0)');
+          c.fillStyle = g2; c.fillRect(0, 0, s, s);
+        }),
+        color, transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending,
+      });
+      for (const n of this.enemies.npcs) {
+        if (!n.alive || n.faction !== 'enemy') continue;
+        if (U.flatDist(n.pos, this.player.pos) > 45) continue;
+        const sp = new THREE.Sprite(mkMat(0xff5030));
+        sp.scale.set(0.9, 0.9, 1);
+        sp.renderOrder = 999;
+        this.scene.add(sp);
+        this._senseMarkers.push({ obj: sp, npc: n, t: 6 });
+      }
+      const marker = this.missions.currentMarker();
+      if (marker) {
+        const pillar = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.35, 0.5, 34, 8, 1, true),
+          new THREE.MeshBasicMaterial({ color: 0xf3cd7a, transparent: true, opacity: 0.3, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+        pillar.position.set(marker[0], 17, marker[1]);
+        pillar.renderOrder = 998;
+        this.scene.add(pillar);
+        this._senseMarkers.push({ obj: pillar, npc: null, t: 6 });
+      }
+      this.ui.toast('WARRIOR SENSE — the hunt is shown');
+    }
+    _updateSenseMarkers(dt) {
+      if (!this._senseMarkers || !this._senseMarkers.length) return;
+      for (let i = this._senseMarkers.length - 1; i >= 0; i--) {
+        const m = this._senseMarkers[i];
+        m.t -= dt;
+        if (m.t <= 0 || (m.npc && !m.npc.alive)) {
+          this.scene.remove(m.obj);
+          this._senseMarkers.splice(i, 1);
+          continue;
+        }
+        if (m.npc) m.obj.position.set(m.npc.pos.x, m.npc.pos.y + 0.9, m.npc.pos.z);
+        const fade = Math.min(1, m.t / 1.5);
+        if (m.obj.material) m.obj.material.opacity = (m.npc ? 0.9 : 0.3) * fade;
+      }
+    }
+
     /* Commander skill: Rally Cry (T) — allies fight harder for a spell */
     rally() {
       if (!(G.Skills && G.Skills.owned('rally'))) return;
@@ -523,6 +590,7 @@
 
       this.rallyT = Math.max(0, this.rallyT - dt);
       this.rallyCd = Math.max(0, this.rallyCd - dt);
+      this._updateSenseMarkers(dt);
 
       this.physics.step(1 / 60, dt, 3);
       if (!this.cinematic.active) {
@@ -643,6 +711,7 @@
         herbs: p.herbs,
         skillPts: G.Skills ? G.Skills.points() : 0,
         crosshair: c.weapon === 'bow' ? (c.drawPct >= 1 ? 'bowfull' : c.drawing ? 'bow' : 'melee') : 'melee',
+        takedown: !!c.takedownTarget(),
         facingDeg, objDiff, threats,
         prompt: this.riding ? 'Dismount' : (this.currentPrompt ? this.currentPrompt.prompt : null),
         repute: G.GameState.reputation + this.stats.saved,

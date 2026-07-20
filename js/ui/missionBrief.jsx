@@ -32,7 +32,7 @@
         }, 'Begin'),
         onBack ? h('button', { className: 'menu-btn small', onClick: () => { G.audio.ui(); onBack(); } }, 'Back to Menu') : null,
         h('div', { className: 'menu-footnote' },
-          'WASD move · SHIFT sprint · SPACE jump · C crouch · LMB strike / loose · RMB guard / draw · 1–5 weapons · Q sword⇄bow · F interact / mount · G herbs · T rally · K skills · TAB log · ESC pause')));
+          'WASD move · SHIFT sprint · SPACE jump/vault · C crouch (takedowns from behind) · LMB strike / loose · RMB guard / draw · 1–5 weapons · Q sword⇄bow · F interact / mount · G herbs · B whistle · X sense · T rally · K skills · V camera · ESC pause')));
   }
 
   G.UI = G.UI || {};

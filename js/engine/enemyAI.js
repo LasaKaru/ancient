@@ -59,6 +59,7 @@
       if (myFaction === 'enemy' && eng.player.alive) out.push(eng.player);
       for (const n of eng.enemies.npcs) {
         if (!n.alive || n === this.npc) continue;
+        if (n.captive) continue;   // bound prisoners are already subdued — no target
         if (n.faction !== myFaction && (n.faction === 'ally' || n.faction === 'enemy')) out.push(n);
       }
       return out;
@@ -69,7 +70,12 @@
       const myPos = this.npc.pos;
       const tPos = t.pos;
       let view = this.cfg.view * (G.Realism ? G.Realism().enemyAwareness : 1);
-      if (t.isPlayer && t.crouching) view *= 0.55;
+      if (t.isPlayer && t.crouching) {
+        view *= 0.55;
+        // stone-still in the scrub: harder again to pick out (v0.5)
+        const v = t.body.velocity;
+        if (Math.hypot(v.x, v.z) < 0.5) view *= 0.7;
+      }
       const d = U.flatDist(myPos, tPos);
       if (d > view) return { seen: false, d };
       // facing cone (~150° when engaged, ~120° when calm)
@@ -118,6 +124,25 @@
             this.lastKnown = n.pos.clone();
             if (this.state === 'idle' || this.state === 'patrol') this._setState('investigate');
           }
+        }
+      }
+      // corpse awareness (v0.5): a fallen brother is a warning
+      if (!this.target && (this.state === 'idle' || this.state === 'patrol')) {
+        for (const n of eng.enemies.npcs) {
+          if (n.alive || n.corpseSpotted || n.faction !== this.npc.faction) continue;
+          const d = U.flatDist(this.npc.pos, n.group.position);
+          if (d > 13) continue;
+          const from = new CANNON.Vec3(this.npc.pos.x, this.npc.pos.y + 0.3, this.npc.pos.z);
+          const to = new CANNON.Vec3(n.group.position.x, 0.4, n.group.position.z);
+          const res = eng.aiRayResult; res.reset();
+          eng.physics.raycastClosest(from, to, { collisionFilterMask: G.COL.STATIC, skipBackfaces: true }, res);
+          if (res.hasHit) continue;
+          n.corpseSpotted = true;
+          this.lastKnown = new THREE.Vector3(n.group.position.x, 0, n.group.position.z);
+          this._setState('investigate');
+          this.sightTimer = 0.4;          // on edge now
+          G.audio.enemyHurt();            // alarmed bark
+          break;
         }
       }
       // target died / lost

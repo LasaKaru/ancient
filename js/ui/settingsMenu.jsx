@@ -17,6 +17,7 @@
     nock: 'Nock arrow', interact: 'Interact / mount', missionLog: 'Mission log', pause: 'Pause',
     herb: 'Use healing herbs', rally: 'Rally cry (skill)', skills: 'Skills page',
     camera: 'First ⇄ third person',
+    lure: 'Whistle lure', sense: 'Warrior sense',
   };
 
   function RealismPresetRow({ onChanged }) {

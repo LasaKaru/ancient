@@ -269,6 +269,22 @@
     }
     stagger() { if (!this.ensure()) return; this._tone({ freq: 320, freqEnd: 140, dur: 0.3, gain: 0.18, type: 'square' }); }
     interact() { if (!this.ensure()) return; this._tone({ freq: 523, dur: 0.08, gain: 0.14, type: 'triangle' }); this._tone({ freq: 659, dur: 0.14, gain: 0.14, type: 'triangle', delay: 0.08 }); }
+    whistle() {
+      if (!this.ensure()) return;
+      this._tone({ freq: 1400, freqEnd: 2100, dur: 0.22, gain: 0.2, type: 'sine', attack: 0.02 });
+      this._tone({ freq: 2100, freqEnd: 1500, dur: 0.28, gain: 0.18, type: 'sine', delay: 0.24, attack: 0.02 });
+    }
+    sense() {
+      if (!this.ensure()) return;
+      this._tone({ freq: 110, dur: 1.4, gain: 0.14, type: 'sine', attack: 0.15 });
+      this._tone({ freq: 220, dur: 1.1, gain: 0.08, type: 'sine', delay: 0.1, attack: 0.2 });
+      this._tone({ freq: 1760, freqEnd: 880, dur: 0.5, gain: 0.05, type: 'sine', delay: 0.05 });
+    }
+    takedown() {
+      if (!this.ensure()) return;
+      this._burst({ dur: 0.1, gain: 0.22, filter: { type: 'bandpass', freq: 2200 }, sweep: 500, q: 2 });
+      this._tone({ freq: 140, freqEnd: 60, dur: 0.16, gain: 0.28 });
+    }
     objectiveDone() {
       if (!this.ensure()) return;
       [523, 659, 784].forEach((f, i) => this._tone({ freq: f, dur: 0.28, gain: 0.14, type: 'triangle', delay: i * 0.1 }));

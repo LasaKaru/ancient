@@ -444,6 +444,7 @@
       engine.physics.addBody(this.body);
 
       this.ai = null;          // attached by EnemyManager when combat-capable
+      this.captive = opts.posture === 'captive';   // bound prisoners draw no blades
       this.lodFar = false;
       this._lodTick = 0;
       this._moving = false;
@@ -525,12 +526,17 @@
       if (!this.alive) return;
       this.hp -= amount;
       const isPlayerHit = info.from && info.from.isPlayer;
-      if (info.type === 'melee') G.audio.swordClash();
-      G.audio.enemyHurt();
+      if (info.type === 'melee' && !info.silent) G.audio.swordClash();
+      if (!info.silent) G.audio.enemyHurt();
       this.rig.playFlinch();
-      // getting hit reveals the attacker
+      // getting hit reveals the attacker — unless the blow was silent:
+      // the dead raise no cry, and a wounded survivor turns without shouting
       if (this.ai && info.from && info.from.faction !== this.faction) {
-        this.ai._acquire ? this.ai._acquire(info.from) : null;
+        if (info.silent) {
+          if (this.hp > 0) this.ai.alertTo(info.from);
+        } else if (this.ai._acquire) {
+          this.ai._acquire(info.from);
+        }
       }
       if (this.faction === 'civilian') this.engine.events.emit('civilianHurt', this);
       if (this.hp <= 0) this._die(info);

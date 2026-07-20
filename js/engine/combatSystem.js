@@ -153,6 +153,7 @@
       if (!player.alive) return;
       if (this.isMelee) {
         if (this.secondaryHeld) return; // can't swing while guarding
+        if (this._tryTakedown()) return;
         this._trySwing();
       } else if (this.weapon === 'bow') {
         if (this.drawing && this.drawPct > 0.2) this._releaseArrow();
@@ -160,6 +161,44 @@
       }
     }
     primaryUp() {}
+
+    /* ---------------- stealth takedown (v0.5 Shadows) ----------------
+       Crouched, behind an unaware enemy: the knife ends it instantly,
+       heavier blades wound gravely — and quietly either way. */
+    takedownTarget() {
+      const player = this.engine.player;
+      if (!player.crouching || !player.alive || this.attacking) return null;
+      const origin = player.pos;
+      const fwd = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+      for (const e of this.engine.enemies.combatants()) {
+        if (e.faction !== 'enemy' || !e.ai) continue;
+        if (!['idle', 'patrol', 'investigate'].includes(e.ai.state)) continue;
+        const to = new THREE.Vector3().subVectors(e.pos, origin);
+        if (Math.hypot(to.x, to.z) > 1.9) continue;
+        to.setY(0).normalize();
+        if (to.dot(fwd) < 0.5) continue;                          // must face them
+        const eFwd = new THREE.Vector3(Math.sin(e.yaw), 0, Math.cos(e.yaw));
+        const fromE = to.clone().negate();
+        if (eFwd.dot(fromE) > -0.3) continue;                     // must be behind
+        return e;
+      }
+      return null;
+    }
+    _tryTakedown() {
+      const target = this.takedownTarget();
+      if (!target) return false;
+      const player = this.engine.player;
+      player.stamina = Math.max(0, player.stamina - 8);
+      const lethal = this.weapon === 'dagger';
+      G.audio.takedown();
+      this.engine.playerRig?.playSwing(2);
+      this.attacking = true; this.attackT = 0; this._didHit = true;  // brief lunge, no swing-hit
+      target.takeDamage(lethal ? 500 : 70, { type: 'melee', from: player, silent: true });
+      this.engine.noiseEvent(player.pos, 3);                          // barely a whisper
+      player.viewShake = Math.max(player.viewShake, 0.3);
+      this.engine.ui.toast(target.alive ? 'STRUCK FROM THE SHADOWS' : 'SILENT TAKEDOWN');
+      return true;
+    }
 
     secondaryDown() {
       this.secondaryHeld = true;
