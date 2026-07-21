@@ -150,7 +150,8 @@
       id: 'uva1818', era: 'british', at: [0.52, 0.68], year: '1815–1818',
       name: 'The Fall of Kandy & the Uva Rising', sides: 'Kingdom of Kandy (Keppetipola Disawe) vs. United Kingdom (Brownrigg)',
       result: 'British victory — the last kingdom ends',
-      desc: 'The convention of 1815 gave the kingdom away; the great rising of 1817–18 in Uva–Wellassa fought to take it back, and its suppression closed two thousand three hundred years of Lankan kingship.',
+      desc: 'The convention of 1815 gave the kingdom away; the great rising of 1817–18 in Uva–Wellassa fought to take it back, and its suppression closed two thousand three hundred years of Lankan kingship. Play the last defiance: raise the flag, break the redcoat outpost, see the people of Wellassa away into the hills, and cut down the reprisal\'s major — the crown cannot be saved, only the memory.',
+      playable: 'uvaRising',
     },
   ];
   G.WARS = WARS;
