@@ -122,7 +122,8 @@
       id: 'kotteJaffna', era: 'transitional', at: [0.42, 0.10], year: '1449–1454',
       name: 'The Kotte Conquest of Jaffna', sides: 'Kingdom of Kotte (Prince Sapumal) vs. Jaffna kingdom & Vanni chiefs',
       result: 'Kotte victory',
-      desc: 'Parakramabahu VI\'s adopted son Sapumal took the northern kingdom, and for a span one throne again spoke for the whole island.',
+      desc: 'Parakramabahu VI\'s adopted son Sapumal took the northern kingdom, and for a span one throne again spoke for the whole island. Play the storming of Nallur: break the gate-guard, raise the Kotte lion over the three quarters, spare the scribes, and depose the Arya Chakravarti king in his citadel.',
+      playable: 'kotteRising',
     },
     {
       id: 'mulleriyawa', era: 'transitional', at: [0.32, 0.66], year: '1559',
