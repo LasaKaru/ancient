@@ -18,6 +18,7 @@
     herb: 'Use healing herbs', rally: 'Rally cry (skill)', skills: 'Skills page',
     camera: 'First ⇄ third person',
     lure: 'Whistle lure', sense: 'Warrior sense',
+    shield: 'Raise / lower shield', javelin: 'Throw javelin',
   };
 
   function RealismPresetRow({ onChanged }) {

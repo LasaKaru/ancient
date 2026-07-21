@@ -154,6 +154,27 @@
       }
       this.group.add(this.bowArms);
 
+      /* ---------------------- off-hand shield ---------------------- */
+      // a round rattan-and-bronze buckler carried on the left, shown while the
+      // guard is raised (H). Independent of the weapon in the right hand.
+      this.shieldModel = new THREE.Group();
+      {
+        const board = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.045, 20), wood);
+        board.rotation.x = Math.PI / 2;
+        const rim = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.028, 6, 22), bronze);
+        const boss = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), bronze);
+        boss.position.z = -0.05; boss.scale.z = 0.6;
+        const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.3, 8), skin);
+        forearm.rotation.x = Math.PI / 2 - 0.2; forearm.position.set(0.02, -0.02, 0.16);
+        const brc = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.07, 0.14, 8), bracer);
+        brc.rotation.x = Math.PI / 2 - 0.2; brc.position.set(0.02, -0.03, 0.24);
+        this.shieldModel.add(board, rim, boss, forearm, brc);
+      }
+      this.shieldModel.visible = false;
+      this._bashT = 1;                 // bash lunge blend (0→1)
+      this._throwT = 1;                // javelin throw blend
+      this.group.add(this.shieldModel);
+
       this.group.traverse((c) => { if (c.isMesh) { c.castShadow = false; c.frustumCulled = false; } });
 
       /* third-person body (v0.3): the same humanoid rig everyone else uses,
@@ -186,6 +207,8 @@
 
     playSwing() { /* swing driven directly from combat state each frame */ }
     playRelease() { this.releaseT = 0; if (this.engine.tpMode) this.tpBody.playRelease(); }
+    playShieldBash() { this._bashT = 0; if (this.engine.tpMode) this.tpBody.playStrike(); }
+    playThrow() { this._throwT = 0; if (this.engine.tpMode) this.tpBody.playStrike(); }
 
     update(dt) {
       const eng = this.engine, combat = eng.combat, player = eng.player;
@@ -214,6 +237,20 @@
       const bob = Math.sin((player ? player.bobT : this.swayT) * 2) * 0.012 * bobA;
       const swayX = Math.sin(this.swayT * 1.7) * 0.004;
       const swayY = Math.cos(this.swayT * 1.3) * 0.004;
+
+      /* ------------------------ shield pose ------------------------ */
+      // shown only in first person while the guard is raised; punches forward
+      // on a bash and rocks with a throw
+      this._bashT = Math.min(1, this._bashT + dt / 0.4);
+      this._throwT = Math.min(1, this._throwT + dt / 0.45);
+      const shieldUp = player && player.shieldEquipped && this.group.visible;
+      this.shieldModel.visible = shieldUp;
+      if (shieldUp) {
+        const bash = Math.sin(U.clamp(this._bashT, 0, 1) * Math.PI);   // 0→1→0 lunge
+        const rock = Math.sin(U.clamp(this._throwT, 0, 1) * Math.PI) * 0.14;
+        this.shieldModel.position.set(-0.2 + swayX, -0.14 + swayY + bob - rock * 0.4, -0.42 - bash * 0.28);
+        this.shieldModel.rotation.set(0.1 - rock, 0.35 - bash * 0.3, 0.1);
+      }
 
       /* ---------------------- melee-arm pose ---------------------- */
       if (this.swordArm.visible) {

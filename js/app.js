@@ -44,7 +44,7 @@
         switchWeapon: 'KeyQ', nock: 'KeyR', interact: 'KeyF',
         missionLog: 'Tab', pause: 'Escape',
         herb: 'KeyG', rally: 'KeyT', skills: 'KeyK', camera: 'KeyV',
-        lure: 'KeyB', sense: 'KeyX',
+        lure: 'KeyB', sense: 'KeyX', shield: 'KeyH', javelin: 'KeyZ',
       },
     },
     audio: { master: 0.8, music: 0.65, sfx: 0.9, ambience: 0.7 },
@@ -549,8 +549,10 @@
       this.player.teleport(pos[0], pos[1], pos[2], cp.yaw);
       if (!opts.keepHp) this.player.revive();
       this.player.moveLocked = false;
+      this.player.shieldEquipped = false;             // stand down on respawn
       this.combat.arrows = Math.max(this.combat.arrows, cp.arrows);
       this.combat.nocked = this.combat.arrows > 0;
+      this.combat.javelins = this.combat.javelinMax;  // fresh cast of javelins
       this.combat.drawing = false; this.combat.drawPct = 0;
       this.missions.restore(cp.missions);
       this.noises.length = 0;
@@ -773,6 +775,7 @@
         arrows: c.arrows, quiverMax: c.quiverMax,
         drawPct: c.drawPct, slots,
         herbs: p.herbs,
+        javelins: c.javelins, shield: p.shieldEquipped,
         skillPts: G.Skills ? G.Skills.points() : 0,
         crosshair: c.weapon === 'bow' ? (c.drawPct >= 1 ? 'bowfull' : c.drawing ? 'bow' : 'melee') : 'melee',
         takedown: !!c.takedownTarget(),

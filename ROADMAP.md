@@ -50,8 +50,8 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | ✅ Battle axe | Heavy / cleave | Slow, staggers, splits barricades & gates (skill unlock, slot 3) |
 | ✅ Mace / gada | Heavy / blunt | +50% vs. armoured brutes/champions (skill unlock, slot 4) |
 | ✅ Dagger | Fast / stealth | Quick and quiet; 3× damage from behind (skill unlock, slot 5) |
-| ☐ Shield (equippable) | Defense | Passive block arc without RMB-hold, shield-bash stagger move |
-| ☐ Javelin bundle | Ranged sidearm | 3-slot quick-throw between melee exchanges |
+| ✅ Shield (equippable) | Defense | Raise the guard with **H**: a passive block arc (no RMB-hold) that soaks frontal melee **and turns aside arrows** a bare parry can't, folds behind an active block for near-impunity, slows the pace, and enables a **shield-bash** (left-click) that staggers and shoves a front cone |
+| ✅ Javelin bundle | Ranged sidearm | **Z** hurls one of 3 heavy arcing casts between melee exchanges without switching off your blade; HUD stock counter; refilled at checkpoints |
 | ✅ Fire arrows | Bow upgrade | Skill unlock: +35% damage, 2× vs. wooden structures |
 
 Systems work: weapon wheel / number-key quick slots, per-weapon damage-type vs.

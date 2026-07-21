@@ -33,6 +33,11 @@
       this.lastMelee = 'sword';
       this.arrows = 12;
       this.quiverMax = 24;
+      // javelin sidearm (v0.2 Armoury completion): a few heavy throws you can
+      // loose between melee exchanges without switching off your blade
+      this.javelins = 3;
+      this.javelinMax = 3;
+      this._bashCd = 0;            // shield-bash cooldown
 
       // melee state
       this.attacking = false;
@@ -96,7 +101,7 @@
         grp.castShadow = false;
         this.engine.scene.add(grp);
         this.pool.push({
-          mesh: grp, flame, fletch, bullet: false, alive: false, stuck: false, flaming: false,
+          mesh: grp, flame, fletch, bullet: false, javelin: false, alive: false, stuck: false, flaming: false,
           pos: new THREE.Vector3(), prev: new THREE.Vector3(), vel: new THREE.Vector3(),
           owner: null, damage: 0, life: 0, stickParent: null, stickLocal: new THREE.Vector3(),
         });
@@ -153,6 +158,8 @@
     primaryDown() {
       const player = this.engine.player;
       if (!player.alive) return;
+      // a raised shield turns the primary strike into a bash (stagger, not a cut)
+      if (player.shieldEquipped) { this._tryShieldBash(); return; }
       if (this.isMelee) {
         if (this.secondaryHeld) return; // can't swing while guarding
         if (this._tryTakedown()) return;
@@ -163,6 +170,62 @@
       }
     }
     primaryUp() {}
+
+    /* -------- shield bash (v0.2): a short shove that staggers a front cone -------- */
+    _tryShieldBash() {
+      const eng = this.engine, player = eng.player;
+      if (this._bashCd > 0 || this.attacking) { G.audio.ui(); return; }
+      if (player.stamina < 12) { eng.ui.toast('EXHAUSTED'); return; }
+      player.stamina -= 14;
+      player.staminaRegenDelay = 0.9;
+      this._bashCd = 0.85;
+      this.attacking = true; this.attackT = 0; this._didHit = true;   // brief lunge, no blade-hit
+      G.audio.block();
+      this.engine.noiseEvent(player.pos, 7);
+      player.viewShake = Math.max(player.viewShake, 0.3);
+      this.engine.playerRig?.playShieldBash && this.engine.playerRig.playShieldBash();
+      const origin = player.pos;
+      const fwd = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+      let hit = false;
+      for (const e of eng.enemies.combatants()) {
+        if (e.faction === 'ally' || e.alive === false) continue;
+        const to = new THREE.Vector3().subVectors(e.pos, origin);
+        const dist = Math.hypot(to.x, to.z);
+        if (dist > 2.4 + (e.radius || 0)) continue;
+        to.setY(0).normalize();
+        if (to.dot(fwd) < 0.6) continue;
+        hit = true;
+        if (e.stagger) e.stagger(1.6);
+        if (e.takeDamage) e.takeDamage(10 * (G.Realism ? G.Realism().damageDealt : 1), { dir: fwd.clone(), type: 'melee', from: player, attackerPos: origin });
+        // a real shove — soldiers are positioned by their group, others by body
+        const tp = e.group ? e.group.position : (e.body ? e.body.position : null);
+        if (tp) { tp.x += fwd.x * 0.9; tp.z += fwd.z * 0.9; }
+      }
+      if (hit) { G.audio.swordClash(); eng.ui.toast('SHIELD BASH'); }
+    }
+
+    /* -------- javelin throw (v0.2): a heavy arcing cast, any weapon in hand -------- */
+    throwJavelin() {
+      const eng = this.engine, player = eng.player;
+      if (!player.alive || this.attacking) return;
+      if (this.javelins <= 0) { eng.ui.toast('NO JAVELINS LEFT'); G.audio.ui(); return; }
+      this.javelins--;
+      G.audio.swordSwing();
+      eng.noiseEvent(player.pos, 10);
+      this.engine.playerRig?.playThrow && this.engine.playerRig.playThrow();
+      const dir = new THREE.Vector3();
+      eng.camera.getWorldDirection(dir);
+      const from = eng.tpMode
+        ? player.pos.clone().addScaledVector(dir, 0.7)
+        : eng.camera.position.clone().addScaledVector(dir, 0.5);
+      dir.y += 0.06;                                          // a touch of loft
+      this.fireArrow({
+        from, dir: dir.normalize(), speed: 27, owner: player,
+        damage: 42 * (G.Realism ? G.Realism().damageDealt : 1), javelin: true,
+      });
+      eng.ui.toast(this.javelins > 0 ? `JAVELIN — ${this.javelins} left` : 'LAST JAVELIN THROWN');
+    }
+    addJavelins(n) { this.javelins = Math.min(this.javelinMax, this.javelins + n); }
 
     /* ---------------- stealth takedown (v0.5 Shadows) ----------------
        Crouched, behind an unaware enemy: the knife ends it instantly,
@@ -339,7 +402,7 @@
      * Shared projectile spawn — used by player and enemy archers.
      * opts: { from:V3, dir:V3, speed, owner (entity with .faction), damage }
      */
-    fireArrow({ from, dir, speed, owner, damage, flaming = false, bullet = false }) {
+    fireArrow({ from, dir, speed, owner, damage, flaming = false, bullet = false, javelin = false }) {
       const a = this._getArrow();
       a.pos.copy(from);
       a.prev.copy(from);
@@ -349,7 +412,10 @@
       a.flaming = flaming;
       a.flame.visible = flaming;
       a.bullet = bullet;
-      for (const f of a.fletch) f.visible = !bullet;   // musket balls carry no fletching
+      a.javelin = javelin;
+      // a javelin reads as a longer, heavier shaft; a musket ball carries no fletching
+      a.mesh.scale.setScalar(javelin ? 1.8 : 1);
+      for (const f of a.fletch) f.visible = !bullet && !javelin;
       a.mesh.position.copy(from);
       a.mesh.lookAt(from.clone().add(a.vel));
     }
@@ -357,6 +423,7 @@
     /* -------------------------- update -------------------------- */
     update(dt) {
       const eng = this.engine, player = eng.player;
+      if (this._bashCd > 0) this._bashCd -= dt;
 
       // melee swing lifecycle (timings come from the equipped weapon)
       if (this.attacking) {
@@ -486,6 +553,8 @@
         quiverMax: this.quiverMax,
         drawPct: this.drawPct,
         drawing: this.drawing,
+        javelins: this.javelins,
+        javelinMax: this.javelinMax,
       };
     }
 

@@ -49,6 +49,8 @@
       // ---- block / parry ----
       this.blocking = false;
       this.blockPressedAt = -99;
+      // ---- off-hand shield (v0.2 Armoury completion) ----
+      this.shieldEquipped = false;   // raised guard toggled with the shield key
 
       // ---- physics body ----
       const body = new CANNON.Body({
@@ -118,6 +120,8 @@
         }
         else if (e.code === K.lure) eng.whistle();
         else if (e.code === K.sense) eng.warriorSense();
+        else if (e.code === K.shield) this.toggleShield();
+        else if (e.code === K.javelin) eng.combat.throwJavelin();
         else if (/^Digit[1-5]$/.test(e.code)) {
           const slot = Number(e.code.slice(5));
           const id = Object.keys(G.MELEE).find((k) => G.MELEE[k].slot === slot);
@@ -242,6 +246,7 @@
       if (this.sprinting) speed = 7.2;
       if (this.crouching) speed = 2.2;
       if (this.engine.combat.isBlockingOrDrawing()) speed *= 0.55;
+      if (this.shieldEquipped) speed *= 0.78;    // a raised shield weighs on the pace
       // realistic preset: deep wounds slow the legs
       if (R.preset === 'realistic' && this.hp < this.maxHp * 0.25) speed *= 0.8;
 
@@ -418,6 +423,14 @@
       return true;
     }
 
+    /* off-hand shield: raise / lower the guard (v0.2 Armoury completion) */
+    toggleShield() {
+      if (!this.alive) return;
+      this.shieldEquipped = !this.shieldEquipped;
+      G.audio.interact();
+      this.engine.ui.toast(this.shieldEquipped ? '🛡 SHIELD RAISED — H to lower' : 'SHIELD LOWERED');
+    }
+
     /* ------------------- damage / block / parry ------------------- */
     /**
      * @param amount   raw damage
@@ -432,12 +445,16 @@
       this.lastDamageT = eng.time;
       if (eng.riding) amount *= 0.6;   // hard to reach a rider on a war elephant
 
-      // facing check: are we looking (roughly) at the attacker?
-      let facing = false;
+      // facing check: are we looking (roughly) at the attacker?  A raised shield
+      // covers a wider arc than a bare parry.
+      let facing = false, shieldFacing = false;
       if (fromPos) {
         const toA = new THREE.Vector3().subVectors(fromPos, this.pos).setY(0).normalize();
-        facing = this._fwd.dot(toA) > 0.35;
+        const d = this._fwd.dot(toA);
+        facing = d > 0.35;
+        shieldFacing = d > 0.1;
       }
+      const shield = this.shieldEquipped && shieldFacing;
 
       const ironGuard = G.Skills && G.Skills.owned('iron_guard');
       if (opts.type !== 'arrow' && this.blocking && facing) {
@@ -451,18 +468,31 @@
           this.stamina = Math.min(this.maxStamina, this.stamina + 8);
           return { blocked: true, parried: true };
         }
-        // normal block: heavy mitigation, costs stamina (less with Iron Guard)
-        if (this.stamina > 4) {
-          this.stamina -= ironGuard ? 8 : 13;
+        // normal block: heavy mitigation, costs stamina (less with Iron Guard).
+        // A shield behind the block turns it near-impervious.
+        if (this.stamina > 4 || shield) {
+          this.stamina = Math.max(0, this.stamina - (shield ? 4 : ironGuard ? 8 : 13));
           this.staminaRegenDelay = 0.9;
           G.audio.block();
           this.viewShake = 0.4;
-          amount *= 0.15;
+          amount *= shield ? 0.06 : 0.15;
           this.hp -= amount;
           eng.world.flashDamage();
           if (this.hp <= 0) this._die();
           return { blocked: true };
         }
+      }
+      // shield's passive guard: soak melee even without an active block, and
+      // (unlike a bare parry) turn aside arrows caught on its face
+      if (shield) {
+        this.stamina = Math.max(0, this.stamina - (opts.type === 'arrow' ? 3 : 6));
+        G.audio.block();
+        this.viewShake = 0.3;
+        amount *= opts.type === 'arrow' ? 0.12 : 0.28;
+        this.hp -= amount;
+        eng.world.flashDamage();
+        if (this.hp <= 0) this._die();
+        return { blocked: true };
       }
 
       this.hp -= amount;

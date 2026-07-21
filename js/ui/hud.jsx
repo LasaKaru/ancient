@@ -152,6 +152,8 @@
             h('div', { className: 'fill stamina', style: { width: (stFrac * 100) + '%', opacity: snap.exhausted ? 0.45 : 1 } }))),
         h('div', { className: 'hud-repute' },
           (snap.herbs > 0 ? `🌿 ${snap.herbs}   ` : '') +
+          (snap.javelins > 0 ? `🎯 ${snap.javelins}   ` : '') +
+          (snap.shield ? '🛡 guard   ' : '') +
           (snap.repute > 0 ? `Renown ${snap.repute}` : '') +
           (snap.skillPts > 0 ? `  ·  ${snap.skillPts} to spend (K)` : '')),
       ) : null,
