@@ -1,4 +1,4 @@
-# RAJARATA: DUTUGEMUNU'S WAR — Development Roadmap
+# WARRIORS OF TAPROBANE — Development Roadmap
 
 **Vision:** grow the current single-campaign vertical slice (v0.1, playable today) into
 *Chronicles of Lanka* — an Assassin's-Creed-style, open-era historical action series
@@ -28,12 +28,12 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 |---|---|---|---|
 | v0.1 | *Ruwanwelisaya* | ✅ shipped | 6-level Dutugemunu campaign, FPS combat, AI, settings, procedural audio |
 | v0.2 | *Armoury* | ✅ shipped | Spear/axe/mace/dagger, 9-skill Renown tree, herb healing, threat ring, rally, rideable war elephants, wildlife & flora pass (pulled forward from v0.3 §2.4) |
-| v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun, ✅ **weather** (monsoon rain / dust / heat-haze), ✅ **more fauna** (monkeys, buffalo, crocodiles), ✅ **full day/night arc** (moon, stars, moonlit night raid); ☐ war-camp hub, crowds |
-| v0.4 | *Taprobane* | ◐ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch); ☐ save slots, in-game M map |
-| v0.5 | *Shadows* | ◐ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault; ☐ full ledge climbing, finisher animations, crowds |
+| v0.3 | *Kandula* | ✅ shipped | ✅ Realism presets (+ friendly-fire / herb dials), ✅ third-person mode (V), ✅ campaign day counter, ✅ **weather** (rain / dust / heat-haze), ✅ **more fauna** (monkeys, buffalo, crocodiles), ✅ **full day/night arc** (moon, stars, night raid), ✅ **civilian crowds**, ✅ **more architecture**, ✅ **war-camp hub** |
+| v0.4 | *Taprobane* | ✅ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch), ✅ **in-game M map** (parchment mission chart), ✅ **save slots** (three independent campaigns), ✅ **sea-lane invasion arrows** |
+| v0.5 | *Shadows* | ✅ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault, ✅ **full ledge climbing**, ✅ **assassination/riposte finishers**, ✅ **social-blend crowds** |
 | v0.6 | *Chronicles I* | ◐ shipped | ✅ Two playable era campaigns from the map: Gajabahu's Crossing (~120 CE) and the Liberation of Polonnaruwa (1070); ☐ remaining Chronicles I rows |
 | v0.7 | *Chronicles III (early)* | ◐ shipped | ✅ **Yapahuwa & the Tooth** (1283, Kurunegala era) — a relic-escort defense up the rock stair; ☐ Dambadeniya Shield, Kotte Rising |
-| v0.8 | *Chronicles II* | ☐ planned | Parakramabahu's Wars, the Invasion of Kalinga Magha |
+| v0.8 | *Chronicles II* | ◐ shipped | ✅ **The Broken Throne** (1215) — the last stand at Polonnaruwa against Kalinga Magha, an honest fighting withdrawal that saves the Sacred Tooth; ☐ Parakramabahu's Wars |
 | v0.9 | *Chronicles IV (early)* | ◐ shipped | ✅ **Battle of Mulleriyawa** (1559) — the first gunpowder enemies (`AI_TYPES.gunner`, telegraphed musket reload) and Portuguese armour; ✅ **The Passes of 1803** (First Anglo-Kandyan War) — a jungle ambush against British redcoat gunners; ☐ Kandyan–Dutch wars, the Uva Rising finale |
 | v1.0 | *One Island* | ◐ shipped | ✅ **Legends of the King** — the "War of Ages" arena where Dutugemunu faces any age's foe (Chola/Pandya/Kandy/Portuguese/British), explicitly framed as legend; ✅ **polish & performance pass** — FPS/frame-time meter, opt-in adaptive quality (steps the preset down on sustained low FPS), first-launch hardware quality auto-detect, and auto-pause when the tab is hidden; ☐ further campaign polish |
 | v1.1 | *Brothers-in-Arms* | ◐ shipped | ✅ **Phase M1** async multiplayer: seeded Challenge Codes (same fight for everyone) + per-faction leaderboards + daily-seed challenge + ✅ **ghost replays** (record your best run through a code, race its translucent spectre next time); ☐ P2P co-op, duel PvP |
@@ -102,7 +102,9 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
 - ✅ HUD minimalism (hides compass/tracker/threat-ring for diegetic play)
 - ✅ arrow physics drop severity, ✅ enemy awareness sharpness, ✅ low-vitality limp
   (realistic preset)
-- ☐ friendly fire on/off, herb scarcity dial
+- ✅ **friendly fire** on/off (your own steel/arrows can wound allies — on by default only
+  on the realistic preset) and a **herb-abundance dial** (0.5 sparse … 1.5 plentiful,
+  scaling the pouch cap and the starting handful; realistic is stingy, arcade generous)
 
 ### 2.2 Third-person mode (✅ shipped v0.3 — core)
 
@@ -125,15 +127,23 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   each victory advances the calendar by that chapter's march (stored in the save).
 - ☐ Missions locked to time (night infiltration, dawn siege); optional side
   missions consume days.
-- ☐ War-camp hub scene between missions: talk to the Ten Giants, spend skills, choose
-  the next march on the field map.
+- ✅ **War-camp hub** between missions (`js/ui/warCamp.jsx`): after a mainline chapter you
+  rest at the camp — take counsel with the **Ten Giants** (the Dasa Maha Yodhayo, each with
+  a trait and a line), spend Renown on skills, and choose to march on to the next chapter
+  or turn to the field map.
 
 ### 2.4 "Very ancient environment" density pass (◐ — flora & fauna shipped early in v0.2)
 
-- ☐ Populated settlements: civilian crowds with daily-routine schedules (market, wells,
-  paddy work, temple worship — AC-style living streets).
-- ☐ More architecture: vatadage shrines, bodhigara, stone bridges, cave temples,
-  irrigation canals & sluices (bisokotuwa), city walls with working gates.
+- ✅ Populated settlements: **ambient civilian crowds** (`js/entities/crowd.js`) who wander
+  a small daily beat — idle at a well, tend a stall (work posture), stroll a lane — and
+  scatter in panic when battle erupts or a warrior sprints past. Authored into the sacred-
+  city tutorial (a living street to blend into); any level can add `crowd: {…}`.
+- ✅ More architecture (`js/engine/terrain.js` `Build.*`): **vatadage** (circular relic-house
+  — terraces, pillar rings, a central dagoba, moonstone entrances), **bodhigara** (railed
+  bo-tree shrine), **stone bridge** (walkable deck on piers), **bisokotuwa sluice** (the
+  ancient valve-pit + channel) and a **rock cave-temple**. Placed in the sacred city
+  (vatadage, bodhigara, cave-temple) and the village (bridge over the tank, sluice at the
+  paddy bund). City walls with working gates already ship (`Build.gatehouse`).
 - ✅ Wildlife (v0.2): peafowl that fan their tails and spotted deer that wander and
   flee from battle; **rideable war elephants** (mount F, WASD drive, trample) in the
   city, the siege and the stupa defense. ✅ (v0.3) **monkeys** (curling tail, skittish),
@@ -162,7 +172,9 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   public-domain scan (e.g. the 1686 Mallet engraving).
 - ✅ Kingdom regions labelled: Rajarata/Anuradhapura, Ruhuna, Polonnaruwa, Jaffna,
   Dambadeniya–Kurunegala, Sigiriya, Kandy, Kotte, Sitawaka + central highlands, rivers.
-  ☐ Sea-lane invasion arrows.
+  ✅ **Sea-lane invasion arrows** — dashed, labelled routes engraved on the chart (Chola ·
+  Pandya across the Palk Strait, Kalinga Magha from the Bay of Bengal, European fleets from
+  the south-west).
 - ✅ **Select-a-war UI**: 16 conflicts pinned on the chart, each with a chronicle-page
   brief (date, combatants, historical outcome, summary) sourced from the List of wars
   involving Sri Lanka; the Dutugemunu pin launches the playable campaign chapters, the
@@ -170,28 +182,41 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   Completed chapters show ✓ seals.
 - ✅ Era rail (543 BCE → 1818 CE) filtering conflicts by chronicle period —
   Anuradhapura → Polonnaruwa → Transitional → Kandyan → British.
-- ☐ Multiple **save slots** + per-campaign progress tracking.
+- ✅ Multiple **save slots** (`G.Saves` in `js/app.js`): three independent campaigns keyed
+  in localStorage, chosen from a **Save Slots** menu that shows each slot's hero, day and
+  wins; a legacy single-save migrates into slot 0 so returning players keep their progress.
 
-### 3.2 In-game map (☐ new)
+### 3.2 In-game map (✅ shipped v0.4)
 
-- ☐ `M` opens a regional hand-drawn map of the current mission area (objectives, camps,
-  discovered points of interest), same parchment art language.
+- ✅ `M` opens a regional hand-drawn **parchment map** (`js/ui/regionMap.jsx`) of the
+  current mission area — the player's position + facing, objective markers (gold diamonds,
+  ✓-sealed when done), the entry point, and enemy presence — in the same engraved,
+  aged-parchment language as the Taprobane chart, with a compass rose. Pauses the fight;
+  Esc or M closes it. Fed by `engine.getMapData()`.
 
 ---
 
 ## 4 · v0.5 — "Shadows": Assassin's-Creed-style traversal & stealth
 
-- ◐ **Climbing**: ✅ mantle/vault (SPACE hoists you over barricades, crates and onto
-  ledges up to ~1.9m when something blocks the way). ☐ Full ledge-grab wall climbing.
+- ✅ **Climbing**: mantle/vault (SPACE hoists you over barricades, crates and onto ledges
+  up to ~1.9m), and now a **full ledge-grab climb** — a taller wall (~1.9–3.7m) with a
+  clear lip and headroom is latched and pulled up over in a short scripted climb (a real
+  stamina cost; input is suspended for the pull-up), while low obstacles still mantle.
 - ✅ **Parkour-lite**: vaulting barricades & low walls via the mantle system.
 - ✅ **Stealth kit** (v0.5): crouch-takedowns from behind unaware enemies (knife kills
   outright, heavier blades wound gravely — both silent), corpse awareness (patrols that
   spot a fallen brother go searching), stone-still crouch concealment, whistle lure (B).
-  ☐ Social blend in civilian crowds (needs §2.4 crowds).
+  ✅ **Social blend** in civilian crowds (v0.5): stand still and unremarkable among two or
+  more civilians and the enemy's spotting range is halved (`engine.playerBlended` →
+  `enemyAI._canSee`); sprinting, drawing or striking breaks cover. A 👤 blended HUD cue.
 - ✅ **Warrior Sense** (X): stamina-costed pulse marking enemies and the objective
   through walls for 6s; disabled on the realistic preset by design.
-- ☐ Assassination/parry **finisher animations** (both cameras).
-- ◐ Mission design pass: the village liberation is fully stealthable end-to-end.
+- ✅ Assassination/parry **finisher animations** (both cameras): a shared kill flourish
+  (`combat._doFinisher` + `PlayerRig.playFinisher`, a hard overhead chop in first person
+  and a strike on the third-person body, with a heavy view-punch and audio). Fires on a
+  stealth takedown (the **assassination**) and on a **riposte** — a strike into a
+  staggered foe (e.g. one you've just perfect-parried) lands at 2.2× for the kill.
+- ◐ Mission design pass: the village liberation is fully stealthable end-to-end (now at night).
 
 ---
 
@@ -204,7 +229,7 @@ chronicles (Dipavamsa/Mahavamsa/Culavamsa/Rajavaliya) and the Wikipedia war list
 ### v0.6 — Chronicles I: The Anuradhapura Wars (Chola & Pandya)
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
-| ☐ **Vijithapura** (162–161 BCE) | Dutugemunu *(extends shipped campaign)* | Four-month siege of Vijithapura, Kandula at the south gate |
+| ✅ **Vijithapura** (162–161 BCE) — *shipped as core Chapter III* | Dutugemunu | The four-month siege of Vijithapura / Vijitanagara with Kandula at the gate is the shipped campaign's Chapter III ("The Gates of Vijitanagara"). |
 | ✅ **Gajabahu's Crossing** (c. 120 CE) — *shipped v0.6* | Gajabahu I fights beside you | Beach landing among the war-canoes, storming the palisaded Chola camp, breaking the captive pens (freed captives run for the boats), slaying the camp commander, optional store-burning |
 | ☐ **The Pandyan Sack** (846 CE) | Defender of Anuradhapura under Sena I | Fighting withdrawal, Battle of Mahatalita, save the relics |
 | ☐ **Udaya's Counterstroke** (946 CE) | General Viduragga | Repel Parantaka I, cross-strait raid to recover the plunder |
@@ -221,7 +246,7 @@ chronicles (Dipavamsa/Mahavamsa/Culavamsa/Rajavaliya) and the Wikipedia war list
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
 | ☐ **Parakramabahu's Wars** (1153–1186) | Parakramabahu the Great's champion | Unification of the three lands, overseas expeditions (Pagan war 1164, Pandyan intervention 1169–77) |
-| ☐ **The Broken Throne** (1202–1215) | Last guard of Polonnaruwa | Chola raids of 1202/1208/1210, Queen Lilavati's fall, stand against Kalinga Magha's invasion (1215) |
+| ✅ **The Broken Throne** (1215) — *shipped* | Last guard of Polonnaruwa | The night of Magha's sack, played as an honest fighting withdrawal: hold the citadel gate, escort the Relic-bearer over the causeway to the south sally-port, hold the crossing, and cut down Magha's war-captain — the city falls (history's own outcome) but the Sacred Tooth and the royal line escape south. Launched from the **Kalinga Magha** map pin. |
 
 ### v0.9 — Chronicles IV: Muskets on the Shore (European wars & **Kandy**) — ◐ shipped
 | Campaign | Playable era/hero | Key missions |
@@ -293,14 +318,22 @@ Browser + no-build-step makes this the hardest pillar; staged to keep each relea
 
 - ◐ **Performance:** instancing/LOD exist; add merged static batches per level, worker
   thread for physics, quality autotuner, mobile/touch controls investigation.
-- ◐ **Save system:** extend `G.GameState` for slots, skill trees, calendar, map progress.
-- ◐ **Asset pipeline:** keep every procedural asset swappable (see `assets/README.md`);
-  add optional glTF character/architecture packs as they become available (CC0 only).
-- ☐ **Localisation:** externalise strings; Sinhala and Tamil as first targets.
+- ✅ **Save system:** `G.GameState` carries slots (`G.Saves`), the skill tree, the campaign
+  calendar and map progress — three independent save slots with legacy migration.
+- ◐ **Asset pipeline:** every procedural asset stays swappable (see `assets/README.md`);
+  ✅ **rebrand to _Warriors of Taprobane_** (the game outgrew a single king's war — it now
+  spans every era) with wired optional **key-art slots** (menu backdrop, loading backdrop,
+  per-campaign briefing banners via `js/ui/art.jsx`) that fade in over the procedural look
+  when a file is present and fall back silently when absent; ☐ optional glTF packs (CC0).
+- ◐ **Localisation:** ✅ scaffold shipped (`js/i18n.js`) — a `G.t('key')` string table with
+  per-key English fallback, a persisted language choice and a Settings selector; the main
+  menu is wired as the worked example with seed **Sinhala** and **Tamil** translations
+  (pending native review). ☐ extend the coverage to the full UI.
 - ☐ **Testing:** grow the headless Playwright suite (already used for v0.1) into a CI
   gate per level and per campaign.
-- ☐ **Historical review:** each Chronicles drop gets a sources note in-game (chronicle
-  citations on briefing cards, like v0.1's credits note separating history from legend).
+- ✅ **Historical review:** every playable level carries a **chronicle-sources** citation
+  (Mahavamsa / Culavamsa / Rajavaliya / early European accounts) shown on its briefing
+  card, extending v0.1's credits note that separates history from legend.
 
 ---
 

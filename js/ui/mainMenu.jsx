@@ -77,8 +77,8 @@
   }
 
   /* ------------------------- menu panels ------------------------- */
-  function MainMenu({ progress, onNewGame, onContinue, onChapter, onSettings, onMap, onLegends }) {
-    const [view, setView] = React.useState('root'); // root | newgame | chapters | credits
+  function MainMenu({ progress, onNewGame, onContinue, onChapter, onSettings, onMap, onLegends, onSelectSlot, onDeleteSlot, activeSlot }) {
+    const [view, setView] = React.useState('root'); // root | newgame | chapters | credits | slots
     const [name, setName] = React.useState(progress.profile?.name || 'Abhaya');
     const [color, setColor] = React.useState(progress.profile?.armorColor || ARMOR_COLORS[0].hex);
     const click = (fn) => () => { G.audio.ensure(); G.audio.ui(); fn(); };
@@ -117,10 +117,27 @@
           }, `${def.chapter} — ${def.title}` + (locked ? '  🔒' : ''));
         }),
         h('button', { className: 'menu-btn small', onClick: click(() => setView('root')) }, 'Back'));
+    } else if (view === 'slots') {
+      const slots = (G.Saves ? G.Saves.list() : []);
+      body = h(React.Fragment, null,
+        h('div', { className: 'menu-subtitle', style: { marginBottom: 6 } }, 'Choose a campaign'),
+        slots.map(({ slot, data }) => h('div', { key: slot, className: 'slot-row' + (slot === activeSlot ? ' active' : '') },
+          h('button', {
+            className: 'menu-btn small', style: { flex: 1, textAlign: 'left', textTransform: 'none', letterSpacing: 0.4 },
+            onClick: click(() => { onSelectSlot && onSelectSlot(slot); setView('root'); }),
+          }, data
+            ? `Slot ${slot + 1} · ${data.name} — Day ${data.day}, ${data.completed} won${slot === activeSlot ? '  ◄' : ''}`
+            : `Slot ${slot + 1} · — empty —${slot === activeSlot ? '  ◄' : ''}`),
+          data ? h('button', {
+            className: 'menu-btn small danger', style: { flex: '0 0 auto', width: 40 },
+            title: 'Erase this campaign',
+            onClick: click(() => { if (onDeleteSlot) onDeleteSlot(slot); }),
+          }, '✕') : null)),
+        h('button', { className: 'menu-btn small', onClick: click(() => setView('root')) }, 'Back'));
     } else if (view === 'credits') {
       body = h('div', { className: 'credits-body' },
         h('h3', null, 'A Historical Action Tale'),
-        h('div', { className: 'big' }, 'Rajarata: Dutugemunu\'s War'),
+        h('div', { className: 'big' }, 'Warriors of Taprobane'),
         h('h3', null, 'Inspired By'),
         h('div', null, 'The Mahavamsa chronicle · the sacred city of Anuradhapura', h('br'), 'the Ruwanwelisaya Maha Seya · the Dasa Maha Yodhayo', h('br'), 'and the enduring legend of Sigiriya'),
         h('h3', null, 'A Note On History'),
@@ -130,22 +147,25 @@
         h('button', { className: 'menu-btn small', style: { marginTop: 18 }, onClick: click(() => setView('root')) }, 'Back'));
     } else {
       body = h(React.Fragment, null,
-        h('button', { className: 'menu-btn primary', onClick: click(() => setView('newgame')) }, 'New Game'),
-        h('button', { className: 'menu-btn', disabled: !hasSave, onClick: click(onContinue) }, 'Continue'),
-        onMap ? h('button', { className: 'menu-btn', onClick: click(onMap) }, 'Campaign Map — Taprobane') : null,
-        onLegends ? h('button', { className: 'menu-btn', onClick: click(onLegends) }, '✦ Legends of the King') : null,
-        h('button', { className: 'menu-btn', disabled: !hasSave, onClick: click(() => setView('chapters')) }, 'Chapters'),
-        h('button', { className: 'menu-btn', onClick: click(onSettings) }, 'Settings'),
-        h('button', { className: 'menu-btn', onClick: click(() => setView('credits')) }, 'Credits'),
+        h('button', { className: 'menu-btn primary', onClick: click(() => setView('newgame')) }, G.t('menu.newGame')),
+        h('button', { className: 'menu-btn', disabled: !hasSave, onClick: click(onContinue) }, G.t('menu.continue')),
+        onMap ? h('button', { className: 'menu-btn', onClick: click(onMap) }, G.t('menu.map')) : null,
+        onLegends ? h('button', { className: 'menu-btn', onClick: click(onLegends) }, G.t('menu.legends')) : null,
+        h('button', { className: 'menu-btn', disabled: !hasSave, onClick: click(() => setView('chapters')) }, G.t('menu.chapters')),
+        onSelectSlot ? h('button', { className: 'menu-btn', onClick: click(() => setView('slots')) }, `${G.t('menu.saveSlots')} (${(activeSlot | 0) + 1})`) : null,
+        h('button', { className: 'menu-btn', onClick: click(onSettings) }, G.t('menu.settings')),
+        h('button', { className: 'menu-btn', onClick: click(() => setView('credits')) }, G.t('menu.credits')),
         h('div', { className: 'menu-footnote' },
-          'Ancient Ceylon, 2nd century BCE. One island, two kings —', h('br'), 'and the war that raised the Great Stupa.'));
+          'Twenty-two centuries of war upon one island —', h('br'), 'from Dutugemunu the Great to the last kings of Kandy.'));
     }
 
     return h('div', { className: 'screen' },
       h(MenuCanvasBoundary),
+      G.UI.KeyArtBg ? h(G.UI.KeyArtBg, { name: 'menu.jpg', dim: 0.5 }) : null,
       h('div', { className: 'panel', style: { minWidth: 420 } },
-        h('div', { className: 'menu-title' }, 'RAJARATA'),
-        h('div', { className: 'menu-subtitle' }, "Dutugemunu's War"),
+        h('div', { className: 'menu-eyebrow' }, 'Warriors of'),
+        h('div', { className: 'menu-title' }, 'TAPROBANE'),
+        h('div', { className: 'menu-subtitle' }, G.t('menu.subtitle')),
         h('div', { className: 'menu-rule' }),
         body));
   }

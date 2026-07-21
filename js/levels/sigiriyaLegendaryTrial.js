@@ -41,6 +41,7 @@
     chapter: 'A Legend Apart',
     title: 'The Trial of the Lion Rock',
     location: 'Sigiriya — the Sky Fortress (a legend set centuries later)',
+    sources: 'Culavamsa ch. 39 (Kashyapa and the Lion Rock, 5th c. CE) — retold here as legend, ~600 years after Dutugemunu.',
     framing:
       'CENTURIES LATER, A LEGEND ENDURES… Long after Dutugemunu slept beneath ' +
       'his great stupas, another king — Kashyapa — raised a palace in the clouds ' +

@@ -173,6 +173,7 @@
       this.shieldModel.visible = false;
       this._bashT = 1;                 // bash lunge blend (0→1)
       this._throwT = 1;                // javelin throw blend
+      this._finisherT = 1;             // finisher chop blend (v0.5)
       this.group.add(this.shieldModel);
 
       this.group.traverse((c) => { if (c.isMesh) { c.castShadow = false; c.frustumCulled = false; } });
@@ -209,6 +210,7 @@
     playRelease() { this.releaseT = 0; if (this.engine.tpMode) this.tpBody.playRelease(); }
     playShieldBash() { this._bashT = 0; if (this.engine.tpMode) this.tpBody.playStrike(); }
     playThrow() { this._throwT = 0; if (this.engine.tpMode) this.tpBody.playStrike(); }
+    playFinisher() { this._finisherT = 0; if (this.engine.tpMode) this.tpBody.playStrike(); }
 
     update(dt) {
       const eng = this.engine, combat = eng.combat, player = eng.player;
@@ -288,6 +290,12 @@
         } else if (player && player.blocking) {
           px = 0.1; py = -0.16; pz = -0.42;
           rx = 0.25; ry = 0.9; rz = 1.25;   // weapon held across the view
+        }
+        // finisher flourish: a hard overhead chop laid over whatever pose we're in
+        this._finisherT = Math.min(1, this._finisherT + dt / 0.45);
+        if (this._finisherT < 1) {
+          const ff = Math.sin(U.clamp(this._finisherT, 0, 1) * Math.PI);
+          py += ff * 0.16; pz -= ff * 0.14; rx -= ff * 1.7; rz += ff * 0.25;
         }
         this.swordArm.position.set(px + swayX, py + swayY + bob, pz);
         this.swordArm.rotation.set(rx, ry, rz);

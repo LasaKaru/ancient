@@ -1,4 +1,4 @@
-# Rajarata: Dutugemunu's War — Asset Slots
+# Warriors of Taprobane — Asset Slots
 
 The game ships **fully procedural**: every texture is painted onto canvases at
 startup, every model is built from primitives, and every sound is synthesised
@@ -70,6 +70,33 @@ substitute glTF models (via `GLTFLoader` from `three/addons`):
 | Slot | Path | Notes |
 |---|---|---|
 | Antique chart | `assets/map/taprobane.jpg` | Auto-detected by `js/ui/campaignMap.jsx`; a public-domain scan such as the 1686 Mallet *"Ancienne Isle Taprobane"* engraving drops in perfectly. Portrait orientation ≈ 900×1150. Without it, a procedurally engraved chart is painted at runtime. |
+
+## Key art (rebrand — "Warriors of Taprobane")
+
+Drop any of these into `assets/art/` and they fade in over the procedural
+look; leave them out and nothing breaks. Slots are wired in `js/ui/art.jsx`
+(`G.UI.KeyArtBg` for full-screen backdrops, `G.UI.ArtPanel` for briefing
+banners). Landscape ≈ 1200×800 works well; briefing banners are cropped to a
+wide strip. **Only use art you have the rights to.**
+
+| Slot | Path | Shown on |
+|---|---|---|
+| Main-menu key art | `assets/art/menu.jpg` | behind the title panel on the main menu (over the 3D dusk scene) |
+| Loading backdrop | `assets/art/loading.jpg` | behind the loading screen (CSS backdrop) |
+| Mission briefing | `assets/art/brief_<levelId>.jpg` | banner at the top of that level's brief card (a level may override with `art:` in its def) |
+
+Level ids for the briefing slots: `anuradhapura`, `village`, `siege`, `duel`,
+`stupa`, `sigiriya`, plus the standalone chronicles (`gajabahu`, `vijayabahu`,
+`yapahuwa`, `mulleriyawa`, `anglokandyan`) and the Legends arena (`warofages`).
+
+Suggested mapping for the concept images shared during the rebrand:
+
+| Image | Best slot |
+|---|---|
+| Composite Taprobane battle poster (elephant rider · Lion Rock · monsoon paddy) | `assets/art/menu.jpg` (and/or `loading.jpg`) — the broad "all the wars" hero shot |
+| Aged Taprobane chart with kingdom labels + ships + sea-serpent | `assets/map/taprobane.jpg` |
+| Axe-warrior on a war elephant before the great stupa | `assets/art/brief_siege.jpg` (Dutugemunu's Kandula siege) |
+| Night jungle / ruined temple with a crouching climber | `assets/art/brief_sigiriya.jpg` (the Lion-Rock legend) |
 
 ## HDRI / environment
 

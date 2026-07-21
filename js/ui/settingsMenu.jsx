@@ -19,6 +19,7 @@
     camera: 'First ⇄ third person',
     lure: 'Whistle lure', sense: 'Warrior sense',
     shield: 'Raise / lower shield', javelin: 'Throw javelin',
+    map: 'Regional map',
   };
 
   function RealismPresetRow({ onChanged }) {
@@ -66,6 +67,16 @@
       className: 'toggle' + (v ? ' on' : ''),
       onClick: () => { G.audio.ui(); setV(!v); G.Settings.set(path, !v); },
     }, h('div', { className: 'knob' }));
+  }
+  function LangRow() {
+    const [, self] = React.useReducer((x) => x + 1, 0);
+    if (!G.I18N) return null;
+    const cur = G.I18N.lang;
+    return h('div', { className: 'seg' },
+      G.I18N.langs().map((l) => h('button', {
+        key: l, className: cur === l ? 'on' : '',
+        onClick: () => { G.audio.ui(); G.I18N.setLang(l); self(); },
+      }, G.I18N.LANG_NAMES[l] || l)));
   }
 
   function ControlsTab() {
@@ -130,8 +141,10 @@
         h(Row, { label: 'Enemy awareness', key: 'ra' + G.Settings.data.realism.preset }, h(Slider, { path: 'realism.enemyAwareness', min: 0.5, max: 1.5, step: 0.05, fmt: (v) => '×' + v.toFixed(2) })),
         h(Row, { label: 'Arrow drop (gravity)', key: 'rr' + G.Settings.data.realism.preset }, h(Slider, { path: 'realism.arrowDrop', min: 0.5, max: 1.6, step: 0.05, fmt: (v) => '×' + v.toFixed(2) })),
         h(Row, { label: 'Minimal HUD (diegetic)', key: 'rh' + G.Settings.data.realism.preset }, h(Toggle, { path: 'realism.hudMinimal' })),
+        h(Row, { label: 'Friendly fire', key: 'rf' + G.Settings.data.realism.preset }, h(Toggle, { path: 'realism.friendlyFire' })),
+        h(Row, { label: 'Herb abundance', key: 'rhb' + G.Settings.data.realism.preset }, h(Slider, { path: 'realism.herbs', min: 0.5, max: 1.5, step: 0.1, fmt: (v) => Math.round(v * 100) + '%' })),
         h('div', { className: 'settings-note' },
-          'Applies instantly, mid-fight if you like. Realistic mode also slows your legs below a quarter vitality — chew your herbs. Hand-tuning any dial switches the preset to "custom".'));
+          'Applies instantly, mid-fight if you like. Realistic mode also slows your legs below a quarter vitality — chew your herbs — turns on friendly fire (mind your allies), and makes herbs scarce. Hand-tuning any dial switches the preset to "custom".'));
     } else if (tab === 'controls') {
       body = h(ControlsTab);
     } else if (tab === 'audio') {
@@ -148,6 +161,7 @@
         h(Row, { label: 'High-contrast HUD outline' }, h(Toggle, { path: 'access.colorblind' })),
         h(Row, { label: 'Enemy-nearby warning ring' }, h(Toggle, { path: 'access.threatRing' })),
         h(Row, { label: 'Auto-pause when tab is hidden' }, h(Toggle, { path: 'access.autoPause' })),
+        h(Row, { label: 'Language' }, h(LangRow)),
         h('div', { className: 'settings-note' },
           'High-contrast mode recolours the vitality and stamina bars (orange / blue) and strengthens HUD outlines for colour-blind visibility. Auto-pause halts the battle the moment you switch away, so nothing lands a blow while you\'re gone.'));
     }

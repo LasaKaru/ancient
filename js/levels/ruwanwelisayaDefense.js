@@ -26,6 +26,7 @@
     chapter: 'Chapter V',
     title: 'The Great Stupa Rises',
     location: 'Ruwanwelisaya construction grounds, Anuradhapura',
+    sources: 'Mahavamsa chs. 28–30 (the raising of the Ruwanwelisaya Maha Seya).',
     framing:
       'The war is won; the harder work begins. On the sanctified ground of ' +
       'Anuradhapura, King Dutugemunu raises the Ruwanwelisaya — the Great Stupa, ' +

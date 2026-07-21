@@ -22,6 +22,7 @@
     chapter: 'Chronicles IV',
     title: 'Battle of Mulleriyawa',
     location: 'The marshes east of Colombo, 1559 CE',
+    sources: 'Rajavaliya; Queirós, The Temporal and Spiritual Conquest of Ceylon (Mulleriyawa, 1559).',
     framing:
       'Twelve years of war between Sitawaka and the Portuguese come to this ' +
       'field. Their line has muskets — slow to load, murderous at range. Ours ' +

@@ -98,7 +98,8 @@
       id: 'magha', era: 'polonnaruwa', at: [0.53, 0.34], year: '1215',
       name: 'The Invasion of Kalinga Magha', sides: 'Polonnaruwa Kingdom vs. Eastern Ganga dynasty (Kalinga Magha)',
       result: 'Defeat — Rajarata abandoned',
-      desc: 'Magha\'s host sacked Polonnaruwa, burned the libraries, and drove the court south — the bitter end of the Rajarata civilisation and the beginning of the drift to the south-west.',
+      desc: 'Magha\'s host sacked Polonnaruwa, burned the libraries, and drove the court south — the bitter end of the Rajarata civilisation and the beginning of the drift to the south-west. Play the last stand at the citadel: hold long enough for the Sacred Tooth and the royal line to escape over the causeway.',
+      playable: 'brokenThrone',
     },
     {
       id: 'tambralinga', era: 'transitional', at: [0.37, 0.55], year: '1247 & 1262',
@@ -275,6 +276,27 @@
       i ? c.lineTo(x, y) : c.moveTo(x, y);
     }
     c.stroke();
+
+    // sea-lane invasion arrows (v0.4 §3.1) — the routes the island's foes sailed
+    const seaArrow = (x0, y0, x1, y1, text) => {
+      c.save();
+      c.strokeStyle = 'rgba(140,40,25,0.72)'; c.fillStyle = 'rgba(140,40,25,0.72)'; c.lineWidth = 2.2;
+      const ax0 = x0 * W, ay0 = y0 * H, ax1 = x1 * W, ay1 = y1 * H;
+      const mx = (ax0 + ax1) / 2, my = (ay0 + ay1) / 2 - Math.hypot(ax1 - ax0, ay1 - ay0) * 0.2;
+      c.setLineDash([7, 5]);
+      c.beginPath(); c.moveTo(ax0, ay0); c.quadraticCurveTo(mx, my, ax1, ay1); c.stroke();
+      c.setLineDash([]);
+      const ang = Math.atan2(ay1 - my, ax1 - mx);
+      c.beginPath(); c.moveTo(ax1, ay1);
+      c.lineTo(ax1 - Math.cos(ang - 0.42) * 13, ay1 - Math.sin(ang - 0.42) * 13);
+      c.lineTo(ax1 - Math.cos(ang + 0.42) * 13, ay1 - Math.sin(ang + 0.42) * 13);
+      c.closePath(); c.fill();
+      if (text) { c.font = 'italic 11px Georgia'; c.textAlign = 'center'; c.fillText(text, mx, my - 5); }
+      c.restore();
+    };
+    seaArrow(0.30, 0.04, 0.44, 0.19, 'Chola · Pandya');       // South India across the strait
+    seaArrow(0.87, 0.23, 0.60, 0.37, 'Kalinga Magha');         // from the Bay of Bengal
+    seaArrow(0.08, 0.82, 0.30, 0.66, 'European fleets');       // Portuguese / Dutch / British
 
     // border with degree ticks (engraved plate frame)
     c.strokeStyle = '#3a2c14'; c.lineWidth = 3;

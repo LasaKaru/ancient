@@ -18,6 +18,7 @@
     chapter: 'Chapter IV',
     title: 'The Field of Kings',
     location: 'The plain before Anuradhapura',
+    sources: 'Mahavamsa ch. 25 (the single combat of Dutugemunu and Elara on their elephants).',
     framing:
       'The last fortress has fallen. Between Dutugemunu and the throne of ' +
       'Anuradhapura stands only Elara himself — old, upright, and unbowed. ' +

@@ -1245,5 +1245,133 @@
     engine.addStaticBoxQuat(mid, [width / 2, 0.12, slopeLen / 2 + 0.3], yaw, -pitch);
     return grp;
   };
+
+  /* --- vatadage: a circular relic-house (raised terraces, pillar rings, a
+     small central dagoba, moonstone entrances at the cardinal steps) --- */
+  Build.vatadage = function (engine, { pos = [0, 0], radius = 7, yaw = 0 } = {}) {
+    const lib = M.library();
+    const grp = new THREE.Group();
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius + 0.4, 0.6, 32), lib.graniteDark);
+    base.position.y = 0.3; base.receiveShadow = true; grp.add(base);
+    const terr = new THREE.Mesh(new THREE.CylinderGeometry(radius - 1.2, radius - 1, 0.5, 32), lib.stone);
+    terr.position.y = 0.85; terr.receiveShadow = true; grp.add(terr);
+    const m4 = new THREE.Matrix4();
+    for (const [ringR, n, h] of [[radius - 0.6, 32, 3.2], [radius - 2.4, 20, 2.6]]) {
+      const inst = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.16, 0.18, h, 8), lib.stone, n);
+      for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2; m4.makeTranslation(Math.cos(a) * ringR, 0.9 + h / 2, Math.sin(a) * ringR); inst.setMatrixAt(i, m4); }
+      inst.castShadow = true; grp.add(inst);
+    }
+    const drum = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.32, radius * 0.34, 0.8, 20), lib.whitewash);
+    drum.position.y = 1.3; drum.castShadow = true; grp.add(drum);
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(radius * 0.34, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), lib.whitewash);
+    dome.position.y = 1.7; dome.castShadow = true; grp.add(dome);
+    const spire = new THREE.Mesh(new THREE.ConeGeometry(0.16, 1.1, 8), lib.whitewash);
+    spire.position.y = 1.7 + radius * 0.34 + 0.5; grp.add(spire);
+    grp.rotation.y = yaw; grp.position.set(pos[0], 0, pos[1]);
+    engine.scene.add(grp);
+    engine.addStaticCylinder([pos[0], 0.7, pos[1]], radius - 0.4, 1.4);
+    engine.occluders.push(base);
+    for (let k = 0; k < 4; k++) {
+      const a = yaw + k * Math.PI / 2;
+      Build.moonstone(engine, { pos: [pos[0] + Math.cos(a) * (radius + 0.7), pos[1] + Math.sin(a) * (radius + 0.7)], yaw: a + Math.PI / 2, r: 1.1 });
+    }
+    return grp;
+  };
+
+  /* --- bodhigara: a railed terrace enclosing a sacred bo-tree --- */
+  Build.bodhigara = function (engine, { pos = [0, 0], size = 6, yaw = 0 } = {}) {
+    const lib = M.library();
+    const grp = new THREE.Group();
+    const plat = new THREE.Mesh(new THREE.BoxGeometry(size, 0.6, size), lib.stone);
+    plat.position.y = 0.3; plat.receiveShadow = true; grp.add(plat);
+    // railing posts along the four edges
+    const per = Math.max(2, Math.round(size / 1.5));
+    const post = new THREE.InstancedMesh(new THREE.BoxGeometry(0.2, 0.9, 0.2), lib.graniteDark, per * 4);
+    const m4 = new THREE.Matrix4(); let idx = 0; const half = size / 2 - 0.15;
+    for (let e = 0; e < 4; e++) {
+      for (let i = 0; i < per; i++) {
+        const t = -half + (i / (per - 1)) * (half * 2);
+        const p = e === 0 ? [t, half] : e === 1 ? [t, -half] : e === 2 ? [half, t] : [-half, t];
+        m4.makeTranslation(p[0], 1.05, p[1]); post.setMatrixAt(idx++, m4);
+      }
+    }
+    post.castShadow = true; grp.add(post);
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, 3.2, 8), lib.trunk);
+    trunk.position.y = 2.2; trunk.castShadow = true; grp.add(trunk);
+    const canopy = new THREE.Mesh(new THREE.SphereGeometry(size * 0.5, 10, 8), lib.foliage);
+    canopy.position.y = 4.0; canopy.scale.set(1, 0.8, 1); canopy.castShadow = true; grp.add(canopy);
+    const altar = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 0.7), lib.whitewash);
+    altar.position.set(0, 0.85, size * 0.32); altar.castShadow = true; grp.add(altar);
+    grp.rotation.y = yaw; grp.position.set(pos[0], 0, pos[1]);
+    engine.scene.add(grp);
+    engine.addStaticBox([pos[0], 0.3, pos[1]], [size / 2, 0.35, size / 2], yaw);
+    engine.addStaticCylinder([pos[0], 1.6, pos[1]], 0.5, 3.2);
+    return grp;
+  };
+
+  /* --- stone bridge on piers (a walkable deck over a channel/tank) --- */
+  Build.bridge = function (engine, { from = [0, 0], to = [10, 0], width = 3, mat = null } = {}) {
+    const lib = M.library();
+    const len = Math.hypot(to[0] - from[0], to[1] - from[1]);
+    const cx = (from[0] + to[0]) / 2, cz = (from[1] + to[1]) / 2;
+    const yaw = Math.atan2(to[0] - from[0], to[1] - from[1]);
+    const grp = new THREE.Group();
+    const deckMat = mat || lib.stone;
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(width, 0.4, len), deckMat);
+    deck.position.y = 1.4; deck.receiveShadow = deck.castShadow = true; grp.add(deck);
+    const nPiers = Math.max(2, Math.round(len / 4));
+    for (let i = 0; i < nPiers; i++) {
+      const f = i / (nPiers - 1);
+      const pier = new THREE.Mesh(new THREE.BoxGeometry(width * 0.9, 1.4, 0.8), deckMat);
+      pier.position.set(0, 0.7, -len / 2 + len * f); pier.castShadow = true; grp.add(pier);
+    }
+    for (const s of [-1, 1]) {
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.5, len), lib.graniteDark);
+      rail.position.set(s * (width / 2 - 0.12), 1.85, 0); rail.castShadow = true; grp.add(rail);
+    }
+    grp.rotation.y = yaw; grp.position.set(cx, 0, cz);
+    engine.scene.add(grp);
+    engine.addStaticBox([cx, 1.4, cz], [width / 2, 0.2, len / 2], yaw);
+    return grp;
+  };
+
+  /* --- bisokotuwa sluice: the ancient valve-pit at a tank bund + stone channel --- */
+  Build.sluice = function (engine, { pos = [0, 0], yaw = 0 } = {}) {
+    const lib = M.library();
+    const grp = new THREE.Group();
+    for (const s of [-1, 1]) {
+      const jamb = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.4, 1.6), lib.graniteDark);
+      jamb.position.set(s * 1.2, 1.2, 0); jamb.castShadow = jamb.receiveShadow = true; grp.add(jamb);
+    }
+    const lintel = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.6, 1.6), lib.graniteDark);
+    lintel.position.y = 2.7; lintel.castShadow = true; grp.add(lintel);
+    const cist = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.75, 1.2, 10), lib.stone);
+    cist.position.set(0, 0.6, -1.2); cist.castShadow = true; grp.add(cist);
+    const chan = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.4, 4), lib.stone);
+    chan.position.set(0, 0.2, 2.4); chan.receiveShadow = true; grp.add(chan);
+    grp.rotation.y = yaw; grp.position.set(pos[0], 0, pos[1]);
+    engine.scene.add(grp);
+    engine.addStaticCylinder([pos[0], 0.6, pos[1]], 0.8, 1.2);
+    return grp;
+  };
+
+  /* --- cave temple: a leaning drip-ledge rock over a small shrine platform --- */
+  Build.caveTemple = function (engine, { pos = [0, 0], yaw = 0 } = {}) {
+    const lib = M.library();
+    const grp = new THREE.Group();
+    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(4, 0), lib.rock);
+    rock.scale.set(1.6, 1, 1.2); rock.position.set(0, 3.4, -1.6); rock.rotation.set(0.3, 0.4, 0.2);
+    rock.castShadow = rock.receiveShadow = true; grp.add(rock);
+    const plat = new THREE.Mesh(new THREE.BoxGeometry(4, 0.4, 3), lib.stone);
+    plat.position.y = 0.2; plat.receiveShadow = true; grp.add(plat);
+    const niche = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.6, 0.8), lib.graniteDark);
+    niche.position.set(0, 0.8, -0.9); niche.castShadow = true; grp.add(niche);
+    grp.rotation.y = yaw; grp.position.set(pos[0], 0, pos[1]);
+    engine.scene.add(grp);
+    engine.addStaticBox([pos[0], 0.2, pos[1]], [2, 0.3, 1.5], yaw);
+    engine.occluders.push(rock);
+    return grp;
+  };
+
   G.Terrain = Terrain;
 })();

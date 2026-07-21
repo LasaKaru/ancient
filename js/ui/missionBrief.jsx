@@ -11,6 +11,7 @@
   function MissionBrief({ level, onBegin, onBack }) {
     return h('div', { className: 'screen dim fade-in' },
       h('div', { className: 'panel brief-panel' },
+        G.UI.ArtPanel ? h(G.UI.ArtPanel, { name: (level.art || ('brief_' + level.id + '.jpg')), className: 'brief-art' }) : null,
         h('div', { className: 'brief-chapter' }, level.chapter || ''),
         h('div', { className: 'brief-title' }, level.title),
         h('div', { className: 'brief-location' }, level.location || ''),
@@ -22,6 +23,7 @@
               : `Day ${G.GameState.day} of the campaign · ${level.timeLine || 'morning'}`),
         h('div', { className: 'menu-rule' }),
         h('div', { className: 'brief-framing' }, level.framing),
+        level.sources ? h('div', { className: 'brief-sources' }, '📜 Sources: ' + level.sources) : null,
         h('div', { className: 'brief-objectives-h' }, 'Objectives'),
         level.objectives.filter((o) => !o.hidden).map((o) =>
           h('div', { key: o.id, className: 'brief-obj' + (o.optional ? ' optional' : '') },
@@ -34,7 +36,7 @@
         }, 'Begin'),
         onBack ? h('button', { className: 'menu-btn small', onClick: () => { G.audio.ui(); onBack(); } }, 'Back to Menu') : null,
         h('div', { className: 'menu-footnote' },
-          'WASD move · SHIFT sprint · SPACE jump/vault · C crouch (takedowns from behind) · LMB strike / loose · RMB guard / draw · 1–5 weapons · Q sword⇄bow · F interact / mount · G herbs · B whistle · X sense · T rally · K skills · V camera · ESC pause')));
+          'WASD move · SHIFT sprint · SPACE jump/vault/climb · C crouch (takedowns from behind) · LMB strike / loose · RMB guard / draw · 1–5 weapons · Q sword⇄bow · H shield · Z javelin · F interact / mount · G herbs · B whistle · X sense · T rally · K skills · V camera · M map · ESC pause')));
   }
 
   G.UI = G.UI || {};

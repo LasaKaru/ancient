@@ -163,6 +163,7 @@
           (snap.herbs > 0 ? `🌿 ${snap.herbs}   ` : '') +
           (snap.javelins > 0 ? `🎯 ${snap.javelins}   ` : '') +
           (snap.shield ? '🛡 guard   ' : '') +
+          (snap.blended ? '👤 blended   ' : '') +
           (snap.repute > 0 ? `Renown ${snap.repute}` : '') +
           (snap.skillPts > 0 ? `  ·  ${snap.skillPts} to spend (K)` : '')),
       ) : null,
