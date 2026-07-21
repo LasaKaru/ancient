@@ -214,6 +214,11 @@
       subsOn && S.subtitle && S.subtitle.until > now ? h('div', { className: 'hud-subtitle' },
         S.subtitle.speaker ? h('span', { className: 'speaker' }, S.subtitle.speaker + ': ') : null,
         S.subtitle.text) : null,
+
+      // performance readout (opt-in)
+      G.Settings.data.graphics.showFPS && G.Perf ? h('div', {
+        className: 'hud-perf' + (G.Perf.fps < 30 ? ' bad' : G.Perf.fps < 50 ? ' mid' : ''),
+      }, `${G.Perf.fps} FPS · ${G.Perf.ms.toFixed(1)} ms`) : null,
     );
   }
 

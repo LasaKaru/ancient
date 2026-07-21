@@ -322,6 +322,17 @@ button { font-family: inherit; cursor: pointer; }
 }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
+/* --- performance readout (opt-in) --- */
+.hud-perf {
+  position: absolute; top: 8px; right: 12px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 12px; letter-spacing: 1px; color: #8fe6a0;
+  text-shadow: 0 1px 3px #000; background: rgba(5,3,1,0.4);
+  padding: 3px 8px; border-radius: 3px; pointer-events: none;
+}
+.hud-perf.mid { color: #f3d27a; }
+.hud-perf.bad { color: #f08a70; }
+
 /* --- damage & effects overlays --- */
 .hud-damage-vignette {
   position: absolute; inset: 0; pointer-events: none;

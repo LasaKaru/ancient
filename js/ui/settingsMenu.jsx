@@ -116,8 +116,10 @@
         h(Row, { label: 'Draw distance / fog' }, h(Slider, { path: 'graphics.drawDistance', min: 100, max: 350, step: 10, fmt: (v) => v + 'm' })),
         h(Row, { label: 'Foliage density' }, h(Slider, { path: 'graphics.foliage', min: 0.2, max: 1.5, step: 0.05, fmt: (v) => Math.round(v * 100) + '%' })),
         h(Row, { label: 'Camera' }, h(Seg, { path: 'graphics.camera', options: ['first', 'third'], labels: ['1st person', '3rd person'] })),
+        h(Row, { label: 'Auto quality (adaptive)' }, h(Toggle, { path: 'graphics.autoQuality' })),
+        h(Row, { label: 'Show FPS' }, h(Toggle, { path: 'graphics.showFPS' })),
         h('div', { className: 'settings-note' },
-          'Preset changes shadow resolution and render scale immediately; foliage density takes effect when a mission (re)loads. V swaps the camera in the field.'));
+          'Preset changes shadow resolution and render scale immediately; foliage density takes effect when a mission (re)loads. V swaps the camera in the field. Auto quality steps the preset down if the frame-rate stays low.'));
     } else if (tab === 'realism') {
       body = h(React.Fragment, null,
         h(Row, { label: 'Realism preset' }, h(RealismPresetRow, { onChanged: force })),
@@ -144,8 +146,9 @@
         h(Row, { label: 'Subtitles & objective text' }, h(Toggle, { path: 'access.subtitles' })),
         h(Row, { label: 'High-contrast HUD outline' }, h(Toggle, { path: 'access.colorblind' })),
         h(Row, { label: 'Enemy-nearby warning ring' }, h(Toggle, { path: 'access.threatRing' })),
+        h(Row, { label: 'Auto-pause when tab is hidden' }, h(Toggle, { path: 'access.autoPause' })),
         h('div', { className: 'settings-note' },
-          'High-contrast mode recolours the vitality and stamina bars (orange / blue) and strengthens HUD outlines for colour-blind visibility.'));
+          'High-contrast mode recolours the vitality and stamina bars (orange / blue) and strengthens HUD outlines for colour-blind visibility. Auto-pause halts the battle the moment you switch away, so nothing lands a blow while you\'re gone.'));
     }
 
     return h('div', { className: 'screen dim fade-in', style: { zIndex: 70 } },

@@ -35,7 +35,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.7 | *Chronicles III (early)* | ◐ shipped | ✅ **Yapahuwa & the Tooth** (1283, Kurunegala era) — a relic-escort defense up the rock stair; ☐ Dambadeniya Shield, Kotte Rising |
 | v0.8 | *Chronicles II* | ☐ planned | Parakramabahu's Wars, the Invasion of Kalinga Magha |
 | v0.9 | *Chronicles IV (early)* | ◐ shipped | ✅ **Battle of Mulleriyawa** (1559) — the first gunpowder enemies (`AI_TYPES.gunner`, telegraphed musket reload) and Portuguese armour; ✅ **The Passes of 1803** (First Anglo-Kandyan War) — a jungle ambush against British redcoat gunners; ☐ Kandyan–Dutch wars, the Uva Rising finale |
-| v1.0 | *One Island* | ◐ shipped | ✅ **Legends of the King** — the "War of Ages" arena where Dutugemunu faces any age's foe (Chola/Pandya/Kandy/Portuguese/British), explicitly framed as legend; ☐ full campaign polish, performance pass |
+| v1.0 | *One Island* | ◐ shipped | ✅ **Legends of the King** — the "War of Ages" arena where Dutugemunu faces any age's foe (Chola/Pandya/Kandy/Portuguese/British), explicitly framed as legend; ✅ **polish & performance pass** — FPS/frame-time meter, opt-in adaptive quality (steps the preset down on sustained low FPS), first-launch hardware quality auto-detect, and auto-pause when the tab is hidden; ☐ further campaign polish |
 | v1.1 | *Brothers-in-Arms* | ◐ shipped | ✅ **Phase M1** async multiplayer: seeded Challenge Codes (same fight for everyone) + per-faction leaderboards + daily-seed challenge + ✅ **ghost replays** (record your best run through a code, race its translucent spectre next time); ☐ P2P co-op, duel PvP |
 
 ---
@@ -236,7 +236,15 @@ era, faction flag art, and era-specific music modes remain open.
   troop mix (including gunpowder `gunner` troops for the Portuguese/British).
   King Dutugemunu (given a real combat brain, 600 HP) and three of the Ten Giants
   fight at your side; the tale ends if the king falls.
-- ☐ Full-campaign polish + performance pass remain for the v1.0 release proper.
+- ✅ **Polish & performance pass** (`G.Perf` in `js/app.js`): a self-clocked FPS /
+  frame-time meter (optional on-screen readout, off by default) that also drives an
+  opt-in **adaptive-quality** governor — after ~3s of sustained low frames it steps the
+  graphics preset down one rung (never up, so it settles without oscillating), keeping
+  the wide range of browser hardware playable. A **first-launch quality auto-detect**
+  fits the starting preset to the machine (`navigator.deviceMemory` / cores / mobile UA)
+  so low-end devices don't open on Medium and stutter, and **auto-pause on tab-hidden**
+  halts the battle the instant you switch away. All exposed as Settings toggles.
+- ☐ Further full-campaign polish remains for the v1.0 release proper.
 
 ---
 

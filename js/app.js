@@ -25,6 +25,8 @@
       preset: 'medium', postFX: true, fov: 75, fpsCap: 60,
       drawDistance: 180, foliage: 0.8, pixelRatio: 1.5,
       camera: 'first',            // 'first' | 'third' (V toggles in the field)
+      showFPS: false,             // v1.0 polish: on-screen frame-rate readout
+      autoQuality: true,          // v1.0 polish: step the preset down on sustained low FPS
     },
     realism: {                    // v0.3: one dial for how punishing the war is
       preset: 'standard',
@@ -46,7 +48,7 @@
       },
     },
     audio: { master: 0.8, music: 0.65, sfx: 0.9, ambience: 0.7 },
-    access: { subtitles: true, colorblind: false, threatRing: true },
+    access: { subtitles: true, colorblind: false, threatRing: true, autoPause: true },
   });
   const PRESETS = {
     low: { drawDistance: 120, foliage: 0.4, pixelRatio: 1, postFX: false },
@@ -92,6 +94,22 @@
     _persist() {
       try { localStorage.setItem('rajarata_settings', JSON.stringify(this.data)); } catch (_) {}
     },
+    /* First launch only: guess a sensible quality preset from the hardware so
+       low-end machines don't open on Medium and stutter. Never overrides a
+       returning player's saved choice. */
+    autoDetectPreset() {
+      let preset = 'medium';
+      try {
+        const mem = navigator.deviceMemory || 4;             // GB, coarse & privacy-clamped
+        const cores = navigator.hardwareConcurrency || 4;
+        const mobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+        if (mobile || mem <= 2 || cores <= 2) preset = 'low';
+        else if (mem >= 8 && cores >= 8) preset = 'high';
+      } catch (_) {}
+      this.data.graphics.preset = preset;
+      Object.assign(this.data.graphics, PRESETS[preset]);
+      return preset;
+    },
     load() {
       try {
         const raw = localStorage.getItem('rajarata_settings');
@@ -105,6 +123,8 @@
             audio: { ...base.audio, ...saved.audio },
             access: { ...base.access, ...saved.access },
           };
+        } else {
+          this.autoDetectPreset();     // brand-new player: fit the machine
         }
       } catch (_) {}
     },
@@ -112,6 +132,47 @@
   G.Settings.load();
   G.Settings.subscribe(() => G.audio.setVolumes(G.Settings.data.audio));
   G.audio.setVolumes(G.Settings.data.audio);
+
+  /* ===================== PERFORMANCE MONITOR (v1.0 polish) =====================
+     A self-clocked frame-rate meter, ticked once per presented frame. Feeds the
+     optional on-screen FPS readout and the opt-in adaptive-quality governor,
+     which steps the graphics preset DOWN (never up, so it settles and never
+     oscillates) after a sustained low-FPS spell, keeping the wide range of
+     browser hardware playable. */
+  G.Perf = {
+    fps: 60, ms: 16.7,
+    _frames: 0, _t0: 0, _lowSpells: 0, _lastAdjust: -1e9,
+    reset() { this.fps = 60; this.ms = 16.7; this._frames = 0; this._t0 = 0; this._lowSpells = 0; },
+    tick(now) {
+      now = now || (performance.now ? performance.now() : Date.now());
+      if (!this._t0) { this._t0 = now; return; }
+      this._frames++;
+      const el = now - this._t0;
+      if (el >= 500) {                       // recompute twice a second
+        this.fps = Math.round((this._frames * 1000) / el);
+        this.ms = +(el / this._frames).toFixed(1);
+        this._frames = 0; this._t0 = now;
+        this._adapt(now);
+      }
+    },
+    _adapt(now) {
+      const gfx = G.Settings.data.graphics;
+      if (!gfx.autoQuality) { this._lowSpells = 0; return; }
+      const order = ['ultra', 'high', 'medium', 'low'];
+      const i = order.indexOf(gfx.preset);
+      if (i < 0 || i >= order.length - 1) { this._lowSpells = 0; return; }   // already lowest / custom
+      const cap = gfx.fpsCap > 0 ? gfx.fpsCap : 60;
+      const floor = Math.max(24, cap * 0.7);
+      if (this.fps < floor) this._lowSpells++; else this._lowSpells = Math.max(0, this._lowSpells - 1);
+      // ~3s of sustained low frames, and don't thrash: at least 5s between steps
+      if (this._lowSpells >= 6 && now - this._lastAdjust > 5000) {
+        this._lowSpells = 0; this._lastAdjust = now;
+        const next = order[i + 1];
+        G.Settings.applyPreset(next);
+        if (G.UIBus) G.UIBus.toast('⚙ Auto quality → ' + next + ' for smoother play');
+      }
+    },
+  };
 
   /* ========================= GAME STATE ========================= */
   G.GameState = {
@@ -667,6 +728,7 @@
         if (this._renderAcc < 1 / cap) return;
         this._renderAcc %= (1 / cap);
       }
+      G.Perf.tick();          // count real presented frames for the meter / auto-quality
       this.world.render(dt);
     }
 
@@ -924,6 +986,22 @@
       };
       document.addEventListener('keydown', onKey);
       return () => document.removeEventListener('keydown', onKey);
+    }, []);
+
+    // auto-pause when the tab is hidden so nothing keeps swinging at you while
+    // you're away (complements the pointer-lock-loss pause for unlocked states)
+    React.useEffect(() => {
+      const onHide = () => {
+        if (!G.Settings.data.access.autoPause) return;
+        if (!document.hidden) return;
+        const st = stateRef.current;
+        if (st.screen !== 'game' || st.paused || st.death || st.showSettings || st.showSkills) return;
+        const eng = engineRef.current;
+        if (eng && eng.player) eng.player.releaseLock();
+        setPaused(true);
+      };
+      document.addEventListener('visibilitychange', onHide);
+      return () => document.removeEventListener('visibilitychange', onHide);
     }, []);
 
     // keep engine.paused in sync + relock pointer on resume
