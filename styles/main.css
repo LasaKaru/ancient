@@ -37,7 +37,10 @@ button { font-family: inherit; cursor: pointer; }
 #loading-screen {
   position: fixed; inset: 0; z-index: 1000;
   display: flex; align-items: center; justify-content: center;
+  /* optional assets/art/loading.jpg fades under the gradient scrim; absent → just the gradient */
   background:
+    radial-gradient(ellipse at 50% 30%, rgba(42,31,16,0.82) 0%, rgba(18,13,6,0.92) 55%, rgba(7,5,3,0.98) 100%),
+    url('assets/art/loading.jpg') center/cover no-repeat,
     radial-gradient(ellipse at 50% 30%, #2a1f10 0%, #120d06 55%, #070503 100%);
   transition: opacity 0.8s ease;
 }
@@ -47,6 +50,10 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 54px; color: var(--gold); opacity: 0.9;
   text-shadow: 0 0 30px rgba(216, 169, 78, 0.5);
   margin-bottom: 10px;
+}
+.load-eyebrow {
+  font-size: 15px; letter-spacing: 11px; color: #b49b6c; text-transform: uppercase;
+  margin-bottom: 4px; font-weight: 400;
 }
 .load-title {
   font-size: 52px; letter-spacing: 14px; color: var(--gold-bright);
@@ -84,6 +91,14 @@ button { font-family: inherit; cursor: pointer; }
 .screen.dim { background: rgba(5, 3, 1, 0.72); backdrop-filter: blur(3px); }
 .screen-canvas-bg { position: absolute; inset: 0; z-index: -1; }
 
+/* optional key-art slots (assets/art/*) — fade in only when the file exists */
+.keyart-bg { position: absolute; inset: 0; z-index: 0; opacity: 0; transition: opacity 1.4s ease; pointer-events: none; }
+.keyart-bg.on { opacity: 1; }
+.keyart-bg img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.keyart-scrim { position: absolute; inset: 0; }
+.art-panel { display: block; width: 100%; max-height: 220px; object-fit: cover; border-radius: 5px; margin-bottom: 14px; opacity: 0; transition: opacity 0.6s ease; box-shadow: 0 4px 18px rgba(0,0,0,0.5); }
+.art-panel.on { opacity: 1; }
+
 .panel {
   background: linear-gradient(180deg, rgba(24, 17, 8, 0.94), rgba(12, 8, 4, 0.96));
   border: 1px solid rgba(216, 169, 78, 0.4);
@@ -96,6 +111,10 @@ button { font-family: inherit; cursor: pointer; }
 .panel::-webkit-scrollbar { width: 8px; }
 .panel::-webkit-scrollbar-thumb { background: rgba(216, 169, 78, 0.35); border-radius: 4px; }
 
+.menu-eyebrow {
+  text-align: center; font-size: 13px; letter-spacing: 9px; color: #b49b6c;
+  text-transform: uppercase; margin-bottom: 2px; font-weight: 400;
+}
 .menu-title {
   font-size: 44px; letter-spacing: 10px; color: var(--gold-bright);
   text-align: center; font-weight: 400;

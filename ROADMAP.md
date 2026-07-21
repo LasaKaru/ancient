@@ -1,4 +1,4 @@
-# RAJARATA: DUTUGEMUNU'S WAR — Development Roadmap
+# WARRIORS OF TAPROBANE — Development Roadmap
 
 **Vision:** grow the current single-campaign vertical slice (v0.1, playable today) into
 *Chronicles of Lanka* — an Assassin's-Creed-style, open-era historical action series
@@ -310,9 +310,13 @@ Browser + no-build-step makes this the hardest pillar; staged to keep each relea
 
 - ◐ **Performance:** instancing/LOD exist; add merged static batches per level, worker
   thread for physics, quality autotuner, mobile/touch controls investigation.
-- ◐ **Save system:** extend `G.GameState` for slots, skill trees, calendar, map progress.
-- ◐ **Asset pipeline:** keep every procedural asset swappable (see `assets/README.md`);
-  add optional glTF character/architecture packs as they become available (CC0 only).
+- ✅ **Save system:** `G.GameState` carries slots (`G.Saves`), the skill tree, the campaign
+  calendar and map progress — three independent save slots with legacy migration.
+- ◐ **Asset pipeline:** every procedural asset stays swappable (see `assets/README.md`);
+  ✅ **rebrand to _Warriors of Taprobane_** (the game outgrew a single king's war — it now
+  spans every era) with wired optional **key-art slots** (menu backdrop, loading backdrop,
+  per-campaign briefing banners via `js/ui/art.jsx`) that fade in over the procedural look
+  when a file is present and fall back silently when absent; ☐ optional glTF packs (CC0).
 - ☐ **Localisation:** externalise strings; Sinhala and Tamil as first targets.
 - ☐ **Testing:** grow the headless Playwright suite (already used for v0.1) into a CI
   gate per level and per campaign.

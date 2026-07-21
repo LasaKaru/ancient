@@ -967,7 +967,7 @@
   function ChallengeShare({ summary }) {
     const [copied, setCopied] = React.useState(false);
     const copy = () => {
-      const text = `I held the arena against ${summary.factionName} — scored ${summary.score.toLocaleString()} in Rajarata: Dutugemunu's War. Match my fight: ${summary.code}`;
+      const text = `I held the arena against ${summary.factionName} — scored ${summary.score.toLocaleString()} in Warriors of Taprobane. Match my fight: ${summary.code}`;
       const done = () => { setCopied(true); G.audio.uiConfirm(); setTimeout(() => setCopied(false), 2000); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, done);
       else done();

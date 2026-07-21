@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <!--
   ============================================================================
-  RAJARATA: DUTUGEMUNU'S WAR
-  A first-person historical action game set in ancient Ceylon (2nd c. BCE).
+  WARRIORS OF TAPROBANE — Wars of the Ancient Isle
+  A historical action game spanning the great wars of ancient Ceylon
+  (Taprobane), from Dutugemunu (2nd c. BCE) to the Kandyan era.
   ============================================================================
   HOW TO RUN:
     Open this file directly in Chrome / Edge / Firefox - no server or build
@@ -26,7 +27,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rajarata: Dutugemunu's War</title>
+  <title>Warriors of Taprobane</title>
   <link rel="stylesheet" href="styles/main.css" />
   <link rel="stylesheet" href="styles/settings.css" />
 
@@ -55,8 +56,9 @@
   <div id="loading-screen">
     <div class="load-inner">
       <div class="load-sigil">ᱛ</div>
-      <h1 class="load-title">RAJARATA</h1>
-      <h2 class="load-subtitle">Dutugemunu's War</h2>
+      <div class="load-eyebrow">Warriors of</div>
+      <h1 class="load-title">TAPROBANE</h1>
+      <h2 class="load-subtitle">Wars of the Ancient Isle</h2>
       <div class="load-bar-outer"><div id="load-bar" class="load-bar-inner"></div></div>
       <div id="load-status" class="load-status">Summoning the ancient world&hellip;</div>
       <div id="load-error" class="load-error" style="display:none"></div>
@@ -159,6 +161,7 @@
         'js/levels/angloKandyanWar.js',
         'js/levels/warOfAges.js',
         'js/ui/hud.jsx',
+        'js/ui/art.jsx',
         'js/ui/skillsMenu.jsx',
         'js/ui/campaignMap.jsx',
         'js/ui/legendsMenu.jsx',
