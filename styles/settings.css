@@ -1,0 +1,90 @@
+/* ============================================================================
+   RAJARATA: DUTUGEMUNU'S WAR — settings screen styling
+   ============================================================================ */
+
+.settings-panel { min-width: 560px; max-width: 680px; }
+
+.settings-tabs { display: flex; gap: 6px; margin: 18px 0 20px; }
+.settings-tab {
+  flex: 1; padding: 9px 6px; font-size: 12px; letter-spacing: 2px;
+  text-transform: uppercase; color: #b3a175;
+  background: rgba(216, 169, 78, 0.04);
+  border: 1px solid rgba(216, 169, 78, 0.25); border-radius: 3px;
+  transition: all 0.15s ease;
+}
+.settings-tab:hover { color: var(--gold-bright); }
+.settings-tab.active {
+  background: rgba(216, 169, 78, 0.16);
+  border-color: var(--gold); color: var(--gold-bright);
+}
+
+.set-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 9px 4px; border-bottom: 1px solid rgba(216, 169, 78, 0.08);
+}
+.set-row label.name { flex: 0 0 190px; font-size: 14px; color: #cbb68a; letter-spacing: 0.5px; }
+.set-row .val { flex: 0 0 64px; text-align: right; font-size: 13px; color: var(--gold-bright); font-family: var(--hud-font); }
+
+/* sliders */
+.set-row input[type="range"] {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 2px;
+  background: rgba(216, 169, 78, 0.22); outline: none;
+}
+.set-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--gold-bright); border: 2px solid #6d5322; cursor: pointer;
+}
+.set-row input[type="range"]::-moz-range-thumb {
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--gold-bright); border: 2px solid #6d5322; cursor: pointer;
+}
+
+/* segmented option buttons (quality preset, fps cap, toggles) */
+.seg { display: flex; gap: 5px; flex: 1; }
+.seg button {
+  flex: 1; padding: 7px 4px; font-size: 12px; letter-spacing: 1px;
+  background: rgba(0, 0, 0, 0.35); color: #b3a175;
+  border: 1px solid rgba(216, 169, 78, 0.25); border-radius: 3px;
+  transition: all 0.12s ease; text-transform: uppercase;
+}
+.seg button:hover { color: var(--gold-bright); }
+.seg button.on {
+  background: rgba(216, 169, 78, 0.2); color: var(--gold-bright);
+  border-color: var(--gold);
+}
+
+/* toggle */
+.toggle {
+  flex: 0 0 52px; height: 24px; border-radius: 12px; position: relative;
+  background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(216, 169, 78, 0.35);
+  transition: background 0.15s ease;
+}
+.toggle.on { background: rgba(216, 169, 78, 0.4); border-color: var(--gold); }
+.toggle .knob {
+  position: absolute; top: 2px; left: 3px; width: 18px; height: 18px;
+  border-radius: 50%; background: var(--parchment); transition: left 0.15s ease;
+}
+.toggle.on .knob { left: 29px; background: var(--gold-bright); }
+
+/* key binding rows */
+.bind-btn {
+  flex: 0 0 130px; padding: 7px 10px; font-size: 13px;
+  font-family: var(--hud-font);
+  background: rgba(0, 0, 0, 0.4); color: var(--parchment);
+  border: 1px solid rgba(216, 169, 78, 0.3); border-radius: 3px;
+}
+.bind-btn:hover { border-color: var(--gold-bright); }
+.bind-btn.listening {
+  color: var(--gold-bright); border-color: var(--gold-bright);
+  animation: bind-pulse 0.7s infinite alternate;
+}
+@keyframes bind-pulse { from { background: rgba(216,169,78,0.08); } to { background: rgba(216,169,78,0.28); } }
+
+.settings-note {
+  margin-top: 14px; font-size: 12px; font-style: italic;
+  color: #8d7b57; line-height: 1.6;
+}
+.settings-actions { display: flex; gap: 10px; margin-top: 20px; }
+.settings-actions .menu-btn { margin: 0; }
