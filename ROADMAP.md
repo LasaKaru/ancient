@@ -112,6 +112,16 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   `HumanoidRig` as the player body (player's sash colour) with the FP arms hidden;
   camera collision probe against the physics world; tighter over-shoulder framing
   while drawing the bow; body rides the howdah when mounted.
+- ✅ **Character-fidelity pass** — the shared `HumanoidRig` (every soldier, king,
+  civilian, the third-person player body, the ghost spectre) rebuilt from plain
+  capsules into an articulated, layered figure: jointed legs (thigh → knee-cop →
+  greave → sabaton boot with a toe), a pelvis + belt-and-buckle + hanging
+  faulds/tassets, a banded lamellar cuirass with a raised collar, gilt trim ring
+  and chest medallion, gorget-guarded neck, pauldron → vambrace → sculpted
+  five-box hands, and a real face (whites-and-iris eyes, angled brows, nose,
+  mouth, swept-back hair, jaw beard). Same-material sub-meshes are merged
+  (`BGU.mergeGeometries`) to hold the draw-call count down; the animation state
+  machine is untouched (all articulated groups preserved).
 - ☐ Player rig full traversal animations (§4) and finishers in both cameras.
 
 ### 2.3 Day/night & day-by-day campaign structure (◐ shipped v0.3 — calendar + drifting sun)
