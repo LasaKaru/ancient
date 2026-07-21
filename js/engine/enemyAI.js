@@ -81,6 +81,8 @@
         const v = t.body.velocity;
         if (Math.hypot(v.x, v.z) < 0.5) view *= 0.7;
       }
+      // social blend (v0.5): lost among a crowd of civilians, until you engage
+      if (t.isPlayer && eng.playerBlended && this.state !== 'engage') view *= 0.5;
       const d = U.flatDist(myPos, tPos);
       if (d > view) return { seen: false, d };
       // facing cone (~150° when engaged, ~120° when calm)

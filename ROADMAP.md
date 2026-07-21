@@ -30,7 +30,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.2 | *Armoury* | ✅ shipped | Spear/axe/mace/dagger, 9-skill Renown tree, herb healing, threat ring, rally, rideable war elephants, wildlife & flora pass (pulled forward from v0.3 §2.4) |
 | v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun, ✅ **weather** (monsoon rain / dust / heat-haze), ✅ **more fauna** (monkeys, buffalo, crocodiles), ✅ **full day/night arc** (moon, stars, moonlit night raid); ☐ war-camp hub, crowds |
 | v0.4 | *Taprobane* | ✅ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch), ✅ **in-game M map** (parchment mission chart), ✅ **save slots** (three independent campaigns); ☐ sea-lane invasion arrows |
-| v0.5 | *Shadows* | ◐ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault, ✅ **full ledge climbing**, ✅ **assassination/riposte finishers**; ☐ social-blend crowds |
+| v0.5 | *Shadows* | ✅ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault, ✅ **full ledge climbing**, ✅ **assassination/riposte finishers**, ✅ **social-blend crowds** |
 | v0.6 | *Chronicles I* | ◐ shipped | ✅ Two playable era campaigns from the map: Gajabahu's Crossing (~120 CE) and the Liberation of Polonnaruwa (1070); ☐ remaining Chronicles I rows |
 | v0.7 | *Chronicles III (early)* | ◐ shipped | ✅ **Yapahuwa & the Tooth** (1283, Kurunegala era) — a relic-escort defense up the rock stair; ☐ Dambadeniya Shield, Kotte Rising |
 | v0.8 | *Chronicles II* | ☐ planned | Parakramabahu's Wars, the Invasion of Kalinga Magha |
@@ -132,8 +132,10 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
 
 ### 2.4 "Very ancient environment" density pass (◐ — flora & fauna shipped early in v0.2)
 
-- ☐ Populated settlements: civilian crowds with daily-routine schedules (market, wells,
-  paddy work, temple worship — AC-style living streets).
+- ✅ Populated settlements: **ambient civilian crowds** (`js/entities/crowd.js`) who wander
+  a small daily beat — idle at a well, tend a stall (work posture), stroll a lane — and
+  scatter in panic when battle erupts or a warrior sprints past. Authored into the sacred-
+  city tutorial (a living street to blend into); any level can add `crowd: {…}`.
 - ☐ More architecture: vatadage shrines, bodhigara, stone bridges, cave temples,
   irrigation canals & sluices (bisokotuwa), city walls with working gates.
 - ✅ Wildlife (v0.2): peafowl that fan their tails and spotted deer that wander and
@@ -196,7 +198,9 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
 - ✅ **Stealth kit** (v0.5): crouch-takedowns from behind unaware enemies (knife kills
   outright, heavier blades wound gravely — both silent), corpse awareness (patrols that
   spot a fallen brother go searching), stone-still crouch concealment, whistle lure (B).
-  ☐ Social blend in civilian crowds (needs §2.4 crowds).
+  ✅ **Social blend** in civilian crowds (v0.5): stand still and unremarkable among two or
+  more civilians and the enemy's spotting range is halved (`engine.playerBlended` →
+  `enemyAI._canSee`); sprinting, drawing or striking breaks cover. A 👤 blended HUD cue.
 - ✅ **Warrior Sense** (X): stamina-costed pulse marking enemies and the objective
   through walls for 6s; disabled on the realistic preset by design.
 - ✅ Assassination/parry **finisher animations** (both cameras): a shared kill flourish

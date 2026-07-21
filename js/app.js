@@ -394,6 +394,8 @@
       this.rallyCd = 0;
       this.mounts = [];
       this.critters = [];
+      this.crowd = [];
+      this.playerBlended = false;
       this.def.build(this);
       this.player = new G.PlayerController(this, this.def.spawn || { pos: [0, 0], yaw: 0 });
       this.playerRig = new G.PlayerRig(this, { armorColor: G.GameState.profile.armorColor });
@@ -405,6 +407,8 @@
       }
       // living-world layer: flowers, wandering animals, herb plants
       if (G.Wildlife) G.Wildlife.autoPopulate(this, this.def.nature || {});
+      // ambient civilian crowd (v0.3 §2.4) — a living street to blend into
+      if (G.Crowd && this.def.crowd) G.Crowd.populate(this, this.def.crowd);
 
       // ---- audio scene ----
       G.audio.setAmbience(this.def.ambience || 'jungle');
@@ -709,6 +713,15 @@
       }
       for (const m of this.mounts) m.update(dt);
       for (const c of this.critters) c.update(dt);
+      for (const c of this.crowd) c.update(dt);
+      // social blend (v0.5): still and unremarkable among a knot of civilians,
+      // the enemy's eye slides past you
+      if (this.crowd.length && this.player.alive) {
+        let near = 0;
+        const pp = this.player.feetPos;
+        for (const c of this.crowd) if (c.alive && c.state !== 'flee' && U.flatDist(c.pos, pp) < 3.6) near++;
+        this.playerBlended = near >= 2 && !this.player.sprinting && !this.combat.attacking && !this.combat.drawing;
+      } else this.playerBlended = false;
       this.playerRig.update(dt);
       this.combat.update(dt);
       this.enemies.update(dt);
@@ -855,6 +868,7 @@
         drawPct: c.drawPct, slots,
         herbs: p.herbs,
         javelins: c.javelins, shield: p.shieldEquipped,
+        blended: this.playerBlended,
         skillPts: G.Skills ? G.Skills.points() : 0,
         crosshair: c.weapon === 'bow' ? (c.drawPct >= 1 ? 'bowfull' : c.drawing ? 'bow' : 'melee') : 'melee',
         takedown: !!c.takedownTarget(),
@@ -908,6 +922,7 @@
       this.enemies.dispose();
       this.combat.dispose();
       this.world.dispose();
+      for (const c of this.crowd) c.dispose && c.dispose();
       G.UIBus.bossBar(null);
       G.audio.setAmbience('none');
       G.audio.setIntensity(0);

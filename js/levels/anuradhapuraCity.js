@@ -25,6 +25,8 @@
     timeLine: 'morning of the muster', marchDays: 4,
     ambience: 'jungle',
     music: 'explore',
+    // a living sacred-city street (v0.3 §2.4) — folk on their morning beat
+    crowd: { count: 12, center: [0, -6], area: 26 },
     atmosphere: {
       skyTop: 0x3d6fb5, skyHorizon: 0xe3d3ac, fogColor: 0xd6c8a4,
       sunDir: new THREE.Vector3(-0.5, 0.8, 0.3),
