@@ -499,6 +499,32 @@ button { font-family: inherit; cursor: pointer; }
   border-right: 1px solid rgba(216,169,78,0.3);
 }
 .map-eras-h { font-size: 12px; letter-spacing: 4px; color: var(--gold); margin-bottom: 12px; }
+
+/* campaign-wide progress: wars of the island won */
+.map-progress {
+  margin: 0 0 16px; padding: 10px 12px; border-radius: 4px;
+  background: rgba(216,169,78,0.06); border: 1px solid rgba(216,169,78,0.22);
+}
+.map-progress-count { font-family: Georgia, serif; font-size: 22px; color: var(--gold-bright); letter-spacing: 1px; }
+.map-progress-label { font-size: 10.5px; letter-spacing: 1.5px; color: #9a8a66; text-transform: uppercase; margin-top: 1px; }
+.map-progress-bar { margin-top: 8px; height: 5px; border-radius: 3px; background: rgba(0,0,0,0.4); overflow: hidden; }
+.map-progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-bright)); transition: width 0.5s ease; }
+.map-progress.complete { border-color: var(--gold-bright); background: rgba(216,169,78,0.14); box-shadow: 0 0 16px rgba(216,169,78,0.25); }
+.map-progress.complete .map-progress-label { color: var(--gold); }
+
+/* capstone banner: the whole chronicle won */
+.map-capstone {
+  position: fixed; left: 50%; top: 22px; transform: translateX(-50%);
+  z-index: 30; max-width: 640px; width: min(86vw, 640px); text-align: center;
+  padding: 14px 26px; border-radius: 6px;
+  background: linear-gradient(180deg, rgba(40,28,10,0.96), rgba(24,17,8,0.94));
+  border: 1px solid var(--gold); box-shadow: 0 6px 34px rgba(0,0,0,0.6), 0 0 22px rgba(216,169,78,0.3);
+  animation: capstoneIn 0.9s ease;
+}
+@keyframes capstoneIn { from { opacity: 0; transform: translate(-50%, -14px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.map-capstone-h { font-family: Georgia, serif; font-size: 18px; letter-spacing: 3px; color: var(--gold-bright); }
+.map-capstone-body { font-size: 12.5px; font-style: italic; color: #d9c9a4; line-height: 1.65; margin-top: 6px; }
+
 .map-era-btn {
   display: block; width: 100%; text-align: left; margin: 6px 0; padding: 8px 12px;
   background: rgba(216,169,78,0.05); border: 1px solid rgba(216,169,78,0.25);

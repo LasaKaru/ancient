@@ -192,6 +192,12 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   Completed chapters show ✓ seals.
 - ✅ Era rail (543 BCE → 1818 CE) filtering conflicts by chronicle period —
   Anuradhapura → Polonnaruwa → Transitional → Kandyan → British.
+- ✅ **Every historical pin is now playable** — all 17 chart pins launch a mission
+  (the Dutugemunu campaign, the Sigiriya legend, and 15 standalone Chronicles from
+  110 CE to 1818), so the chart is a complete, unbroken campaign selector.
+- ✅ **Campaign capstone** — a "wars of the island won" progress readout in the era
+  rail (won / total + a gilt bar), and a **chronicle-complete** epilogue banner when
+  every grounded war is cleared.
 - ✅ Multiple **save slots** (`G.Saves` in `js/app.js`): three independent campaigns keyed
   in localStorage, chosen from a **Save Slots** menu that shows each slot's hero, day and
   wins; a legacy single-save migrates into slot 0 so returning players keep their progress.

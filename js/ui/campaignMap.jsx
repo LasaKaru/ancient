@@ -373,7 +373,23 @@
       return 'record';
     };
 
+    // ---- campaign-wide progress: how many of the island's wars are won ----
+    // Counts every grounded, playable war (the main campaign + each standalone
+    // Chronicle); the Sigiriya legend is a bonus and sits outside the tally.
+    const grounded = WARS.filter((w) => w.playable && !w.legend);
+    const warsWon = grounded.filter((w) => pinState(w) === 'done').length;
+    const warsTotal = grounded.length;
+    const allWon = warsTotal > 0 && warsWon === warsTotal;
+
     return h('div', { className: 'screen map-screen fade-in' },
+      // capstone: the whole chronicle won, 110 CE → 1818
+      allWon ? h('div', { className: 'map-capstone' },
+        h('div', { className: 'map-capstone-h' }, 'THE WHOLE CHRONICLE IS WON'),
+        h('div', { className: 'map-capstone-body' },
+          'From the first tiger on the strand to the last flag over Wellassa, every ' +
+          'war of the island has answered to your sword. Two thousand three hundred ' +
+          'years of kings and invasions, held in one hand. The chronicle is complete — ' +
+          'but the drums, they say, are never quite silent.')) : null,
       h('div', { className: 'map-chart-wrap' },
         chart ? h('img', { className: 'map-chart', src: chart, alt: 'Taprobane' }) : null,
         // war pins
@@ -396,6 +412,11 @@
       // era filter rail
       h('div', { className: 'map-eras' },
         h('div', { className: 'map-eras-h' }, 'CHRONICLE ERAS'),
+        h('div', { className: 'map-progress' + (allWon ? ' complete' : '') },
+          h('div', { className: 'map-progress-count' }, warsWon + ' / ' + warsTotal),
+          h('div', { className: 'map-progress-label' }, allWon ? 'the whole chronicle is won' : 'wars of the island won'),
+          h('div', { className: 'map-progress-bar' },
+            h('div', { className: 'map-progress-fill', style: { width: (warsTotal ? (warsWon / warsTotal * 100) : 0) + '%' } }))),
         ERAS.map((e) => h('button', {
           key: e.id,
           className: 'map-era-btn' + (era === e.id ? ' on' : ''),
