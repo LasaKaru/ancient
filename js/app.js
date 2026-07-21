@@ -1062,6 +1062,7 @@
     const [showMap, setShowMap] = React.useState(false);
     const [death, setDeath] = React.useState(null);
     const [summary, setSummary] = React.useState(null);
+    const [pendingNext, setPendingNext] = React.useState(null);   // next chapter after the war camp
     const [, force] = React.useReducer((x) => x + 1, 0);
     const engineRef = React.useRef(null);
 
@@ -1264,10 +1265,25 @@
           if (def.bonus) { quitToMenu(); return; }
           if (isLast) { setScreen('victory'); setLevelId(null); return; }
           const next = G.Levels.next(summary.levelId);
-          if (next && !G.Levels.defs[next].bonus) startLevel(next);
-          else setScreen('victory');
+          if (next && !G.Levels.defs[next].bonus) {
+            // rest at the war camp before the next chapter (v0.3 §2.3)
+            setPendingNext(next); setSummary(null); setLevelId(null); setScreen('warcamp');
+          } else setScreen('victory');
         },
         onMenu: quitToMenu,
+      }));
+    }
+
+    if (screen === 'warcamp' && G.UI.WarCamp) {
+      const nd = pendingNext && G.Levels.defs[pendingNext];
+      children.push(h(G.UI.WarCamp, {
+        key: 'warcamp',
+        day: G.GameState.day,
+        nextTitle: nd ? nd.title : null,
+        onMarch: () => { const n = pendingNext; setPendingNext(null); if (n) startLevel(n); else quitToMenu(); },
+        onSkills: () => setShowSkills(true),
+        onMap: () => { setPendingNext(null); setScreen('map'); },
+        onMenu: () => { setPendingNext(null); quitToMenu(); },
       }));
     }
 

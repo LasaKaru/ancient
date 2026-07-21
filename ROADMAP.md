@@ -28,7 +28,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 |---|---|---|---|
 | v0.1 | *Ruwanwelisaya* | ✅ shipped | 6-level Dutugemunu campaign, FPS combat, AI, settings, procedural audio |
 | v0.2 | *Armoury* | ✅ shipped | Spear/axe/mace/dagger, 9-skill Renown tree, herb healing, threat ring, rally, rideable war elephants, wildlife & flora pass (pulled forward from v0.3 §2.4) |
-| v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun, ✅ **weather** (monsoon rain / dust / heat-haze), ✅ **more fauna** (monkeys, buffalo, crocodiles), ✅ **full day/night arc** (moon, stars, moonlit night raid); ☐ war-camp hub, crowds |
+| v0.3 | *Kandula* | ✅ shipped | ✅ Realism presets (+ friendly-fire / herb dials), ✅ third-person mode (V), ✅ campaign day counter, ✅ **weather** (rain / dust / heat-haze), ✅ **more fauna** (monkeys, buffalo, crocodiles), ✅ **full day/night arc** (moon, stars, night raid), ✅ **civilian crowds**, ✅ **more architecture**, ✅ **war-camp hub** |
 | v0.4 | *Taprobane* | ✅ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch), ✅ **in-game M map** (parchment mission chart), ✅ **save slots** (three independent campaigns), ✅ **sea-lane invasion arrows** |
 | v0.5 | *Shadows* | ✅ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault, ✅ **full ledge climbing**, ✅ **assassination/riposte finishers**, ✅ **social-blend crowds** |
 | v0.6 | *Chronicles I* | ◐ shipped | ✅ Two playable era campaigns from the map: Gajabahu's Crossing (~120 CE) and the Liberation of Polonnaruwa (1070); ☐ remaining Chronicles I rows |
@@ -127,8 +127,10 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   each victory advances the calendar by that chapter's march (stored in the save).
 - ☐ Missions locked to time (night infiltration, dawn siege); optional side
   missions consume days.
-- ☐ War-camp hub scene between missions: talk to the Ten Giants, spend skills, choose
-  the next march on the field map.
+- ✅ **War-camp hub** between missions (`js/ui/warCamp.jsx`): after a mainline chapter you
+  rest at the camp — take counsel with the **Ten Giants** (the Dasa Maha Yodhayo, each with
+  a trait and a line), spend Renown on skills, and choose to march on to the next chapter
+  or turn to the field map.
 
 ### 2.4 "Very ancient environment" density pass (◐ — flora & fauna shipped early in v0.2)
 
