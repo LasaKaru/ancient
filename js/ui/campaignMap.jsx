@@ -54,7 +54,8 @@
       id: 'chola110', era: 'anuradhapura', at: [0.50, 0.22], year: '110 CE',
       name: '110 Chola Invasion', sides: 'Anuradhapura Kingdom vs. Early Cholas',
       result: 'Chola victory',
-      desc: 'A Chola expedition falls upon Rajarata and carries away captives across the strait.',
+      desc: 'A Chola expedition falls upon Rajarata and carries away captives across the strait. Play the coastal defence at dawn: drive the raiders off the strand, cut the bound townsfolk free before they are loaded, and break the raid-captain — the raid that Gajabahu will avenge ten years hence.',
+      playable: 'firstCholaRaid',
     },
     {
       id: 'gajabahu', era: 'anuradhapura', at: [0.40, 0.16], year: '~120 CE',
@@ -81,7 +82,8 @@
       id: 'conquest', era: 'anuradhapura', at: [0.47, 0.36], year: '992–1017',
       name: 'The Chola Conquest', sides: 'Anuradhapura Kingdom & Pandyan allies vs. Chola Empire (Rajaraja I, Rajendra I)',
       result: 'Chola victory — Anuradhapura destroyed, Rajarata annexed',
-      desc: 'The thousand-year city fell. Polonnaruwa became a Chola provincial capital and the north lay under the tiger banner for two generations.',
+      desc: 'The thousand-year city fell. Polonnaruwa became a Chola provincial capital and the north lay under the tiger banner for two generations. Play the last night of the old kingdom: hold the sacred precinct, bear the regalia south to the Ruhuna road, see the people away, and make the Chola general pay — the crown survives in the south to rise again as Vijayabahu.',
+      playable: 'cholaConquest',
     },
     {
       id: 'vijayabahu', era: 'polonnaruwa', at: [0.56, 0.40], year: '1017–1070',
