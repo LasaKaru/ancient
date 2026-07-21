@@ -255,7 +255,7 @@ chronicles (Dipavamsa/Mahavamsa/Culavamsa/Rajavaliya) and the Wikipedia war list
 ### v0.8 — Chronicles II: Polonnaruwa Ascendant — ☐ planned
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
-| ☐ **Parakramabahu's Wars** (1153–1186) | Parakramabahu the Great's champion | Unification of the three lands, overseas expeditions (Pagan war 1164, Pandyan intervention 1169–77) |
+| ✅ **Parakramabahu's Wars** (1153–1186) — *shipped* | Parakramabahu the Great's champion | A field action of the unification war: force a river ford against the rival claimant's shield-line, throw down the camp gate-barricades (a rideable war elephant waits to charge them), raise the lion banner over the captured court, break the pretender's champion, and rally the fallen. Launched from the **1153–1186** map pin. ☐ overseas expeditions (Pagan 1164, Pandyan intervention) remain open. |
 | ✅ **The Broken Throne** (1215) — *shipped* | Last guard of Polonnaruwa | The night of Magha's sack, played as an honest fighting withdrawal: hold the citadel gate, escort the Relic-bearer over the causeway to the south sally-port, hold the crossing, and cut down Magha's war-captain — the city falls (history's own outcome) but the Sacred Tooth and the royal line escape south. Launched from the **Kalinga Magha** map pin. |
 
 ### v0.9 — Chronicles IV: Muskets on the Shore (European wars & **Kandy**) — ◐ shipped

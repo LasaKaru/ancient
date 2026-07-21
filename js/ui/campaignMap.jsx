@@ -94,7 +94,8 @@
       id: 'parakramabahu', era: 'polonnaruwa', at: [0.58, 0.44], year: '1153–1186',
       name: "Parakramabahu's Wars", sides: 'Polonnaruwa Kingdom (Parakramabahu the Great) vs. Pagan kingdom · Chola & Pandya interventions',
       result: 'Victory abroad and at home',
-      desc: 'The great unifier turned the island\'s strength outward — expeditions against Pagan in Burma (1164) and into the Pandyan civil war, while the tanks and walls of Polonnaruwa rose to their height.',
+      desc: 'The great unifier turned the island\'s strength outward — expeditions against Pagan in Burma (1164) and into the Pandyan civil war, while the tanks and walls of Polonnaruwa rose to their height. Play a battle of the unification war: force the river ford, throw down the rival\'s gate (ride the war elephant through it), raise the lion over his court, and break the pretender\'s champion.',
+      playable: 'parakramabahuWars',
     },
     {
       id: 'magha', era: 'polonnaruwa', at: [0.53, 0.34], year: '1215',
