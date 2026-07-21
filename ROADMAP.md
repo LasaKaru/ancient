@@ -262,7 +262,7 @@ chronicles (Dipavamsa/Mahavamsa/Culavamsa/Rajavaliya) and the Wikipedia war list
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
 | ◐ **Sitawaka Lion** (1551–1593) | Sitawaka/Kotte-era warrior | ✅ *Battle of Mulleriyawa (1559) shipped v0.7*: break a Portuguese musket skirmish line before it reloads, spike its two gun emplacements, rescue pinned soldiers, break the field commander. ☐ Sieges of Kotte, Danture |
-| ☐ **Kandyan Defiance** (1670–1766) | **Kandyan Kingdom** ranger | Kandyan–Dutch wars: forest ambush warfare, Rajasinha II's offensives |
+| ✅ **Kandyan Defiance** (1670–1766) — *shipped* | **Kandyan Kingdom** ranger | A moonlit night raid on a Dutch Company stockade: slip the sally-port watch, spike the Company guns, fire the powder magazine (the set-piece), free the pressed villagers, and cut down the Dutch commander before the coast sends relief — Dutch matchlock gunners (`AI_TYPES.gunner`) man the walls. Launched from the **Kandyan–Dutch Wars** map pin. |
 | ◐ **The Last Kingdom** (1803–1818) | Kandyan guerrilla under Keppetipola | ✅ *The Passes of 1803 shipped v0.7*: ambush the British vanguard, burn the baggage train, cut down the column's officer, seal the pass, free pressed porters — the First Anglo-Kandyan War told as a retreat harried to pieces. ☐ 1815 fall, 1818 Uva–Wellassa rising (the series' solemn finale) |
 
 *New systems these require:* naval landing set pieces ✅ (`Build.boat`, shipped v0.6),

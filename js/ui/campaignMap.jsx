@@ -136,7 +136,8 @@
       id: 'kandyDutch', era: 'kandy', at: [0.48, 0.62], year: '1670–1766',
       name: 'The Kandyan–Dutch Wars', sides: 'Kingdom of Kandy (Rajasinha II, Kirti Sri Rajasinha) vs. Dutch East India Company',
       result: 'Dutch hold the coasts; the mountain kingdom endures',
-      desc: 'A century of forest ambush and burned lowlands: the Company took every harbour, but the drums in the hills never stopped.',
+      desc: 'A century of forest ambush and burned lowlands: the Company took every harbour, but the drums in the hills never stopped. Play a night raid on a Company stockade: slip the sally-port watch, spike the guns, fire the powder magazine, free the pressed villagers, and cut down the Dutch commander before dawn.',
+      playable: 'kandyanDefiance',
     },
     {
       id: 'kandy1803', era: 'kandy', at: [0.46, 0.66], year: '1803–1805',
