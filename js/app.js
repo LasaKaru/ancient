@@ -791,6 +791,11 @@
       else done();
     };
     return h('div', { className: 'challenge-share' },
+      summary.ghostSaved
+        ? h('div', { className: 'cs-ghost' }, '👻 A new ghost of this run is saved — race it (and your best score) next time you take this fight.')
+        : summary.hadGhost
+          ? h('div', { className: 'cs-ghost dim' }, '👻 Your ghost held its record this time.')
+          : null,
       h('div', { className: 'cs-label' }, 'Challenge a friend to the same fight'),
       h('div', { className: 'cs-code-row' },
         h('code', { className: 'cs-code' }, summary.code),

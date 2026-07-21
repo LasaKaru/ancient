@@ -106,6 +106,13 @@
       level.rng = U.mulberry(level.seed);
       level.code = G.Challenge ? G.Challenge.encode({ faction: level.cfg.id, waves: level.totalWaves, seed: level.seed }) : '';
       level.score = 0;
+      // ghost replay (v1.1 M1): record this run, and if a best run for this
+      // exact code exists, race its translucent replay through the same waves
+      if (G.Ghost) {
+        level.recorder = new G.GhostRecorder();
+        const gd = G.Ghost.load(level.code);
+        level.replay = gd ? new G.GhostReplay(engine, gd) : null;
+      }
 
       // the sacred centre: a whitewashed stupa the king defends across time
       B.stupa(engine, { pos: [0, 10], radius: 6, whitewashed: true });
@@ -185,6 +192,12 @@
       G.audio.warHorn();
       engine.ui.banner('WAVE ' + level.wave + ' / ' + level.totalWaves, 'The age of ' + c.name + ' comes on');
       engine.setCombatIntensity(0.85);
+      // the recorder and the ghost both start with the first age, so their
+      // clocks line up with the seeded fight
+      if (level.wave === 1) {
+        if (level.recorder) level.recorder.start();
+        if (level.replay) level.replay.start();
+      }
     },
 
     /* final score, leaderboard entry, and the shareable code — merged into
@@ -194,7 +207,7 @@
       const cleared = level.wave >= level.totalWaves ? level.totalWaves : Math.max(0, level.wave - 1);
       const timeBonus = Math.max(0, 1200 - Math.round(t));
       const score = level.score + engine.stats.kills * 10 + timeBonus;
-      let rank = 0, isBest = false;
+      let rank = 0, isBest = false, ghostSaved = false;
       if (!level._recorded && cleared > 0 && G.Leaderboard) {
         level._recorded = true;
         const res = G.Leaderboard.record(level.cfg.id, {
@@ -202,6 +215,8 @@
           waves: level.totalWaves, cleared, seed: level.seed, code: level.code,
         });
         rank = res.rank; isBest = res.isBest;
+        // keep this run's ghost if it beats the one stored for this exact fight
+        if (G.Ghost && level.recorder) ghostSaved = G.Ghost.save(level.code, score, level.recorder.samples);
       }
       return {
         arena: true,
@@ -209,7 +224,7 @@
         factionName: level.cfg.name,
         score, cleared, totalWaves: level.totalWaves,
         code: level.code, seed: level.seed,
-        rank, isBest,
+        rank, isBest, ghostSaved, hadGhost: !!level.replay,
         best: G.Leaderboard ? G.Leaderboard.best(level.cfg.id) : score,
       };
     },
@@ -230,6 +245,8 @@
     update(engine, dt) {
       const level = this;
       level.king.update(dt);
+      if (level.recorder) level.recorder.sample(engine, dt);
+      if (level.replay) level.replay.update(engine, dt);
 
       if (level.state === 'intro') {
         level.timer -= dt;

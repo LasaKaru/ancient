@@ -36,7 +36,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.8 | *Chronicles II* | ☐ planned | Parakramabahu's Wars, the Invasion of Kalinga Magha |
 | v0.9 | *Chronicles IV (early)* | ◐ shipped | ✅ **Battle of Mulleriyawa** (1559) — the first gunpowder enemies (`AI_TYPES.gunner`, telegraphed musket reload) and Portuguese armour; ✅ **The Passes of 1803** (First Anglo-Kandyan War) — a jungle ambush against British redcoat gunners; ☐ Kandyan–Dutch wars, the Uva Rising finale |
 | v1.0 | *One Island* | ◐ shipped | ✅ **Legends of the King** — the "War of Ages" arena where Dutugemunu faces any age's foe (Chola/Pandya/Kandy/Portuguese/British), explicitly framed as legend; ☐ full campaign polish, performance pass |
-| v1.1 | *Brothers-in-Arms* | ◐ shipped | ✅ **Phase M1** async multiplayer: seeded Challenge Codes (same fight for everyone) + per-faction leaderboards + daily-seed challenge; ☐ ghost replays, P2P co-op, duel PvP |
+| v1.1 | *Brothers-in-Arms* | ◐ shipped | ✅ **Phase M1** async multiplayer: seeded Challenge Codes (same fight for everyone) + per-faction leaderboards + daily-seed challenge + ✅ **ghost replays** (record your best run through a code, race its translucent spectre next time); ☐ P2P co-op, duel PvP |
 
 ---
 
@@ -250,7 +250,11 @@ Browser + no-build-step makes this the hardest pillar; staged to keep each relea
    skill decides the score. ✅ A per-faction, localStorage **leaderboard** (shown on the
    Legends menu and stamped on the run summary with rank + NEW-BEST), a **Fresh /
    Today's (shared daily seed) / From-a-code** launcher, and a one-tap "copy challenge"
-   share on the summary. ☐ Ghost replays remain (record + replay a run's inputs).
+   share on the summary. ✅ **Ghost replays** (`js/ghost.js`): a code makes the fight
+   reproducible, so a run's path is meaningful — the recorder samples position, facing,
+   weapon and action at 8 Hz, and beating the stored score overwrites the ghost. Take the
+   same code again and a translucent cyan spectre of your best run fights the identical
+   waves beside you (keyed by code in localStorage, so a ghost only haunts its own fight).
 2. ☐ **Phase M2 — P2P co-op (WebRTC):** 2-player co-op in wave-defense and Chronicles
    missions via WebRTC DataChannels; manual copy-paste signalling keeps the no-server
    promise, an optional tiny signalling relay (documented, self-hostable) makes it

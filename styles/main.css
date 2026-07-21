@@ -468,6 +468,8 @@ button { font-family: inherit; cursor: pointer; }
   background: rgba(79, 143, 179, 0.08);
   border: 1px solid rgba(79, 143, 179, 0.35); border-radius: 4px;
 }
+.cs-ghost { font-size: 13px; color: #8fe6e6; line-height: 1.5; margin-bottom: 10px; }
+.cs-ghost.dim { color: #7a9a9a; }
 .cs-label { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #7fb3cf; margin-bottom: 8px; }
 .cs-code-row { display: flex; align-items: center; gap: 10px; }
 .cs-code {
