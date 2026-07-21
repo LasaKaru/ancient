@@ -23,12 +23,13 @@
       'the dark of their homes. Slip in with the dawn mist. Free the captured ' +
       'soldiers, drive out the garrison — and if you can, see the villagers safe. ' +
       'An army that saves its people is an army the island will follow.',
-    timeLine: 'first light, under mist', marchDays: 5,
+    timeLine: 'the dead of night, by moonlight', marchDays: 5,
     ambience: 'village',
     music: 'explore',
     atmosphere: {
       skyTop: 0x6f89ae, skyHorizon: 0xe8d2a8, fogColor: 0xd9cba8, fogScale: 0.8,
       sunDir: new THREE.Vector3(0.6, 0.5, 0.3), sunIntensity: 2.2,
+      timeOfDay: 0.9,   // v0.3 §2.3: a moonlit night infiltration (braziers light the way)
     },
     objectives: [
       { id: 'garrison', text: 'Eliminate the Chola garrison', count: 8, marker: [0, 10] },
@@ -58,6 +59,10 @@
       // small village shrine = the refuge point
       B.stupa(engine, { pos: [34, -22], radius: 3.2, whitewashed: true });
       B.banner(engine, { pos: [30, -18], color: 0xcfc2a2, terrain: T });
+      // lit braziers throw pools of light and pockets of shadow for the night raid
+      for (const bp of [[-8, 8], [8, 12], [-2, 22], [0, -6], [-14, 16], [34, -18]]) {
+        B.brazier(engine, { pos: bp, light: true, terrain: T });
+      }
 
       T.scatterTrees(150, 64, [
         { x: 0, z: 12, r: 26 }, { x: -24, z: -18, r: 16 }, { x: 40, z: 20, r: 17 },

@@ -28,7 +28,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 |---|---|---|---|
 | v0.1 | *Ruwanwelisaya* | ✅ shipped | 6-level Dutugemunu campaign, FPS combat, AI, settings, procedural audio |
 | v0.2 | *Armoury* | ✅ shipped | Spear/axe/mace/dagger, 9-skill Renown tree, herb healing, threat ring, rally, rideable war elephants, wildlife & flora pass (pulled forward from v0.3 §2.4) |
-| v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun, ✅ **weather** (monsoon rain / dust / heat-haze), ✅ **more fauna** (monkeys, buffalo, crocodiles); ☐ full day/night cycle, war-camp hub, crowds |
+| v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun, ✅ **weather** (monsoon rain / dust / heat-haze), ✅ **more fauna** (monkeys, buffalo, crocodiles), ✅ **full day/night arc** (moon, stars, moonlit night raid); ☐ war-camp hub, crowds |
 | v0.4 | *Taprobane* | ◐ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch); ☐ save slots, in-game M map |
 | v0.5 | *Shadows* | ◐ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault; ☐ full ledge climbing, finisher animations, crowds |
 | v0.6 | *Chronicles I* | ◐ shipped | ✅ Two playable era campaigns from the map: Gajabahu's Crossing (~120 CE) and the Liberation of Polonnaruwa (1070); ☐ remaining Chronicles I rows |
@@ -114,8 +114,13 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
 
 ### 2.3 Day/night & day-by-day campaign structure (◐ shipped v0.3 — calendar + drifting sun)
 
-- ◐ **Time-of-day**: the sun now drifts visibly across the sky during a mission
-  (sky dome + shadows follow). ☐ Full day/night arc, moon, torch-lit night missions.
+- ✅ **Time-of-day**: the sun drifts across the sky during a mission, and now a full
+  **day/night arc** — `World.setTimeOfDay(t)` drives sun elevation, sky/fog darkening,
+  a sun→moonlight blend, and a fading **star field + moon**; a level may pin a fixed
+  time (`atmosphere.timeOfDay` / `night`) or run a live cycle (`dayNightRate`). The
+  **village liberation is now a moonlit night raid** lit by braziers — torch-lit night
+  infiltration, exactly the stealth mission the v0.5 kit was built for.
+- ☐ Missions locked to time by the map (dawn siege etc.) beyond the authored ones.
 - ✅ **Campaign calendar**: mission briefs show "Day N of the campaign · time of day";
   each victory advances the calendar by that chapter's march (stored in the save).
 - ☐ Missions locked to time (night infiltration, dawn siege); optional side

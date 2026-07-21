@@ -280,6 +280,9 @@
         hemiSky: 0xbcd8f5, hemiGround: 0x8a7048, hemiIntensity: 0.55,
         fogColor: 0xcfc4a4, fogScale: 1.0, dust: true,
         weather: 'clear',          // v0.3 §2.4: 'clear' | 'rain' | 'dust' | 'haze'
+        timeOfDay: null,           // v0.3 §2.3: null=daylight default; else 0..1 (0.5=noon)
+        night: false,              // shorthand for a deep-night mission
+        dayNightRate: 0,           // >0 = live cycle, full day per (this) seconds
       }, opts);
       this.scene = engine.scene;
       this.composer = null;
@@ -321,6 +324,47 @@
       this.sky.frustumCulled = false;
       scene.add(this.sky);
       this._baseSunDir = o.sunDir.clone().normalize();
+      this._dayTop = new THREE.Color(o.skyTop);
+      this._dayHorizon = new THREE.Color(o.skyHorizon);
+
+      /* --- night sky (v0.3 §2.3): stars + moon, parented to the sky dome so
+         they follow the player; hidden by day, faded in by setTimeOfDay --- */
+      {
+        const SN = 1100;
+        const spos = new Float32Array(SN * 3);
+        for (let i = 0; i < SN; i++) {
+          // upper hemisphere of a sphere just inside the sky dome
+          const u = Math.random(), v = Math.random() * 0.5;   // v<0.5 → above horizon
+          const th = u * Math.PI * 2, ph = Math.acos(1 - v * 2 + 1 - 1);
+          const y = Math.abs(Math.cos(v * Math.PI));
+          const r = 850, rad = Math.sqrt(Math.max(0.02, 1 - y * y));
+          spos[i * 3] = Math.cos(th) * rad * r;
+          spos[i * 3 + 1] = y * r;
+          spos[i * 3 + 2] = Math.sin(th) * rad * r;
+        }
+        const sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        this.stars = new THREE.Points(sgeo, new THREE.PointsMaterial({
+          color: 0xf2f4ff, size: 3.2, sizeAttenuation: false, transparent: true, opacity: 0,
+          depthWrite: false, blending: THREE.AdditiveBlending,
+        }));
+        this.stars.frustumCulled = false; this.stars.visible = false;
+        this.sky.add(this.stars);
+
+        const moonTex = Mats.canvasTex('moon', 64, (c, s) => {
+          const g2 = c.createRadialGradient(s / 2, s / 2, 2, s / 2, s / 2, s / 2);
+          g2.addColorStop(0, 'rgba(255,255,245,1)');
+          g2.addColorStop(0.55, 'rgba(228,232,240,0.9)');
+          g2.addColorStop(1, 'rgba(200,210,230,0)');
+          c.fillStyle = g2; c.fillRect(0, 0, s, s);
+        }, { srgb: true });
+        this.moon = new THREE.Sprite(new THREE.SpriteMaterial({ map: moonTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+        const az = Math.atan2(this._baseSunDir.x, this._baseSunDir.z) + Math.PI;   // opposite the sun
+        this.moon.position.set(Math.sin(az) * 400, 470, Math.cos(az) * 400);
+        this.moon.scale.set(90, 90, 1);
+        this.moon.visible = false;
+        this.sky.add(this.moon);
+      }
 
       /* --- lighting rig: key sun + hemisphere fill + faint bounce --- */
       this.hemi = new THREE.HemisphereLight(o.hemiSky, o.hemiGround, o.hemiIntensity);
@@ -368,6 +412,48 @@
       this._buildWeather();
       this.applySettings();
       this.setWeather(o.weather);
+      // fixed time-of-day / night missions: apply once and stop the day-drift so
+      // the two systems don't fight over the sun
+      let t0 = o.timeOfDay;
+      if (t0 == null && o.night) t0 = 0.94;               // deep night
+      if (t0 != null || o.dayNightRate > 0) {
+        this.timeOfDay = (t0 != null) ? t0 : 0.3;
+        if (o.dayNightRate <= 0) o.sunDrift = false;      // static time: freeze the drift
+        this.setTimeOfDay(this.timeOfDay);
+      }
+    }
+
+    /* Full day/night arc (v0.3 §2.3): t in [0,1], 0.5 = high noon, 0/1 = midnight.
+       Drives sun elevation, sky/fog colour, sun→moonlight, and the star/moon fade. */
+    setTimeOfDay(t) {
+      this.timeOfDay = ((t % 1) + 1) % 1;
+      const o = this.opts, U2 = util;
+      const elev = Math.sin((this.timeOfDay - 0.25) * Math.PI * 2);   // -1..1, noon = 1
+      const night = U2.clamp(-elev * 1.4 + 0.22, 0, 1);
+      this._nightAmt = night;
+      // sun/moon direction: keep the base azimuth, drive elevation by the clock
+      const base = this._baseSunDir;
+      const az = Math.atan2(base.x, base.z);
+      const horiz = Math.max(0.05, Math.sqrt(Math.max(0, 1 - elev * elev)));
+      o.sunDir.set(Math.sin(az) * horiz, elev, Math.cos(az) * horiz).normalize();
+      this.sky.material.uniforms.sunDir.value.copy(o.sunDir);
+      // colours
+      const lerp = (a, b, f) => a.clone().lerp(b, f);
+      const nightTop = new THREE.Color(0x070d20), nightHor = new THREE.Color(0x141b32);
+      this.sky.material.uniforms.top.value.copy(lerp(this._dayTop, nightTop, night));
+      this.sky.material.uniforms.horizon.value.copy(lerp(this._dayHorizon, nightHor, night));
+      // light: the day sun dims and cools into moonlight; nothing lights the ground from below
+      const above = Math.max(0, elev);
+      this.sun.intensity = U2.lerp(o.sunIntensity * (0.35 + 0.65 * above), 0.35, night);
+      this.sun.color.copy(lerp(new THREE.Color(o.sunColor), new THREE.Color(0x9fb6e0), night));
+      this.hemi.intensity = U2.lerp(o.hemiIntensity, 0.16, night);
+      // fog / background follow the sky down into the dark
+      const fogNight = new THREE.Color(0x0b1222);
+      const fc = lerp(this._baseFog.color, fogNight, night);
+      this.scene.fog.color.copy(fc); this.scene.background.copy(fc);
+      // stars + moon fade in
+      if (this.stars) { this.stars.visible = night > 0.04; this.stars.material.opacity = night; }
+      if (this.moon) { this.moon.visible = night > 0.25; this.moon.material.opacity = U2.clamp((night - 0.2) * 1.6, 0, 1); }
     }
 
     /* -------------------- weather (v0.3 §2.4) --------------------
@@ -495,8 +581,13 @@
 
     update(dt, playerPos) {
       this.time += dt;
+      // live day/night arc: advance the clock and re-light the world
+      if (this.opts.dayNightRate > 0) {
+        this.setTimeOfDay((this.timeOfDay || 0) + dt / this.opts.dayNightRate);
+      }
       // the day wears on: the sun drifts slowly across the sky during a mission
-      if (this.opts.sunDrift !== false) {
+      // (skipped when a fixed time-of-day or a live cycle owns the sun)
+      if (this.opts.sunDrift !== false && !(this.opts.dayNightRate > 0)) {
         const a = this.time * (this.opts.sunDriftRate || 0.0006);
         const b = this._baseSunDir, cs = Math.cos(a), sn = Math.sin(a);
         this.opts.sunDir.set(b.x * cs - b.z * sn, b.y + Math.sin(this.time * 0.0004) * 0.06, b.x * sn + b.z * cs).normalize();
