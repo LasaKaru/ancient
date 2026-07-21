@@ -33,7 +33,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.5 | *Shadows* | ✅ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault, ✅ **full ledge climbing**, ✅ **assassination/riposte finishers**, ✅ **social-blend crowds** |
 | v0.6 | *Chronicles I* | ◐ shipped | ✅ Two playable era campaigns from the map: Gajabahu's Crossing (~120 CE) and the Liberation of Polonnaruwa (1070); ☐ remaining Chronicles I rows |
 | v0.7 | *Chronicles III (early)* | ◐ shipped | ✅ **Yapahuwa & the Tooth** (1283, Kurunegala era) — a relic-escort defense up the rock stair; ☐ Dambadeniya Shield, Kotte Rising |
-| v0.8 | *Chronicles II* | ☐ planned | Parakramabahu's Wars, the Invasion of Kalinga Magha |
+| v0.8 | *Chronicles II* | ◐ shipped | ✅ **The Broken Throne** (1215) — the last stand at Polonnaruwa against Kalinga Magha, an honest fighting withdrawal that saves the Sacred Tooth; ☐ Parakramabahu's Wars |
 | v0.9 | *Chronicles IV (early)* | ◐ shipped | ✅ **Battle of Mulleriyawa** (1559) — the first gunpowder enemies (`AI_TYPES.gunner`, telegraphed musket reload) and Portuguese armour; ✅ **The Passes of 1803** (First Anglo-Kandyan War) — a jungle ambush against British redcoat gunners; ☐ Kandyan–Dutch wars, the Uva Rising finale |
 | v1.0 | *One Island* | ◐ shipped | ✅ **Legends of the King** — the "War of Ages" arena where Dutugemunu faces any age's foe (Chola/Pandya/Kandy/Portuguese/British), explicitly framed as legend; ✅ **polish & performance pass** — FPS/frame-time meter, opt-in adaptive quality (steps the preset down on sustained low FPS), first-launch hardware quality auto-detect, and auto-pause when the tab is hidden; ☐ further campaign polish |
 | v1.1 | *Brothers-in-Arms* | ◐ shipped | ✅ **Phase M1** async multiplayer: seeded Challenge Codes (same fight for everyone) + per-faction leaderboards + daily-seed challenge + ✅ **ghost replays** (record your best run through a code, race its translucent spectre next time); ☐ P2P co-op, duel PvP |
@@ -229,7 +229,7 @@ chronicles (Dipavamsa/Mahavamsa/Culavamsa/Rajavaliya) and the Wikipedia war list
 ### v0.6 — Chronicles I: The Anuradhapura Wars (Chola & Pandya)
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
-| ☐ **Vijithapura** (162–161 BCE) | Dutugemunu *(extends shipped campaign)* | Four-month siege of Vijithapura, Kandula at the south gate |
+| ✅ **Vijithapura** (162–161 BCE) — *shipped as core Chapter III* | Dutugemunu | The four-month siege of Vijithapura / Vijitanagara with Kandula at the gate is the shipped campaign's Chapter III ("The Gates of Vijitanagara"). |
 | ✅ **Gajabahu's Crossing** (c. 120 CE) — *shipped v0.6* | Gajabahu I fights beside you | Beach landing among the war-canoes, storming the palisaded Chola camp, breaking the captive pens (freed captives run for the boats), slaying the camp commander, optional store-burning |
 | ☐ **The Pandyan Sack** (846 CE) | Defender of Anuradhapura under Sena I | Fighting withdrawal, Battle of Mahatalita, save the relics |
 | ☐ **Udaya's Counterstroke** (946 CE) | General Viduragga | Repel Parantaka I, cross-strait raid to recover the plunder |
@@ -246,7 +246,7 @@ chronicles (Dipavamsa/Mahavamsa/Culavamsa/Rajavaliya) and the Wikipedia war list
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
 | ☐ **Parakramabahu's Wars** (1153–1186) | Parakramabahu the Great's champion | Unification of the three lands, overseas expeditions (Pagan war 1164, Pandyan intervention 1169–77) |
-| ☐ **The Broken Throne** (1202–1215) | Last guard of Polonnaruwa | Chola raids of 1202/1208/1210, Queen Lilavati's fall, stand against Kalinga Magha's invasion (1215) |
+| ✅ **The Broken Throne** (1215) — *shipped* | Last guard of Polonnaruwa | The night of Magha's sack, played as an honest fighting withdrawal: hold the citadel gate, escort the Relic-bearer over the causeway to the south sally-port, hold the crossing, and cut down Magha's war-captain — the city falls (history's own outcome) but the Sacred Tooth and the royal line escape south. Launched from the **Kalinga Magha** map pin. |
 
 ### v0.9 — Chronicles IV: Muskets on the Shore (European wars & **Kandy**) — ◐ shipped
 | Campaign | Playable era/hero | Key missions |

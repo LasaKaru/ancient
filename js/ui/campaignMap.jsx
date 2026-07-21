@@ -98,7 +98,8 @@
       id: 'magha', era: 'polonnaruwa', at: [0.53, 0.34], year: '1215',
       name: 'The Invasion of Kalinga Magha', sides: 'Polonnaruwa Kingdom vs. Eastern Ganga dynasty (Kalinga Magha)',
       result: 'Defeat — Rajarata abandoned',
-      desc: 'Magha\'s host sacked Polonnaruwa, burned the libraries, and drove the court south — the bitter end of the Rajarata civilisation and the beginning of the drift to the south-west.',
+      desc: 'Magha\'s host sacked Polonnaruwa, burned the libraries, and drove the court south — the bitter end of the Rajarata civilisation and the beginning of the drift to the south-west. Play the last stand at the citadel: hold long enough for the Sacred Tooth and the royal line to escape over the causeway.',
+      playable: 'brokenThrone',
     },
     {
       id: 'tambralinga', era: 'transitional', at: [0.37, 0.55], year: '1247 & 1262',
