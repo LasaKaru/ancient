@@ -352,9 +352,9 @@
       this.player = new G.PlayerController(this, this.def.spawn || { pos: [0, 0], yaw: 0 });
       this.playerRig = new G.PlayerRig(this, { armorColor: G.GameState.profile.armorColor });
       if (!this.terrain) this.terrain = new G.Terrain(this, {});
-      // battle-hardened: learned skills toughen the body
+      // battle-hardened: learned skills toughen the body (100 → 150 at mastery)
       if (G.Skills) {
-        this.player.maxHp = 100 + 5 * G.Skills.ownedCount();
+        this.player.maxHp = 100 + G.Skills.bonusHp();
         this.player.hp = this.player.maxHp;
       }
       // living-world layer: flowers, wandering animals, herb plants

@@ -64,17 +64,19 @@ loot pickups from fallen elites, level-authored weapon racks.
   - **Warrior** — combo extender (4th swing), parry window +, stagger damage +, dual-wield dagger.
   - **Hunter** — faster draw, breath-hold zoom, arrow recovery from corpses, fire/heavy arrows.
   - **Commander** — ally damage/health auras, rally shout (AI push), Kandula horn (elephant charge event, once per mission).
-- ☐ Skill screen accessible from pause + mission summary; respec allowed between missions.
-- ☐ Persist in the existing `G.GameState` localStorage save.
+- ✅ Skill screen accessible from pause + mission summary; ✅ **respec** between missions
+  ("Forget All" unlearns every discipline and frees the Renown to re-spend).
+- ✅ Persist in the existing `G.GameState` localStorage save.
 
 ### 1.3 Health & survival (◐ flat 100 HP + full-heal checkpoints)
 
-- ☐ Max-vitality growth with campaign progress (100 → 150 via skill tree).
-- ☐ **Herb pouch**: carryable siyambala/kothala-himbutu field remedies (2–3 charges,
-  hold-to-use with animation, found at camps) instead of checkpoint-only healing.
-- ☐ Optional **regeneration modes** tied to the Realism setting (§2.1): arcade
-  (slow auto-regen), standard (regen to 40% only), realistic (herbs/checkpoints only).
-- ☐ Bandaged/limping state under 25% HP in realistic mode (slower sprint, audible breathing).
+- ✅ Max-vitality growth with campaign progress: `G.Skills.bonusHp()` scales the body from
+  100 to **150** across the nine-skill tree (and drops back on respec).
+- ✅ **Herb pouch**: carryable field remedies (`player.herbs`, hold-G to chew with a
+  heal-over-time), refilled at checkpoints; the Herbalist skill deepens it.
+- ✅ Optional **regeneration modes** tied to the Realism setting (§2.1): arcade
+  (auto-regen), standard (regen to 40% only), realistic (herbs/checkpoints only).
+- ✅ Low-vitality **limp** under a quarter HP on the realistic preset (slower legs).
 
 ### 1.4 Enemy-nearby warning (✅ shipped v0.2 — toggle in Settings → Accessibility)
 

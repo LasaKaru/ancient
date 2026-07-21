@@ -29,6 +29,19 @@
     owned(id) { return (G.GameState.skills || []).includes(id); },
     ownedCount() { return (G.GameState.skills || []).length; },
     points() { return Math.max(0, Math.floor(G.GameState.reputation) - this.ownedCount()); },
+    /* battle-hardened body: mastering the whole tree grows vitality 100 → 150 */
+    bonusHp() { return Math.round(50 * this.ownedCount() / DEFS.length); },
+    /* respec between missions: unlearn every discipline, freeing the Renown to
+       re-spend (points() rises again as ownedCount falls) */
+    respec() {
+      if (!this.ownedCount()) return false;
+      G.GameState.skills = [];
+      G.GameState.save();
+      const eng = G.engine;
+      if (eng && eng.player) { eng.player.maxHp = 100; eng.player.hp = Math.min(eng.player.hp, 100); }
+      G.audio.uiConfirm();
+      return true;
+    },
     canBuy(id) {
       if (this.owned(id) || this.points() <= 0) return false;
       const def = DEFS.find((d) => d.id === id);
@@ -48,7 +61,7 @@
       // battle-hardened: every discipline learned toughens the body
       const eng = G.engine;
       if (eng && eng.player) {
-        eng.player.maxHp = 100 + 5 * this.ownedCount();
+        eng.player.maxHp = 100 + this.bonusHp();
         eng.player.hp = Math.min(eng.player.maxHp, eng.player.hp + 5);
       }
       return true;
@@ -89,8 +102,16 @@
                   h('div', { style: { fontSize: 11.5, color: '#b3a175', marginTop: 3 } }, d.desc)));
               })))),
         h('div', { className: 'menu-footnote' },
-          'Earn Renown by completing missions and saving civilians. Each skill learned also grants +5 max vitality.'),
-        h('button', { className: 'menu-btn small primary', style: { marginTop: 10 }, onClick: () => { G.audio.uiConfirm(); onBack(); } }, 'Done')));
+          'Earn Renown by completing missions and saving civilians. Mastering the whole tree grows your vitality from 100 to 150. Between missions you may forget your disciplines and re-spend the Renown.'),
+        h('div', { style: { display: 'flex', gap: 10, marginTop: 10 } },
+          h('button', {
+            className: 'menu-btn small',
+            style: { flex: '0 0 auto', opacity: G.Skills.ownedCount() ? 1 : 0.4 },
+            disabled: !G.Skills.ownedCount(),
+            title: 'Unlearn every discipline and reclaim the Renown to re-spend.',
+            onClick: () => { if (G.Skills.respec()) force(); },
+          }, `Forget All (respec ${G.Skills.ownedCount()})`),
+          h('button', { className: 'menu-btn small primary', style: { flex: 1 }, onClick: () => { G.audio.uiConfirm(); onBack(); } }, 'Done'))));
   }
 
   G.UI = G.UI || {};
