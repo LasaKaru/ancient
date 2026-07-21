@@ -51,6 +51,8 @@
       this.blockPressedAt = -99;
       // ---- off-hand shield (v0.2 Armoury completion) ----
       this.shieldEquipped = false;   // raised guard toggled with the shield key
+      // ---- ledge climb (v0.5) ----
+      this.climbing = null;          // {t, dur} while pulling up onto a high ledge
 
       // ---- physics body ----
       const body = new CANNON.Body({
@@ -230,9 +232,12 @@
 
       this._checkGrounded();
 
+      // v0.5: a ledge climb owns the body while it runs (input is suspended)
+      if (this.climbing) this._updateClimb(dt);
+
       // desired planar velocity from input
       let ix = 0, iz = 0;
-      if (this.alive && !this.moveLocked && this.pointerLocked && !eng.paused) {
+      if (this.alive && !this.moveLocked && !this.climbing && this.pointerLocked && !eng.paused) {
         if (this.key('forward')) iz += 1;
         if (this.key('back')) iz -= 1;
         if (this.key('left')) ix -= 1;
@@ -370,9 +375,11 @@
     }
 
     _tryJump() {
-      if (this.crouching) return;
-      // v0.5: mantle first — vault a barricade / ledge if one is at hand
+      if (this.crouching || this.climbing) return;
+      // v0.5: mantle first — vault a low barricade / ledge if one is at hand,
+      // then a full ledge-grab climb for a taller wall
       if (this._tryMantle()) return;
+      if (this._tryLedgeClimb()) return;
       if (!this.grounded) return;
       if (this.stamina < 6) return;
       this.stamina -= 6;
@@ -421,6 +428,67 @@
       this.viewShake = Math.max(this.viewShake, 0.35);
       G.audio.jump(); G.audio.footstep(true);
       return true;
+    }
+
+    /* v0.5: full ledge-grab climb — for a wall too tall to mantle (~1.9–3.7 m),
+       latch the lip and pull up over it in a short scripted climb. */
+    _tryLedgeClimb() {
+      if (this.stamina < 16 || this.climbing || !this.grounded) return false;
+      const eng = this.engine, feet = this.feetPos;
+      const fx = this._fwd.x, fz = this._fwd.z;
+      // a solid wall directly ahead at chest & head height
+      const res = new CANNON.RaycastResult();
+      let blocked = false;
+      for (const hy of [1.1, 1.9]) {
+        res.reset();
+        eng.physics.raycastClosest(
+          new CANNON.Vec3(feet.x, feet.y + hy, feet.z),
+          new CANNON.Vec3(feet.x + fx, feet.y + hy, feet.z + fz),
+          { collisionFilterMask: G.COL.STATIC, skipBackfaces: true }, res);
+        if (res.hasHit) { blocked = true; break; }
+      }
+      if (!blocked) return false;
+      // find the lip: probe down from high, just past the face
+      const px = feet.x + fx * 0.85, pz = feet.z + fz * 0.85;
+      const top = new CANNON.RaycastResult();
+      eng.physics.raycastClosest(
+        new CANNON.Vec3(px, feet.y + 4.2, pz), new CANNON.Vec3(px, feet.y + 0.05, pz),
+        { collisionFilterMask: G.COL.STATIC, skipBackfaces: true }, top);
+      if (!top.hasHit) return false;
+      const topY = top.hitPointWorld.y, rise = topY - feet.y;
+      if (rise <= 1.9 || rise > 3.7) return false;      // mantle owns the low ones
+      // is there room to stand on the ledge?
+      const head = new CANNON.RaycastResult();
+      eng.physics.raycastClosest(
+        new CANNON.Vec3(px, topY + 0.15, pz), new CANNON.Vec3(px, topY + 1.9, pz),
+        { collisionFilterMask: G.COL.STATIC, skipBackfaces: true }, head);
+      if (head.hasHit) return false;
+      // climb!
+      this.stamina -= 16; this.staminaRegenDelay = 1.1;
+      this._climbStart = { x: feet.x, y: feet.y, z: feet.z };
+      this._climbTarget = { x: px, y: topY + 0.04, z: pz };
+      this.climbing = { t: 0, dur: 0.95 };
+      this.body.velocity.set(0, 0, 0);
+      G.audio.jump();
+      eng.ui.toast('CLIMBING');
+      return true;
+    }
+    _updateClimb(dt) {
+      const cl = this.climbing;
+      cl.t += dt;
+      const f = U.clamp(cl.t / cl.dur, 0, 1);
+      const s = this._climbStart, tg = this._climbTarget;
+      const yPart = U.clamp(f / 0.72, 0, 1);            // rise first, hand over hand
+      const inPart = U.clamp((f - 0.62) / 0.38, 0, 1);  // then pull in over the lip
+      this.body.position.set(
+        U.lerp(s.x, tg.x, inPart), U.lerp(s.y, tg.y, yPart) + BODY_R, U.lerp(s.z, tg.z, inPart));
+      this.body.velocity.set(0, 0, 0);
+      this.viewShake = Math.max(this.viewShake, 0.12);
+      if (f >= 1) {
+        this.climbing = null;
+        this.body.velocity.set(this._fwd.x * 1.4, 0.4, this._fwd.z * 1.4);
+        G.audio.footstep(true);
+      }
     }
 
     /* off-hand shield: raise / lower the guard (v0.2 Armoury completion) */

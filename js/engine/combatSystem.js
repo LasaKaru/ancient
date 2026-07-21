@@ -171,6 +171,18 @@
     }
     primaryUp() {}
 
+    /* -------- finisher (v0.5): the emphasised kill flourish shared by stealth
+       assassinations and parry ripostes (a strike into a staggered foe) -------- */
+    _doFinisher(target, kind) {
+      this._finisherCount = (this._finisherCount || 0) + 1;
+      const p = this.engine.player;
+      p.viewShake = Math.max(p.viewShake, 0.7);
+      G.audio.swordClash();
+      if (target && target.alive === false) G.audio.enemyDie();
+      if (this.engine.playerRig && this.engine.playerRig.playFinisher) this.engine.playerRig.playFinisher();
+      this.engine.ui.toast(kind === 'stealth' ? '☠ ASSASSINATION' : '⚔ RIPOSTE');
+    }
+
     /* -------- shield bash (v0.2): a short shove that staggers a front cone -------- */
     _tryShieldBash() {
       const eng = this.engine, player = eng.player;
@@ -256,9 +268,9 @@
       player.stamina = Math.max(0, player.stamina - 8);
       const lethal = this.weapon === 'dagger';
       G.audio.takedown();
-      this.engine.playerRig?.playSwing(2);
       this.attacking = true; this.attackT = 0; this._didHit = true;  // brief lunge, no swing-hit
       target.takeDamage(lethal ? 500 : 70, { type: 'melee', from: player, silent: true });
+      this._doFinisher(target, 'stealth');                           // assassination flourish
       this.engine.noiseEvent(player.pos, 3);                          // barely a whisper
       player.viewShake = Math.max(player.viewShake, 0.3);
       this.engine.ui.toast(target.alive ? 'STRUCK FROM THE SHADOWS' : 'SILENT TAKEDOWN');
@@ -329,6 +341,7 @@
       const origin = player.pos;
       const fwd = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
       let hitSomething = false;
+      let riposteTarget = null;
 
       const tryHit = (t, isStruct) => {
         if (!t || t.alive === false) return;
@@ -340,6 +353,8 @@
         if (to.dot(fwd) < cfg.arc) return;
         hitSomething = true;
         let dmg = cfg.dmg[this.combo] * (G.Realism ? G.Realism().damageDealt : 1);
+        // riposte: a strike into a staggered (e.g. just-parried) foe is a finisher
+        if (!isStruct && t.ai && t.ai.state === 'stagger' && !riposteTarget) { dmg *= 2.2; riposteTarget = t; }
         if (isStruct && cfg.structDmg) dmg *= cfg.structDmg;
         if (!isStruct && t.type) {
           if (cfg.vsBrute && t.type === 'brute') dmg *= cfg.vsBrute;
@@ -366,6 +381,7 @@
       if (hitSomething) {
         player.viewShake = Math.max(player.viewShake, 0.25);
       }
+      if (riposteTarget) this._doFinisher(riposteTarget, 'riposte');
     }
 
     /* --------------------------- bow --------------------------- */

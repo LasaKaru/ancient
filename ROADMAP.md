@@ -30,7 +30,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.2 | *Armoury* | ✅ shipped | Spear/axe/mace/dagger, 9-skill Renown tree, herb healing, threat ring, rally, rideable war elephants, wildlife & flora pass (pulled forward from v0.3 §2.4) |
 | v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun, ✅ **weather** (monsoon rain / dust / heat-haze), ✅ **more fauna** (monkeys, buffalo, crocodiles), ✅ **full day/night arc** (moon, stars, moonlit night raid); ☐ war-camp hub, crowds |
 | v0.4 | *Taprobane* | ✅ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch), ✅ **in-game M map** (parchment mission chart), ✅ **save slots** (three independent campaigns); ☐ sea-lane invasion arrows |
-| v0.5 | *Shadows* | ◐ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault; ☐ full ledge climbing, finisher animations, crowds |
+| v0.5 | *Shadows* | ◐ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault, ✅ **full ledge climbing**, ✅ **assassination/riposte finishers**; ☐ social-blend crowds |
 | v0.6 | *Chronicles I* | ◐ shipped | ✅ Two playable era campaigns from the map: Gajabahu's Crossing (~120 CE) and the Liberation of Polonnaruwa (1070); ☐ remaining Chronicles I rows |
 | v0.7 | *Chronicles III (early)* | ◐ shipped | ✅ **Yapahuwa & the Tooth** (1283, Kurunegala era) — a relic-escort defense up the rock stair; ☐ Dambadeniya Shield, Kotte Rising |
 | v0.8 | *Chronicles II* | ☐ planned | Parakramabahu's Wars, the Invasion of Kalinga Magha |
@@ -186,8 +186,10 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
 
 ## 4 · v0.5 — "Shadows": Assassin's-Creed-style traversal & stealth
 
-- ◐ **Climbing**: ✅ mantle/vault (SPACE hoists you over barricades, crates and onto
-  ledges up to ~1.9m when something blocks the way). ☐ Full ledge-grab wall climbing.
+- ✅ **Climbing**: mantle/vault (SPACE hoists you over barricades, crates and onto ledges
+  up to ~1.9m), and now a **full ledge-grab climb** — a taller wall (~1.9–3.7m) with a
+  clear lip and headroom is latched and pulled up over in a short scripted climb (a real
+  stamina cost; input is suspended for the pull-up), while low obstacles still mantle.
 - ✅ **Parkour-lite**: vaulting barricades & low walls via the mantle system.
 - ✅ **Stealth kit** (v0.5): crouch-takedowns from behind unaware enemies (knife kills
   outright, heavier blades wound gravely — both silent), corpse awareness (patrols that
@@ -195,8 +197,12 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   ☐ Social blend in civilian crowds (needs §2.4 crowds).
 - ✅ **Warrior Sense** (X): stamina-costed pulse marking enemies and the objective
   through walls for 6s; disabled on the realistic preset by design.
-- ☐ Assassination/parry **finisher animations** (both cameras).
-- ◐ Mission design pass: the village liberation is fully stealthable end-to-end.
+- ✅ Assassination/parry **finisher animations** (both cameras): a shared kill flourish
+  (`combat._doFinisher` + `PlayerRig.playFinisher`, a hard overhead chop in first person
+  and a strike on the third-person body, with a heavy view-punch and audio). Fires on a
+  stealth takedown (the **assassination**) and on a **riposte** — a strike into a
+  staggered foe (e.g. one you've just perfect-parried) lands at 2.2× for the kill.
+- ◐ Mission design pass: the village liberation is fully stealthable end-to-end (now at night).
 
 ---
 
