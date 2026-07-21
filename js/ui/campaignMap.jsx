@@ -74,7 +74,8 @@
       id: 'chola946', era: 'anuradhapura', at: [0.52, 0.27], year: '946 CE',
       name: "Udaya's Counterstroke", sides: 'Anuradhapura Kingdom (Udaya IV, General Viduragga) vs. Chola Empire (Parantaka I)',
       result: 'Anuradhapura victory — the plunder recovered',
-      desc: 'Parantaka I sacked the capital but could not hold it; General Viduragga struck back into Chola country and compelled the return of what was seized.',
+      desc: 'Parantaka I sacked the capital but could not hold it; General Viduragga struck back into Chola country and compelled the return of what was seized. Play the recovery raid: storm the shore, get the plundered chests down to the boats, and break the Chola shore-captain.',
+      playable: 'udayaCounterstroke',
     },
     {
       id: 'conquest', era: 'anuradhapura', at: [0.47, 0.36], year: '992–1017',
