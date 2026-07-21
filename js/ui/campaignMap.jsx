@@ -67,7 +67,8 @@
       id: 'pandya846', era: 'anuradhapura', at: [0.44, 0.26], year: '846 CE',
       name: 'The Pandyan Sack', sides: 'Anuradhapura Kingdom (Sena I) vs. Pandya dynasty (Srimara Srivallabha)',
       result: 'Pandyan victory — Anuradhapura plundered',
-      desc: 'Srimara Srivallabha broke the Sinhalese line at Mahatalita and plundered the sacred city, until treaty restored the land.',
+      desc: 'Srimara Srivallabha broke the Sinhalese line at Mahatalita and plundered the sacred city, until treaty restored the land. Play the defence of the relics: carry the casket to the inner refuge and hold the sacred precinct through the onslaught.',
+      playable: 'pandyanSack',
     },
     {
       id: 'chola946', era: 'anuradhapura', at: [0.52, 0.27], year: '946 CE',

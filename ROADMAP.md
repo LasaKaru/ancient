@@ -231,7 +231,7 @@ chronicles (Dipavamsa/Mahavamsa/Culavamsa/Rajavaliya) and the Wikipedia war list
 |---|---|---|
 | ✅ **Vijithapura** (162–161 BCE) — *shipped as core Chapter III* | Dutugemunu | The four-month siege of Vijithapura / Vijitanagara with Kandula at the gate is the shipped campaign's Chapter III ("The Gates of Vijitanagara"). |
 | ✅ **Gajabahu's Crossing** (c. 120 CE) — *shipped v0.6* | Gajabahu I fights beside you | Beach landing among the war-canoes, storming the palisaded Chola camp, breaking the captive pens (freed captives run for the boats), slaying the camp commander, optional store-burning |
-| ☐ **The Pandyan Sack** (846 CE) | Defender of Anuradhapura under Sena I | Fighting withdrawal, Battle of Mahatalita, save the relics |
+| ✅ **The Pandyan Sack** (846 CE) — *shipped* | Defender of Anuradhapura under Sena I | Srimara's sack, played as a defence of the relics: carry the casket from the great stupa to the inner shrine refuge, hold the sacred precinct through three waves, shepherd the fleeing monks, and break Srimara's champion at the gate. Launched from the **Pandyan Sack** map pin. |
 | ☐ **Udaya's Counterstroke** (946 CE) | General Viduragga | Repel Parantaka I, cross-strait raid to recover the plunder |
 | ◐ **The Great Conquest & Resistance** (992–1070) | Ruhuna resistance → Vijayabahu I | ✅ *Liberation of Polonnaruwa (1070) shipped v0.6*: stealth-or-steel patrol clearing, citadel gate breach with the resistance rising, the occupation governor, raising the lion banner. ☐ Fall-of-Anuradhapura + guerrilla-years missions |
 
