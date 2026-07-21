@@ -35,6 +35,8 @@
       enemyAwareness: 1,
       arrowDrop: 1,
       hudMinimal: false,
+      friendlyFire: false,        // v0.3 §2.1: your own steel can wound allies
+      herbs: 1,                   // v0.3 §2.1: herb abundance (0.5 sparse … 1.5 plentiful)
     },
     controls: {
       sensitivity: 1.0, invertY: false,
@@ -58,9 +60,9 @@
     ultra: { drawDistance: 330, foliage: 1.3, pixelRatio: 2, postFX: true },
   };
   const REALISM_PRESETS = {
-    arcade: { damageTaken: 0.6, damageDealt: 1.25, regen: 'arcade', enemyAwareness: 0.8, arrowDrop: 0.7, hudMinimal: false },
-    standard: { damageTaken: 1, damageDealt: 1, regen: 'standard', enemyAwareness: 1, arrowDrop: 1, hudMinimal: false },
-    realistic: { damageTaken: 1.5, damageDealt: 1, regen: 'none', enemyAwareness: 1.25, arrowDrop: 1.3, hudMinimal: true },
+    arcade: { damageTaken: 0.6, damageDealt: 1.25, regen: 'arcade', enemyAwareness: 0.8, arrowDrop: 0.7, hudMinimal: false, friendlyFire: false, herbs: 1.4 },
+    standard: { damageTaken: 1, damageDealt: 1, regen: 'standard', enemyAwareness: 1, arrowDrop: 1, hudMinimal: false, friendlyFire: false, herbs: 1 },
+    realistic: { damageTaken: 1.5, damageDealt: 1, regen: 'none', enemyAwareness: 1.25, arrowDrop: 1.3, hudMinimal: true, friendlyFire: true, herbs: 0.6 },
   };
   G.REALISM_PRESETS = REALISM_PRESETS;
   /* live accessor used by combat / AI / player each frame */

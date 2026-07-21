@@ -131,8 +131,10 @@
         h(Row, { label: 'Enemy awareness', key: 'ra' + G.Settings.data.realism.preset }, h(Slider, { path: 'realism.enemyAwareness', min: 0.5, max: 1.5, step: 0.05, fmt: (v) => '×' + v.toFixed(2) })),
         h(Row, { label: 'Arrow drop (gravity)', key: 'rr' + G.Settings.data.realism.preset }, h(Slider, { path: 'realism.arrowDrop', min: 0.5, max: 1.6, step: 0.05, fmt: (v) => '×' + v.toFixed(2) })),
         h(Row, { label: 'Minimal HUD (diegetic)', key: 'rh' + G.Settings.data.realism.preset }, h(Toggle, { path: 'realism.hudMinimal' })),
+        h(Row, { label: 'Friendly fire', key: 'rf' + G.Settings.data.realism.preset }, h(Toggle, { path: 'realism.friendlyFire' })),
+        h(Row, { label: 'Herb abundance', key: 'rhb' + G.Settings.data.realism.preset }, h(Slider, { path: 'realism.herbs', min: 0.5, max: 1.5, step: 0.1, fmt: (v) => Math.round(v * 100) + '%' })),
         h('div', { className: 'settings-note' },
-          'Applies instantly, mid-fight if you like. Realistic mode also slows your legs below a quarter vitality — chew your herbs. Hand-tuning any dial switches the preset to "custom".'));
+          'Applies instantly, mid-fight if you like. Realistic mode also slows your legs below a quarter vitality — chew your herbs — turns on friendly fire (mind your allies), and makes herbs scarce. Hand-tuning any dial switches the preset to "custom".'));
     } else if (tab === 'controls') {
       body = h(ControlsTab);
     } else if (tab === 'audio') {

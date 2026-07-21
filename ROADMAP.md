@@ -102,7 +102,9 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
 - ✅ HUD minimalism (hides compass/tracker/threat-ring for diegetic play)
 - ✅ arrow physics drop severity, ✅ enemy awareness sharpness, ✅ low-vitality limp
   (realistic preset)
-- ☐ friendly fire on/off, herb scarcity dial
+- ✅ **friendly fire** on/off (your own steel/arrows can wound allies — on by default only
+  on the realistic preset) and a **herb-abundance dial** (0.5 sparse … 1.5 plentiful,
+  scaling the pouch cap and the starting handful; realistic is stingy, arcade generous)
 
 ### 2.2 Third-person mode (✅ shipped v0.3 — core)
 

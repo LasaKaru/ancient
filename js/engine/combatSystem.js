@@ -373,7 +373,8 @@
         if (!isStruct && cfg.staggerChance && t.stagger && Math.random() < cfg.staggerChance) t.stagger(1.0);
       };
 
-      for (const e of eng.enemies.combatants()) if (e.faction !== 'ally') tryHit(e, false);
+      const ff = G.Realism && G.Realism().friendlyFire;   // v0.3: careful with your swings
+      for (const e of eng.enemies.combatants()) if (ff || e.faction !== 'ally') tryHit(e, false);
       for (const t of eng.targets) tryHit(t, false);
       for (const d of eng.attackables) tryHit(d, true);
       for (const d of eng.destructibles) if (!d.broken) tryHit(d, true);
@@ -517,7 +518,9 @@
       }
       if (ent && ent.takeDamage) {
         const sameFaction = a.owner && ent.faction && a.owner.faction === ent.faction;
-        if (!sameFaction && ent.alive !== false) {
+        // friendly fire: the player's own arrows can wound allies when it's on
+        const ff = a.owner && a.owner.isPlayer && G.Realism && G.Realism().friendlyFire;
+        if ((!sameFaction || ff) && ent.alive !== false) {
           const crit = hitPoint.y > (ent.pos ? ent.pos.y + 0.42 : 1.6);
           ent.takeDamage(a.damage * (crit ? 1.7 : 1), { dir: dirNorm, type: 'arrow', from: a.owner, crit });
           G.audio.arrowHit('flesh');

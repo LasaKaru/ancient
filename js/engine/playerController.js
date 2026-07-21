@@ -27,8 +27,8 @@
       this.alive = true;
       this.isPlayer = true;
       this.faction = 'ally';
-      // herb pouch (v0.2): field healing between checkpoints
-      this.herbs = 2;
+      // herb pouch (v0.2): field healing between checkpoints (v0.3: scarcity dial)
+      this.herbs = Math.max(1, Math.round(2 * ((G.Realism && G.Realism().herbs) || 1)));
       this._healPool = 0;    // remaining heal-over-time from a chewed herb
 
       // ---- movement state ----
@@ -183,7 +183,11 @@
       return this.keysDown.has(G.Settings.data.controls.keys[action]);
     }
 
-    herbCap() { return (G.Skills && G.Skills.owned('herbalist')) ? 5 : 3; }
+    herbCap() {
+      const base = (G.Skills && G.Skills.owned('herbalist')) ? 5 : 3;
+      const mul = (G.Realism && G.Realism().herbs) || 1;    // v0.3 §2.1 scarcity dial
+      return Math.max(1, Math.round(base * mul));
+    }
     useHerb() {
       if (!this.alive || this.herbs <= 0 || this._healPool > 0) return;
       if (this.hp >= this.maxHp) { this.engine.ui.toast('UNHURT — SAVE THE HERBS'); return; }
