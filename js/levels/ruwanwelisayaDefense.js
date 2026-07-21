@@ -38,6 +38,7 @@
     atmosphere: {
       skyTop: 0x4a7ab8, skyHorizon: 0xe8d8b0, fogColor: 0xd9cda9,
       sunDir: new THREE.Vector3(-0.35, 0.75, 0.4),
+      weather: 'haze',   // the dry-zone stupa shimmers under a hard noon sun
     },
     objectives: [
       { id: 'waves', text: 'Repel the raider incursions', count: 4, marker: [0, 0] },

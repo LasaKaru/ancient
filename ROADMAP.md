@@ -28,7 +28,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 |---|---|---|---|
 | v0.1 | *Ruwanwelisaya* | ✅ shipped | 6-level Dutugemunu campaign, FPS combat, AI, settings, procedural audio |
 | v0.2 | *Armoury* | ✅ shipped | Spear/axe/mace/dagger, 9-skill Renown tree, herb healing, threat ring, rally, rideable war elephants, wildlife & flora pass (pulled forward from v0.3 §2.4) |
-| v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun; ☐ full day/night cycle, war-camp hub, crowds, weather |
+| v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun, ✅ **weather** (monsoon rain / dust / heat-haze), ✅ **more fauna** (monkeys, buffalo, crocodiles); ☐ full day/night cycle, war-camp hub, crowds |
 | v0.4 | *Taprobane* | ◐ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch); ☐ save slots, in-game M map |
 | v0.5 | *Shadows* | ◐ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault; ☐ full ledge climbing, finisher animations, crowds |
 | v0.6 | *Chronicles I* | ◐ shipped | ✅ Two playable era campaigns from the map: Gajabahu's Crossing (~120 CE) and the Liberation of Polonnaruwa (1070); ☐ remaining Chronicles I rows |
@@ -131,12 +131,18 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   irrigation canals & sluices (bisokotuwa), city walls with working gates.
 - ✅ Wildlife (v0.2): peafowl that fan their tails and spotted deer that wander and
   flee from battle; **rideable war elephants** (mount F, WASD drive, trample) in the
-  city, the siege and the stupa defense. ☐ Still to come: monkeys, buffalo, crocodiles.
+  city, the siege and the stupa defense. ✅ (v0.3) **monkeys** (curling tail, skittish),
+  **water buffalo** (sweeping horns, hard to startle) and **mugger crocodiles** (low,
+  still, tail-sweeping) join the weighted fauna pool with per-species nerve (`timid`).
 - ✅ Flora (v0.2): four tree archetypes (clustered rain-tree crowns, palms, flowering
   temple trees, banyan landmarks with aerial roots), per-instance colour variation,
   flowering shrubs, lotus pads & blooms on every tank, mossy stones & standing monoliths,
   gatherable healing-herb plants.
-- ☐ Weather: monsoon rain fronts, heat haze, dust storms in the dry zone.
+- ✅ Weather (`World.setWeather` in `js/engine/world.js`): **monsoon rain** (falling
+  streaks that follow the player, darkened sky/fog, a rain audio bed), dry-zone **dust
+  storms** (blowing motes + amber haze + gusting wind) and **heat haze** (warm shimmering
+  exposure). Set per level via the atmosphere config — Mulleriyawa (1559) fights in the
+  monsoon paddy, the Ruwanwelisaya defense shimmers under a dry-zone noon.
 
 ---
 

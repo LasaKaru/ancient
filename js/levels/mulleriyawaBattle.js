@@ -35,6 +35,7 @@
     atmosphere: {
       skyTop: 0x5a7098, skyHorizon: 0xd8c49a, fogColor: 0xc9baa0, fogScale: 1.05,
       sunDir: new THREE.Vector3(-0.35, 0.55, 0.4), sunIntensity: 2.2,
+      weather: 'rain',   // the 1559 battle was fought in the flooded monsoon paddy
     },
     objectives: [
       { id: 'skirmish', text: 'Break the Portuguese skirmish line', count: 6, marker: [0, 4] },

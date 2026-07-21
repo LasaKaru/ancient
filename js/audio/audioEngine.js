@@ -405,6 +405,34 @@
       }
     }
 
+    /* weather bed (v0.3 §2.4): a rain/dust noise layer laid *over* the level's
+       ambience, so a monsoon can open on a jungle without replacing it */
+    setWeatherSound(kind) {
+      if (!this.ensure()) { this._weatherKind = kind; return; }
+      if (kind === this._weatherKind) return;
+      this._weatherKind = kind;
+      for (const n of (this._weatherNodes || [])) {
+        try { n.gainNode.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.5); n.src.stop(this.ctx.currentTime + 2); } catch (_) {}
+      }
+      this._weatherNodes = [];
+      if (!kind || kind === 'clear') return;
+      const c = this.ctx;
+      const add = (buf, filterType, freq, q, gain, lfoRate, lfoDepth) => {
+        const src = c.createBufferSource(); src.buffer = buf; src.loop = true;
+        const f = c.createBiquadFilter(); f.type = filterType; f.frequency.value = freq; f.Q.value = q;
+        const g = c.createGain(); g.gain.value = 0.0001; g.gain.setTargetAtTime(gain, c.currentTime, 1.5);
+        if (lfoRate) { const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = lfoRate; lg.gain.value = lfoDepth; lfo.connect(lg); lg.connect(f.frequency); lfo.start(); }
+        src.connect(f); f.connect(g); g.connect(this.buses.ambience); src.start();
+        this._weatherNodes.push({ src, gainNode: g });
+      };
+      if (kind === 'rain') {
+        add(this._noise, 'bandpass', 2600, 0.7, 0.16, 0.3, 400);   // hiss of rain
+        add(this._pink, 'lowpass', 500, 0.6, 0.08, 0.15, 120);     // low patter
+      } else if (kind === 'dust' || kind === 'wind') {
+        add(this._pink, 'lowpass', 420, 0.7, 0.14, 0.08, 160);     // gusting dry wind
+      }
+    }
+
     /* ------------------------------------------------------------------ */
     /*  MUSIC — layered war-drums / flute, crossfaded by combat intensity  */
     /*  Implemented as a lookahead scheduler over a beat clock so layers   */

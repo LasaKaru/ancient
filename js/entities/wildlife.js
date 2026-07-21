@@ -24,6 +24,7 @@
       this.target = null;
       this.speed = 0;
       this.phase = U.rand(0, 9);
+      this.timid = 1;              // >1 skittish, <1 unbothered (set per species)
       this._build();
       engine.scene.add(this.group);
     }
@@ -61,6 +62,72 @@
         }
         g.add(body, neck, head, crest, this.fan);
         this.wanderR = 8; this.walkSpeed = 1.1; this.fleeSpeed = 3.4;
+      } else if (this.type === 'monkey') {   // toque macaque
+        const fur = M.std({ color: 0x8a6a3e, rough: 0.9, flat: true });
+        const faceMat = M.std({ color: 0xcaa87c, rough: 0.8 });
+        const body = new THREE.Mesh(new THREE.SphereGeometry(0.14, 7, 6), fur);
+        body.scale.set(0.9, 1.05, 1.1); body.position.y = 0.34;
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.09, 7, 6), fur); head.position.set(0, 0.54, 0.06);
+        const face = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 5), faceMat); face.scale.z = 0.7; face.position.set(0, 0.52, 0.13);
+        // long curling tail
+        this.tail = new THREE.Group();
+        let prev = this.tail;
+        for (let i = 0; i < 5; i++) {
+          const seg = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.024, 0.12, 5), fur);
+          seg.position.y = -0.1; seg.rotation.x = 0.5;
+          const pivot = new THREE.Group(); pivot.position.y = i === 0 ? 0.3 : -0.1; pivot.add(seg);
+          prev.add(pivot); prev = pivot;
+        }
+        this.tail.position.set(0, 0.34, -0.12); g.add(this.tail);
+        this.legs = [];
+        for (const [lx, lz] of [[-0.08, 0.06], [0.08, 0.06], [-0.08, -0.06], [0.08, -0.06]]) {
+          const limb = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.018, 0.26, 5), fur);
+          limb.position.set(lx, 0.14, lz); this.legs.push(limb); g.add(limb);
+        }
+        g.add(body, head, face);
+        this.wanderR = 6; this.walkSpeed = 1.5; this.fleeSpeed = 4.6; this.timid = 1.3;
+      } else if (this.type === 'buffalo') {   // water buffalo
+        const hide = M.std({ color: 0x40403c, rough: 0.9, flat: true });
+        const horn = M.std({ color: 0xb9b0a0, rough: 0.6 });
+        const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.85, 4, 8), hide);
+        body.rotation.z = Math.PI / 2; body.position.y = 0.95;
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.3, 0.4, 7), hide);
+        neck.position.set(0, 0.92, 0.62); neck.rotation.x = 1.1;
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.3, 0.5), hide);
+        head.position.set(0, 0.82, 0.92);
+        for (const s of [-1, 1]) {   // sweeping horns
+          const h1 = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.035, 5, 10, Math.PI * 0.8), horn);
+          h1.position.set(s * 0.14, 0.98, 0.9); h1.rotation.set(0.2, 0, s * 1.1); g.add(h1);
+        }
+        this.legs = [];
+        for (const [lx, lz] of [[-0.24, 0.5], [0.24, 0.5], [-0.24, -0.5], [0.24, -0.5]]) {
+          const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.95, 6), hide);
+          leg.position.set(lx, 0.47, lz); this.legs.push(leg); g.add(leg);
+        }
+        g.add(body, neck, head);
+        this.wanderR = 10; this.walkSpeed = 1.0; this.fleeSpeed = 3.0; this.timid = 0.55;
+      } else if (this.type === 'crocodile') {   // mugger crocodile, low and still
+        const scaleMat = M.std({ color: 0x40543a, rough: 0.95, flat: true });
+        const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 1.0, 4, 8), scaleMat);
+        body.rotation.z = Math.PI / 2; body.position.y = 0.2; body.scale.set(1, 0.7, 1);
+        const snout = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.14, 0.5), scaleMat); snout.position.set(0, 0.18, 0.78);
+        // segmented tail
+        this.tail = new THREE.Group();
+        let prev = this.tail;
+        for (let i = 0; i < 5; i++) {
+          const seg = new THREE.Mesh(new THREE.ConeGeometry(0.16 - i * 0.025, 0.24, 5), scaleMat);
+          seg.rotation.x = -Math.PI / 2; seg.position.z = -0.12;
+          const pivot = new THREE.Group(); pivot.position.z = i === 0 ? -0.55 : -0.22; pivot.add(seg);
+          prev.add(pivot); prev = pivot;
+        }
+        this.tail.position.set(0, 0.2, 0); g.add(this.tail);
+        this.legs = [];
+        for (const [lx, lz] of [[-0.26, 0.32], [0.26, 0.32], [-0.26, -0.28], [0.26, -0.28]]) {
+          const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.2, 5), scaleMat);
+          leg.position.set(lx, 0.1, lz); leg.rotation.z = lx < 0 ? 0.8 : -0.8; this.legs.push(leg); g.add(leg);
+        }
+        g.add(body, snout);
+        this.wanderR = 4; this.walkSpeed = 0.55; this.fleeSpeed = 2.2; this.timid = 0.4;
       } else { // spotted deer
         const hideTex = M.canvasTex('deerhide', 64, (c, s) => {
           c.fillStyle = '#9c6b3a'; c.fillRect(0, 0, s, s);
@@ -98,9 +165,10 @@
       this.phase += dt * (2 + this.speed * 3);
       const playerD = eng.player ? U.flatDist(g.position, eng.player.feetPos) : 99;
 
-      // startled by nearby sprinting players or by battle
-      const scared = (playerD < 5 && eng.player.sprinting) || playerD < 2.2 ||
-        (eng.combatIntensity > 0.5 && playerD < 22);
+      // startled by nearby sprinting players or by battle (species-dependent nerve)
+      const tm = this.timid;
+      const scared = (playerD < 5 * tm && eng.player.sprinting) || playerD < 2.2 * tm ||
+        (eng.combatIntensity > 0.5 && playerD < 22 * tm);
       if (scared && this.state !== 'flee') {
         this.state = 'flee'; this.stateT = 3.5;
         const away = new THREE.Vector3().subVectors(g.position, eng.player.feetPos).setY(0).normalize();
@@ -143,6 +211,9 @@
         const sw = Math.sin(this.phase * 4) * 0.5 * this.speed;
         this.legs[0].rotation.x = sw; this.legs[3].rotation.x = sw;
         this.legs[1].rotation.x = -sw; this.legs[2].rotation.x = -sw;
+      }
+      if (this.tail) {   // idle tail sway (crocodile sweeps, monkey flicks)
+        this.tail.rotation.y = Math.sin(this.phase * (this.type === 'crocodile' ? 1.5 : 3)) * (this.type === 'crocodile' ? 0.35 : 0.6);
       }
     }
   }
@@ -320,11 +391,13 @@
       }
       engine.critters = [];
       if (animals > 0) {
-        const n = Math.round((2 + 3 * animals));
+        const n = Math.round((2 + 4 * animals));
+        // weighted species pool (peacock/deer stay common); a level may override
+        const pool = cfg.fauna || ['peacock', 'peacock', 'deer', 'deer', 'monkey', 'buffalo', 'crocodile'];
         for (let i = 0; i < n; i++) {
           const a = rng() * Math.PI * 2, r = 18 + rng() * (bounds - 30);
           engine.critters.push(new Critter(engine, {
-            type: rng() < 0.45 ? 'peacock' : 'deer',
+            type: pool[Math.floor(rng() * pool.length)],
             pos: [Math.sin(a) * r, Math.cos(a) * r],
           }));
         }

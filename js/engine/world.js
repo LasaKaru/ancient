@@ -279,6 +279,7 @@
         sunColor: 0xfff0d0, sunIntensity: 2.6,
         hemiSky: 0xbcd8f5, hemiGround: 0x8a7048, hemiIntensity: 0.55,
         fogColor: 0xcfc4a4, fogScale: 1.0, dust: true,
+        weather: 'clear',          // v0.3 §2.4: 'clear' | 'rain' | 'dust' | 'haze'
       }, opts);
       this.scene = engine.scene;
       this.composer = null;
@@ -364,7 +365,91 @@
         this.dust.frustumCulled = false;
         scene.add(this.dust);
       }
+      this._buildWeather();
       this.applySettings();
+      this.setWeather(o.weather);
+    }
+
+    /* -------------------- weather (v0.3 §2.4) --------------------
+       Reusable particle rigs built once and toggled per level. Rain falls as
+       short vertical streaks in a box that follows the player; dry-zone dust
+       blows past horizontally; heat haze warms the air and shimmers.  */
+    _buildWeather() {
+      const scene = this.scene;
+      this.weather = { kind: 'clear', intensity: 1, t: 0 };
+      this._baseFog = { near: scene.fog.near, far: scene.fog.far, color: scene.fog.color.clone() };
+      this._baseExposure = 1.06;
+
+      // --- rain: line streaks, 2 verts each ---
+      const RN = 900, R_BOX = 46, R_TOP = 24;
+      const rpos = new Float32Array(RN * 6);
+      this._rainSeed = new Float32Array(RN);
+      for (let i = 0; i < RN; i++) {
+        const x = util.rand(-R_BOX, R_BOX), y = util.rand(0, R_TOP), z = util.rand(-R_BOX, R_BOX);
+        const len = util.rand(0.5, 0.95);
+        rpos[i * 6] = x; rpos[i * 6 + 1] = y + len; rpos[i * 6 + 2] = z;
+        rpos[i * 6 + 3] = x; rpos[i * 6 + 4] = y; rpos[i * 6 + 5] = z;
+        this._rainSeed[i] = util.rand(0.8, 1.4);
+      }
+      const rgeo = new THREE.BufferGeometry();
+      rgeo.setAttribute('position', new THREE.BufferAttribute(rpos, 3));
+      this.rain = new THREE.LineSegments(rgeo, new THREE.LineBasicMaterial({
+        color: 0xafc0d0, transparent: true, opacity: 0.34,
+      }));
+      this.rain.frustumCulled = false; this.rain.visible = false;
+      this._rainPos = rpos; this._rainN = RN; this._rainBox = R_BOX; this._rainTop = R_TOP;
+      scene.add(this.rain);
+
+      // --- dust: horizontal blowing motes ---
+      const DN = 420;
+      const dpos = new Float32Array(DN * 3);
+      for (let i = 0; i < DN; i++) {
+        dpos[i * 3] = util.rand(-50, 50);
+        dpos[i * 3 + 1] = util.rand(0.2, 6);
+        dpos[i * 3 + 2] = util.rand(-50, 50);
+      }
+      const dgeo = new THREE.BufferGeometry();
+      dgeo.setAttribute('position', new THREE.BufferAttribute(dpos, 3));
+      this.dustStorm = new THREE.Points(dgeo, new THREE.PointsMaterial({
+        color: 0xcdb387, size: 0.12, transparent: true, opacity: 0.5, depthWrite: false, sizeAttenuation: true,
+      }));
+      this.dustStorm.frustumCulled = false; this.dustStorm.visible = false;
+      this._dustStormPos = dpos; this._dustStormN = DN;
+      scene.add(this.dustStorm);
+    }
+
+    setWeather(kind = 'clear', intensity = 1) {
+      if (!this.weather) return;
+      this.weather.kind = kind; this.weather.intensity = intensity;
+      const rain = kind === 'rain';
+      if (this.rain) this.rain.visible = rain;
+      if (this.dustStorm) this.dustStorm.visible = kind === 'dust';
+      if (this.dust) this.dust.visible = this.opts.dust && kind !== 'rain';   // motes hide in the downpour
+      // atmosphere shifts
+      const fog = this.scene.fog, bf = this._baseFog;
+      if (rain) {
+        fog.color.setHex(0x6f7a82); this.scene.background.setHex(0x6f7a82);
+        fog.near = bf.near * 0.6; fog.far = bf.far * 0.62;
+        this.hemi.intensity = this.opts.hemiIntensity * 0.7;
+        this.sun.intensity = this.opts.sunIntensity * 0.45;
+      } else if (kind === 'dust') {
+        fog.color.setHex(0xc9a86e); this.scene.background.setHex(0xc9a86e);
+        fog.near = bf.near * 0.5; fog.far = bf.far * 0.66;
+        this.hemi.intensity = this.opts.hemiIntensity;
+        this.sun.intensity = this.opts.sunIntensity * 0.8;
+      } else if (kind === 'haze') {
+        fog.color.setHex(0xe6d6ad); this.scene.background.setHex(0xe6d6ad);
+        fog.near = bf.near * 0.8; fog.far = bf.far * 0.9;
+        this.hemi.intensity = this.opts.hemiIntensity * 1.1;
+        this.sun.intensity = this.opts.sunIntensity;
+      } else {
+        fog.color.copy(bf.color); this.scene.background.copy(bf.color);
+        this.hemi.intensity = this.opts.hemiIntensity;
+        this.sun.intensity = this.opts.sunIntensity;
+        this.applySettings();   // restore the draw-distance-driven fog
+      }
+      if (this._gl) this._gl.toneMappingExposure = kind === 'haze' ? 1.16 : kind === 'rain' ? 0.94 : this._baseExposure;
+      G.audio.setWeatherSound(rain ? 'rain' : kind === 'dust' ? 'dust' : 'clear');
     }
 
     /* Post chain — created once the renderer exists */
@@ -431,6 +516,47 @@
           this.dust.position.y = Math.sin(this.time * 0.13) * 0.4;
         }
       }
+      this._updateWeather(dt, playerPos);
+    }
+
+    _updateWeather(dt, playerPos) {
+      const w = this.weather;
+      if (!w || w.kind === 'clear') return;
+      w.t += dt;
+      const px = playerPos ? playerPos.x : 0, pz = playerPos ? playerPos.z : 0;
+      if (w.kind === 'rain' && this.rain) {
+        // follow the player, and rush each streak downward, wrapping at the ground
+        this.rain.position.set(px, 0, pz);
+        const p = this._rainPos, box = this._rainBox, top = this._rainTop;
+        const fall = 34 * dt, gust = Math.sin(w.t * 0.7) * 3 * dt;
+        for (let i = 0; i < this._rainN; i++) {
+          const spd = this._rainSeed[i];
+          let yTop = p[i * 6 + 1] - fall * spd, yBot = p[i * 6 + 4] - fall * spd;
+          let x = p[i * 6] + gust, xB = p[i * 6 + 3] + gust;
+          if (yBot < 0) {                              // recycle to the top of the box
+            const nx = util.rand(-box, box), nz = util.rand(-box, box), len = yTop - yBot;
+            x = nx; xB = nx;
+            yBot = top; yTop = top + len;
+            p[i * 6 + 2] = nz; p[i * 6 + 5] = nz;
+          }
+          p[i * 6] = x; p[i * 6 + 1] = yTop;
+          p[i * 6 + 3] = xB; p[i * 6 + 4] = yBot;
+        }
+        this.rain.geometry.attributes.position.needsUpdate = true;
+      } else if (w.kind === 'dust' && this.dustStorm) {
+        this.dustStorm.position.set(px, 0, pz);
+        const p = this._dustStormPos;
+        const wind = 9 * dt;
+        for (let i = 0; i < this._dustStormN; i++) {
+          p[i * 3] += wind;
+          p[i * 3 + 1] += Math.sin((w.t + i) * 1.3) * 0.4 * dt;
+          if (p[i * 3] > 50) p[i * 3] = -50;           // wrap across the wind
+        }
+        this.dustStorm.geometry.attributes.position.needsUpdate = true;
+      } else if (w.kind === 'haze') {
+        // gentle heat shimmer on the exposure
+        if (this._gl) this._gl.toneMappingExposure = 1.16 + Math.sin(w.t * 2.3) * 0.02;
+      }
     }
 
     applySettings() {
@@ -448,6 +574,7 @@
 
     dispose() {
       if (this.composer) { this.composer.dispose?.(); this.composer = null; }
+      G.audio.setWeatherSound('clear');
     }
   }
   G.World = World;
