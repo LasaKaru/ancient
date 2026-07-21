@@ -23,6 +23,7 @@
               : `Day ${G.GameState.day} of the campaign · ${level.timeLine || 'morning'}`),
         h('div', { className: 'menu-rule' }),
         h('div', { className: 'brief-framing' }, level.framing),
+        level.sources ? h('div', { className: 'brief-sources' }, '📜 Sources: ' + level.sources) : null,
         h('div', { className: 'brief-objectives-h' }, 'Objectives'),
         level.objectives.filter((o) => !o.hidden).map((o) =>
           h('div', { key: o.id, className: 'brief-obj' + (o.optional ? ' optional' : '') },

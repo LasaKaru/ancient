@@ -24,6 +24,7 @@
     chapter: 'Chronicles I',
     title: "Gajabahu's Crossing",
     location: 'A Chola shore-camp across the strait, c. 120 CE',
+    sources: 'Rajavaliya; the Gajabahu I tradition (~120 CE, the crossing to recover the captives).',
     framing:
       'The chronicles tell it plainly: what was taken shall be returned. In his ' +
       "father's day the Cholas carried off twelve thousand of the island's people. " +

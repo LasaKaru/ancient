@@ -39,6 +39,7 @@
     chapter: 'Chronicles III',
     title: 'Yapahuwa & the Tooth',
     location: 'The rock citadel of Yapahuwa, 1283 CE',
+    sources: 'Culavamsa ch. 90; the Tooth-Relic chronicles (Yapahuwa, 1277–1288).',
     framing:
       'Arya Chakravarti\'s expedition has broken through the outer works. The ' +
       'fortress is already lost — what matters now is what leaves it. Bhikkhu ' +

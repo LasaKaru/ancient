@@ -68,6 +68,16 @@
       onClick: () => { G.audio.ui(); setV(!v); G.Settings.set(path, !v); },
     }, h('div', { className: 'knob' }));
   }
+  function LangRow() {
+    const [, self] = React.useReducer((x) => x + 1, 0);
+    if (!G.I18N) return null;
+    const cur = G.I18N.lang;
+    return h('div', { className: 'seg' },
+      G.I18N.langs().map((l) => h('button', {
+        key: l, className: cur === l ? 'on' : '',
+        onClick: () => { G.audio.ui(); G.I18N.setLang(l); self(); },
+      }, G.I18N.LANG_NAMES[l] || l)));
+  }
 
   function ControlsTab() {
     const [listening, setListening] = React.useState(null);
@@ -151,6 +161,7 @@
         h(Row, { label: 'High-contrast HUD outline' }, h(Toggle, { path: 'access.colorblind' })),
         h(Row, { label: 'Enemy-nearby warning ring' }, h(Toggle, { path: 'access.threatRing' })),
         h(Row, { label: 'Auto-pause when tab is hidden' }, h(Toggle, { path: 'access.autoPause' })),
+        h(Row, { label: 'Language' }, h(LangRow)),
         h('div', { className: 'settings-note' },
           'High-contrast mode recolours the vitality and stamina bars (orange / blue) and strengthens HUD outlines for colour-blind visibility. Auto-pause halts the battle the moment you switch away, so nothing lands a blow while you\'re gone.'));
     }

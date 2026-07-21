@@ -17,6 +17,7 @@
     chapter: 'Chapter II',
     title: 'The Border Village',
     location: 'Kasagala village, southern Rajarata',
+    sources: 'Mahavamsa ch. 25 (the march north, clearing the Chola forts).',
     framing:
       "Elara's border garrisons hold the paddy villages that feed Anuradhapura. " +
       'This one has been taken: its guardians roped to posts, its people hiding in ' +

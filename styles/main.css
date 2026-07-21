@@ -210,6 +210,10 @@ button { font-family: inherit; cursor: pointer; }
   border-left: 2px solid rgba(216, 169, 78, 0.5);
   background: rgba(216, 169, 78, 0.04);
 }
+.brief-sources {
+  margin: -8px 0 14px; font-size: 12px; line-height: 1.5; color: #9c8a63;
+  font-style: italic;
+}
 .brief-objectives-h {
   font-size: 13px; letter-spacing: 4px; text-transform: uppercase;
   color: var(--gold); margin: 18px 0 8px;

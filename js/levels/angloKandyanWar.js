@@ -22,6 +22,7 @@
     chapter: 'Chronicles IV',
     title: 'The Passes of 1803',
     location: 'A jungle pass on the road from Kandy, 1803 CE',
+    sources: 'John Davy, An Account of the Interior of Ceylon (1821); the First Anglo-Kandyan War (1803).',
     framing:
       'They took an empty city and called it a conquest. Now the fever has ' +
       'them, their rice is gone, and they march for the coast through passes ' +

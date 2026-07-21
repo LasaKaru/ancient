@@ -17,6 +17,7 @@
     chapter: 'Chapter I',
     title: "The King's Muster",
     location: 'Anuradhapura — sacred city of Rajarata, 161 BCE',
+    sources: 'Mahavamsa chs. 22–24 (the young prince Gamini at Anuradhapura).',
     framing:
       'Rajarata is divided. From the southern kingdom of Ruhuna, prince Dutugemunu ' +
       'has marched north to unite the island under one banner and end the long rule ' +

@@ -21,6 +21,7 @@
     chapter: 'Chronicles I',
     title: 'The Liberation of Polonnaruwa',
     location: 'Polonnaruwa under Chola occupation, 1070 CE',
+    sources: 'Culavamsa chs. 57–60 (Vijayabahu I and the liberation of Polonnaruwa, 1070).',
     framing:
       'Fifty-three years the tiger banner has flown over Rajarata. From the hills ' +
       'of Ruhuna a boy who grew up in a conquered land became Vijayabahu, and his ' +

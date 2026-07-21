@@ -18,6 +18,7 @@
     chapter: 'Chapter III',
     title: 'The Gates of Vijitanagara',
     location: 'Vijitanagara fortress — four months into the campaign',
+    sources: 'Mahavamsa ch. 25 (the four-month siege of Vijithapura, Kandula at the gate).',
     framing:
       'Vijitanagara: strongest of the thirty-two strongholds on the road to ' +
       'Anuradhapura. Its walls have swallowed four assaults whole. Nandhimitra ' +

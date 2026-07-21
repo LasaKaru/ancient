@@ -147,14 +147,14 @@
         h('button', { className: 'menu-btn small', style: { marginTop: 18 }, onClick: click(() => setView('root')) }, 'Back'));
     } else {
       body = h(React.Fragment, null,
-        h('button', { className: 'menu-btn primary', onClick: click(() => setView('newgame')) }, 'New Game'),
-        h('button', { className: 'menu-btn', disabled: !hasSave, onClick: click(onContinue) }, 'Continue'),
-        onMap ? h('button', { className: 'menu-btn', onClick: click(onMap) }, 'Campaign Map — Taprobane') : null,
-        onLegends ? h('button', { className: 'menu-btn', onClick: click(onLegends) }, '✦ Legends of the King') : null,
-        h('button', { className: 'menu-btn', disabled: !hasSave, onClick: click(() => setView('chapters')) }, 'Chapters'),
-        onSelectSlot ? h('button', { className: 'menu-btn', onClick: click(() => setView('slots')) }, `Save Slots (${(activeSlot | 0) + 1})`) : null,
-        h('button', { className: 'menu-btn', onClick: click(onSettings) }, 'Settings'),
-        h('button', { className: 'menu-btn', onClick: click(() => setView('credits')) }, 'Credits'),
+        h('button', { className: 'menu-btn primary', onClick: click(() => setView('newgame')) }, G.t('menu.newGame')),
+        h('button', { className: 'menu-btn', disabled: !hasSave, onClick: click(onContinue) }, G.t('menu.continue')),
+        onMap ? h('button', { className: 'menu-btn', onClick: click(onMap) }, G.t('menu.map')) : null,
+        onLegends ? h('button', { className: 'menu-btn', onClick: click(onLegends) }, G.t('menu.legends')) : null,
+        h('button', { className: 'menu-btn', disabled: !hasSave, onClick: click(() => setView('chapters')) }, G.t('menu.chapters')),
+        onSelectSlot ? h('button', { className: 'menu-btn', onClick: click(() => setView('slots')) }, `${G.t('menu.saveSlots')} (${(activeSlot | 0) + 1})`) : null,
+        h('button', { className: 'menu-btn', onClick: click(onSettings) }, G.t('menu.settings')),
+        h('button', { className: 'menu-btn', onClick: click(() => setView('credits')) }, G.t('menu.credits')),
         h('div', { className: 'menu-footnote' },
           'Twenty-two centuries of war upon one island —', h('br'), 'from Dutugemunu the Great to the last kings of Kandy.'));
     }
@@ -165,7 +165,7 @@
       h('div', { className: 'panel', style: { minWidth: 420 } },
         h('div', { className: 'menu-eyebrow' }, 'Warriors of'),
         h('div', { className: 'menu-title' }, 'TAPROBANE'),
-        h('div', { className: 'menu-subtitle' }, 'Wars of the Ancient Isle'),
+        h('div', { className: 'menu-subtitle' }, G.t('menu.subtitle')),
         h('div', { className: 'menu-rule' }),
         body));
   }

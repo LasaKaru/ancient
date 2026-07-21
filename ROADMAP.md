@@ -29,7 +29,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.1 | *Ruwanwelisaya* | ✅ shipped | 6-level Dutugemunu campaign, FPS combat, AI, settings, procedural audio |
 | v0.2 | *Armoury* | ✅ shipped | Spear/axe/mace/dagger, 9-skill Renown tree, herb healing, threat ring, rally, rideable war elephants, wildlife & flora pass (pulled forward from v0.3 §2.4) |
 | v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun, ✅ **weather** (monsoon rain / dust / heat-haze), ✅ **more fauna** (monkeys, buffalo, crocodiles), ✅ **full day/night arc** (moon, stars, moonlit night raid); ☐ war-camp hub, crowds |
-| v0.4 | *Taprobane* | ✅ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch), ✅ **in-game M map** (parchment mission chart), ✅ **save slots** (three independent campaigns); ☐ sea-lane invasion arrows |
+| v0.4 | *Taprobane* | ✅ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch), ✅ **in-game M map** (parchment mission chart), ✅ **save slots** (three independent campaigns), ✅ **sea-lane invasion arrows** |
 | v0.5 | *Shadows* | ✅ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault, ✅ **full ledge climbing**, ✅ **assassination/riposte finishers**, ✅ **social-blend crowds** |
 | v0.6 | *Chronicles I* | ◐ shipped | ✅ Two playable era campaigns from the map: Gajabahu's Crossing (~120 CE) and the Liberation of Polonnaruwa (1070); ☐ remaining Chronicles I rows |
 | v0.7 | *Chronicles III (early)* | ◐ shipped | ✅ **Yapahuwa & the Tooth** (1283, Kurunegala era) — a relic-escort defense up the rock stair; ☐ Dambadeniya Shield, Kotte Rising |
@@ -170,7 +170,9 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   public-domain scan (e.g. the 1686 Mallet engraving).
 - ✅ Kingdom regions labelled: Rajarata/Anuradhapura, Ruhuna, Polonnaruwa, Jaffna,
   Dambadeniya–Kurunegala, Sigiriya, Kandy, Kotte, Sitawaka + central highlands, rivers.
-  ☐ Sea-lane invasion arrows.
+  ✅ **Sea-lane invasion arrows** — dashed, labelled routes engraved on the chart (Chola ·
+  Pandya across the Palk Strait, Kalinga Magha from the Bay of Bengal, European fleets from
+  the south-west).
 - ✅ **Select-a-war UI**: 16 conflicts pinned on the chart, each with a chronicle-page
   brief (date, combatants, historical outcome, summary) sourced from the List of wars
   involving Sri Lanka; the Dutugemunu pin launches the playable campaign chapters, the
@@ -321,11 +323,15 @@ Browser + no-build-step makes this the hardest pillar; staged to keep each relea
   spans every era) with wired optional **key-art slots** (menu backdrop, loading backdrop,
   per-campaign briefing banners via `js/ui/art.jsx`) that fade in over the procedural look
   when a file is present and fall back silently when absent; ☐ optional glTF packs (CC0).
-- ☐ **Localisation:** externalise strings; Sinhala and Tamil as first targets.
+- ◐ **Localisation:** ✅ scaffold shipped (`js/i18n.js`) — a `G.t('key')` string table with
+  per-key English fallback, a persisted language choice and a Settings selector; the main
+  menu is wired as the worked example with seed **Sinhala** and **Tamil** translations
+  (pending native review). ☐ extend the coverage to the full UI.
 - ☐ **Testing:** grow the headless Playwright suite (already used for v0.1) into a CI
   gate per level and per campaign.
-- ☐ **Historical review:** each Chronicles drop gets a sources note in-game (chronicle
-  citations on briefing cards, like v0.1's credits note separating history from legend).
+- ✅ **Historical review:** every playable level carries a **chronicle-sources** citation
+  (Mahavamsa / Culavamsa / Rajavaliya / early European accounts) shown on its briefing
+  card, extending v0.1's credits note that separates history from legend.
 
 ---
 
