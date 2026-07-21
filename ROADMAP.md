@@ -248,7 +248,7 @@ chronicles (Dipavamsa/Mahavamsa/Culavamsa/Rajavaliya) and the Wikipedia war list
 ### v0.7 — Chronicles III: The Transitional Kingdoms (incl. **Kurunegala**) — ◐ shipped
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
-| ☐ **Dambadeniya Shield** (1247–1270) | Parakramabahu II's guard | Repel Chandrabhanu's two Tambralinga invasions and the Pandyan expeditions |
+| ✅ **Dambadeniya Shield** (1247–1270) — *shipped* | Parakramabahu II's guard | A two-phase defence of Chandrabhanu's Javaka invasion: bear the Tooth Relic up to the summit shrine, HOLD the rock-gate through two assault waves, then SALLY down to the invasion shore to cast down Chandrabhanu's war-standard and break the man himself — rallying the gate defenders as you go. Launched from the **Tambralinga Invasions** map pin. |
 | ✅ **Yapahuwa & the Tooth** (1277–1288) — *shipped v0.7* | You escort Bhikkhu Ananda | The fortress is lost (history's own outcome, not rewritten) — you buy the time for the Relic-bearer to reach the sally-port: hold the gate, escort him up the great stair, hold the summit, rescue temple guards en route. Frames the historical embassy-recovery as the mission's epilogue. |
 | ☐ **Kotte Rising** (1411–1454) | Prince Sapumal / Parakramabahu VI's forces | Ming–Kotte war aftermath, defence against Vijayanagara raids, conquest of Jaffna |
 

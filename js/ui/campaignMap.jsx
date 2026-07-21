@@ -108,7 +108,8 @@
       id: 'tambralinga', era: 'transitional', at: [0.37, 0.55], year: '1247 & 1262',
       name: 'The Tambralinga Invasions', sides: 'Kingdom of Dambadeniya (Parakramabahu II) vs. Tambralinga (Chandrabhanu)',
       result: 'Both invasions repelled',
-      desc: 'Twice Chandrabhanu of Tambralinga landed seeking the Tooth Relic; twice Dambadeniya threw him back into the sea.',
+      desc: 'Twice Chandrabhanu of Tambralinga landed seeking the Tooth Relic; twice Dambadeniya threw him back into the sea. Play the defence: bear the Tooth up to the summit shrine, hold the rock-gate through the Javaka assault, then sally down to the sand to cast down his standard and break him.',
+      playable: 'dambadeniyaShield',
     },
     {
       id: 'yapahuwa', era: 'transitional', at: [0.43, 0.50], year: '1277–1288',
