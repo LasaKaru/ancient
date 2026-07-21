@@ -19,6 +19,7 @@
     camera: 'First ⇄ third person',
     lure: 'Whistle lure', sense: 'Warrior sense',
     shield: 'Raise / lower shield', javelin: 'Throw javelin',
+    map: 'Regional map',
   };
 
   function RealismPresetRow({ onChanged }) {

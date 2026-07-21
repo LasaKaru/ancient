@@ -45,6 +45,7 @@
         missionLog: 'Tab', pause: 'Escape',
         herb: 'KeyG', rally: 'KeyT', skills: 'KeyK', camera: 'KeyV',
         lure: 'KeyB', sense: 'KeyX', shield: 'KeyH', javelin: 'KeyZ',
+        map: 'KeyM',
       },
     },
     audio: { master: 0.8, music: 0.65, sfx: 0.9, ambience: 0.7 },
@@ -176,6 +177,7 @@
 
   /* ========================= GAME STATE ========================= */
   G.GameState = {
+    slot: 0,                  // active save slot (v0.4 §3.1)
     profile: { name: 'Abhaya', armorColor: 0x7a2f22 },
     unlocked: 1,              // highest unlocked chapter order
     bonusUnlocked: false,
@@ -184,18 +186,21 @@
     skills: [],               // learned skill ids (v0.2)
     day: 1,                   // campaign calendar (v0.3): days since the muster
     get completedCount() { return Object.keys(this.completed).length; },
+    _payload() {
+      return {
+        profile: this.profile, unlocked: this.unlocked,
+        bonusUnlocked: this.bonusUnlocked, completed: this.completed,
+        reputation: this.reputation, skills: this.skills, day: this.day,
+      };
+    },
     save() {
-      try {
-        localStorage.setItem('rajarata_save', JSON.stringify({
-          profile: this.profile, unlocked: this.unlocked,
-          bonusUnlocked: this.bonusUnlocked, completed: this.completed,
-          reputation: this.reputation, skills: this.skills, day: this.day,
-        }));
-      } catch (_) {}
+      try { localStorage.setItem(G.Saves.slotKey(this.slot), JSON.stringify(this._payload())); } catch (_) {}
     },
     load() {
+      // reset to defaults, then overlay the active slot (so switching slots is clean)
+      Object.assign(this, { profile: { name: 'Abhaya', armorColor: 0x7a2f22 }, unlocked: 1, bonusUnlocked: false, completed: {}, reputation: 0, skills: [], day: 1 });
       try {
-        const raw = localStorage.getItem('rajarata_save');
+        const raw = localStorage.getItem(G.Saves.slotKey(this.slot));
         if (raw) Object.assign(this, JSON.parse(raw));
       } catch (_) {}
     },
@@ -210,6 +215,45 @@
       this.save();
     },
   };
+
+  /* Save slots (v0.4 §3.1): three independent campaigns keyed in localStorage,
+     with a legacy single-save migrated into slot 0 so returning players keep
+     their progress. */
+  G.Saves = {
+    MAX: 3,
+    _base: 'rajarata_save',
+    slotKey(s) { return this._base + '_' + s; },
+    activeSlot() {
+      const v = parseInt(localStorage.getItem('rajarata_slot') || '0', 10);
+      return isNaN(v) ? 0 : Math.max(0, Math.min(this.MAX - 1, v));
+    },
+    setActive(s) { try { localStorage.setItem('rajarata_slot', String(s)); } catch (_) {} },
+    summary(s) {
+      try {
+        const raw = localStorage.getItem(this.slotKey(s));
+        if (!raw) return null;
+        const d = JSON.parse(raw);
+        return {
+          name: (d.profile && d.profile.name) || 'Abhaya',
+          armorColor: (d.profile && d.profile.armorColor) || 0x7a2f22,
+          unlocked: d.unlocked || 1, day: d.day || 1,
+          reputation: d.reputation || 0,
+          completed: d.completed ? Object.keys(d.completed).length : 0,
+        };
+      } catch (_) { return null; }
+    },
+    list() { const a = []; for (let s = 0; s < this.MAX; s++) a.push({ slot: s, data: this.summary(s) }); return a; },
+    use(s) { s = Math.max(0, Math.min(this.MAX - 1, s | 0)); this.setActive(s); G.GameState.slot = s; G.GameState.load(); return s; },
+    del(s) { try { localStorage.removeItem(this.slotKey(s)); } catch (_) {} },
+    migrateLegacy() {
+      try {
+        const legacy = localStorage.getItem(this._base);
+        if (legacy && !localStorage.getItem(this.slotKey(0))) localStorage.setItem(this.slotKey(0), legacy);
+      } catch (_) {}
+    },
+  };
+  G.Saves.migrateLegacy();
+  G.GameState.slot = G.Saves.activeSlot();
   G.GameState.load();
 
   /* ======================== MISSION SYSTEM ======================== */
@@ -820,6 +864,29 @@
       };
     }
 
+    /* data for the in-game regional map (v0.4 §3.2) */
+    getMapData() {
+      const p = this.player;
+      const bounds = (this.terrain && this.terrain.opts.bounds) || 70;
+      const objectives = [];
+      for (const o of this.missions.list) {
+        if (!o.marker || o.hidden) continue;
+        objectives.push({ text: o.text, x: o.marker[0], z: o.marker[1], done: o.done, optional: o.optional });
+      }
+      const enemies = [];
+      for (const n of this.enemies.npcs) {
+        if (n.alive && n.faction === 'enemy') enemies.push({ x: n.pos.x, z: n.pos.z });
+      }
+      const sp = this.def.spawn && this.def.spawn.pos;
+      return {
+        bounds, title: this.def.title, timeLine: this.def.timeLine, day: G.GameState.day,
+        player: { x: p.pos.x, z: p.pos.z, yaw: p.yaw },
+        spawn: sp ? { x: sp[0], z: sp.length === 3 ? sp[2] : sp[1] } : null,
+        objectives, enemies,
+        pois: (this.def.pois || []).map((q) => ({ text: q.text, x: q.pos[0], z: q.pos[1], icon: q.icon })),
+      };
+    }
+
     applySettings() {
       if (this.disposed) return;
       this.world.applySettings();
@@ -975,13 +1042,14 @@
     const [paused, setPaused] = React.useState(false);
     const [showSettings, setShowSettings] = React.useState(false);
     const [showSkills, setShowSkills] = React.useState(false);
+    const [showMap, setShowMap] = React.useState(false);
     const [death, setDeath] = React.useState(null);
     const [summary, setSummary] = React.useState(null);
     const [, force] = React.useReducer((x) => x + 1, 0);
     const engineRef = React.useRef(null);
 
     const stateRef = React.useRef({});
-    stateRef.current = { screen, paused, showSettings, showSkills, death };
+    stateRef.current = { screen, paused, showSettings, showSkills, showMap, death };
 
     const bridge = React.useMemo(() => ({
       onEngineReady: () => force(),
@@ -1005,12 +1073,24 @@
       },
     }), []);
 
-    // global Escape / pause handling
+    // global Escape / pause + M (regional map) handling
     React.useEffect(() => {
       const onKey = (e) => {
         const st = stateRef.current;
+        const mapKey = G.Settings.data.controls.keys.map || 'KeyM';
+        // M toggles the regional map (which pauses the sim while it's up)
+        if (e.code === mapKey && !G.engine?.uiFocus) {
+          if (st.screen !== 'game' || st.showSettings || st.showSkills || st.death) return;
+          setShowMap((m) => {
+            const nm = !m;
+            if (nm && engineRef.current) engineRef.current.player.releaseLock();
+            return nm;
+          });
+          return;
+        }
         if (e.code !== 'Escape') return;
         if (st.screen !== 'game') return;
+        if (st.showMap) { setShowMap(false); return; }
         if (st.showSettings) { setShowSettings(false); return; }
         if (st.showSkills) { setShowSkills(false); return; }
         if (st.death) return;
@@ -1044,12 +1124,12 @@
     React.useEffect(() => {
       const eng = engineRef.current;
       if (!eng) return;
-      eng.paused = paused || !!death || showSettings || showSkills;
-      if (showSkills && eng.player) eng.player.releaseLock();
-      if (screen === 'game' && !paused && !death && !showSettings && !showSkills && eng.player) {
+      eng.paused = paused || !!death || showSettings || showSkills || showMap;
+      if ((showSkills || showMap) && eng.player) eng.player.releaseLock();
+      if (screen === 'game' && !paused && !death && !showSettings && !showSkills && !showMap && eng.player) {
         eng.player.requestLock();
       }
-    }, [paused, death, showSettings, showSkills, screen, session]);
+    }, [paused, death, showSettings, showSkills, showMap, screen, session]);
 
     const startLevel = (id) => {
       setLevelId(id);
@@ -1139,6 +1219,9 @@
         },
         onChapter: (id) => startLevel(id),
         onSettings: () => setShowSettings(true),
+        onSelectSlot: (s) => { G.Saves.use(s); force(); },
+        onDeleteSlot: (s) => { G.Saves.del(s); if (G.GameState.slot === s) G.Saves.use(s); force(); },
+        activeSlot: G.GameState.slot,
       }));
     }
 
@@ -1185,6 +1268,9 @@
     }
     if (showSkills) {
       children.push(h(G.UI.SkillsMenu, { key: 'skills', onBack: () => setShowSkills(false) }));
+    }
+    if (showMap && screen === 'game' && engineRef.current && G.UI.RegionMap) {
+      children.push(h(G.UI.RegionMap, { key: 'map', engine: engineRef.current, onClose: () => setShowMap(false) }));
     }
 
     return h(React.Fragment, null, children);

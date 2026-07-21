@@ -110,6 +110,28 @@ button { font-family: inherit; cursor: pointer; }
   background: linear-gradient(90deg, transparent, rgba(216, 169, 78, 0.6), transparent);
 }
 
+/* --- save slots (v0.4 §3.1) --- */
+.slot-row { display: flex; gap: 8px; align-items: stretch; }
+.slot-row.active > .menu-btn:first-child { border-color: rgba(216,169,78,0.8); color: var(--gold-bright); }
+
+/* --- in-game regional map (v0.4 §3.2) --- */
+.region-map { text-align: center; }
+.region-canvas {
+  display: block; margin: 4px auto 10px; border-radius: 4px;
+  box-shadow: 0 6px 26px rgba(0,0,0,0.55); max-width: 100%; height: auto;
+}
+.region-legend {
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+  font-size: 12.5px; color: #cdb98c; margin-bottom: 6px;
+}
+.region-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.region-legend i { width: 11px; height: 11px; display: inline-block; border: 1px solid #3a2810; }
+.region-legend .lg-player { background: #b8321e; border-radius: 50%; }
+.region-legend .lg-obj { background: #c49630; transform: rotate(45deg); }
+.region-legend .lg-obj.done { background: #5a784a; transform: rotate(45deg); }
+.region-legend .lg-foe { background: #962015; border-radius: 50%; }
+.region-legend .lg-spawn { background: #7a6a3a; }
+
 .menu-btn {
   display: block; width: 100%; margin: 9px 0; padding: 13px 22px;
   background: rgba(216, 169, 78, 0.06);

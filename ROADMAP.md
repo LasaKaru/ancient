@@ -29,7 +29,7 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | v0.1 | *Ruwanwelisaya* | ✅ shipped | 6-level Dutugemunu campaign, FPS combat, AI, settings, procedural audio |
 | v0.2 | *Armoury* | ✅ shipped | Spear/axe/mace/dagger, 9-skill Renown tree, herb healing, threat ring, rally, rideable war elephants, wildlife & flora pass (pulled forward from v0.3 §2.4) |
 | v0.3 | *Kandula* | ◐ shipped | ✅ Realism presets (settings + pause), ✅ third-person mode (V), ✅ campaign day counter + drifting sun, ✅ **weather** (monsoon rain / dust / heat-haze), ✅ **more fauna** (monkeys, buffalo, crocodiles), ✅ **full day/night arc** (moon, stars, moonlit night raid); ☐ war-camp hub, crowds |
-| v0.4 | *Taprobane* | ◐ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch); ☐ save slots, in-game M map |
+| v0.4 | *Taprobane* | ✅ shipped | ✅ Ancient-map campaign screen (engraved chart, kingdom labels, era filter, 16 chronicle wars, campaign launch), ✅ **in-game M map** (parchment mission chart), ✅ **save slots** (three independent campaigns); ☐ sea-lane invasion arrows |
 | v0.5 | *Shadows* | ◐ shipped | ✅ Stealth takedowns, corpse awareness, whistle lure, concealment, Warrior Sense, mantle/vault; ☐ full ledge climbing, finisher animations, crowds |
 | v0.6 | *Chronicles I* | ◐ shipped | ✅ Two playable era campaigns from the map: Gajabahu's Crossing (~120 CE) and the Liberation of Polonnaruwa (1070); ☐ remaining Chronicles I rows |
 | v0.7 | *Chronicles III (early)* | ◐ shipped | ✅ **Yapahuwa & the Tooth** (1283, Kurunegala era) — a relic-escort defense up the rock stair; ☐ Dambadeniya Shield, Kotte Rising |
@@ -170,12 +170,17 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   Completed chapters show ✓ seals.
 - ✅ Era rail (543 BCE → 1818 CE) filtering conflicts by chronicle period —
   Anuradhapura → Polonnaruwa → Transitional → Kandyan → British.
-- ☐ Multiple **save slots** + per-campaign progress tracking.
+- ✅ Multiple **save slots** (`G.Saves` in `js/app.js`): three independent campaigns keyed
+  in localStorage, chosen from a **Save Slots** menu that shows each slot's hero, day and
+  wins; a legacy single-save migrates into slot 0 so returning players keep their progress.
 
-### 3.2 In-game map (☐ new)
+### 3.2 In-game map (✅ shipped v0.4)
 
-- ☐ `M` opens a regional hand-drawn map of the current mission area (objectives, camps,
-  discovered points of interest), same parchment art language.
+- ✅ `M` opens a regional hand-drawn **parchment map** (`js/ui/regionMap.jsx`) of the
+  current mission area — the player's position + facing, objective markers (gold diamonds,
+  ✓-sealed when done), the entry point, and enemy presence — in the same engraved,
+  aged-parchment language as the Taprobane chart, with a compass rose. Pauses the fight;
+  Esc or M closes it. Fed by `engine.getMapData()`.
 
 ---
 
