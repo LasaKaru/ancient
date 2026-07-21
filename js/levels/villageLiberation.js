@@ -63,6 +63,10 @@
       for (const bp of [[-8, 8], [8, 12], [-2, 22], [0, -6], [-14, 16], [34, -18]]) {
         B.brazier(engine, { pos: bp, light: true, terrain: T });
       }
+      // irrigation works (v0.3 §2.4): a stone bridge over the tank and a
+      // bisokotuwa sluice at the paddy bund
+      B.bridge(engine, { from: [30, 20], to: [50, 20], width: 3 });
+      B.sluice(engine, { pos: [-24, -5], yaw: 0 });
 
       T.scatterTrees(150, 64, [
         { x: 0, z: 12, r: 26 }, { x: -24, z: -18, r: 16 }, { x: 40, z: 20, r: 17 },

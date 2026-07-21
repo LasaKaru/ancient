@@ -136,8 +136,12 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   a small daily beat — idle at a well, tend a stall (work posture), stroll a lane — and
   scatter in panic when battle erupts or a warrior sprints past. Authored into the sacred-
   city tutorial (a living street to blend into); any level can add `crowd: {…}`.
-- ☐ More architecture: vatadage shrines, bodhigara, stone bridges, cave temples,
-  irrigation canals & sluices (bisokotuwa), city walls with working gates.
+- ✅ More architecture (`js/engine/terrain.js` `Build.*`): **vatadage** (circular relic-house
+  — terraces, pillar rings, a central dagoba, moonstone entrances), **bodhigara** (railed
+  bo-tree shrine), **stone bridge** (walkable deck on piers), **bisokotuwa sluice** (the
+  ancient valve-pit + channel) and a **rock cave-temple**. Placed in the sacred city
+  (vatadage, bodhigara, cave-temple) and the village (bridge over the tank, sluice at the
+  paddy bund). City walls with working gates already ship (`Build.gatehouse`).
 - ✅ Wildlife (v0.2): peafowl that fan their tails and spotted deer that wander and
   flee from battle; **rideable war elephants** (mount F, WASD drive, trample) in the
   city, the siege and the stupa defense. ✅ (v0.3) **monkeys** (curling tail, skittish),

@@ -48,6 +48,11 @@
       // sacred precinct — great whitewashed stupa to the north
       B.stupa(engine, { pos: [0, 46], radius: 11, whitewashed: true });
       B.stupa(engine, { pos: [-38, 30], radius: 5.5 });
+      // more of the sacred city (v0.3 §2.4): a vatadage relic-house, a bo-tree
+      // shrine, and a rock cave-temple on the fringe
+      B.vatadage(engine, { pos: [34, 12], radius: 6 });
+      B.bodhigara(engine, { pos: [-30, 40], size: 6 });
+      B.caveTemple(engine, { pos: [40, 40], yaw: -2.2 });
       // audience hall with correct threshold furniture
       B.pillarHall(engine, { pos: [0, 24], yaw: Math.PI, w: 12, d: 10 });
       B.moonstone(engine, { pos: [0, 17.2], yaw: Math.PI });
