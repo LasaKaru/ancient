@@ -719,7 +719,40 @@
       this.combatIntensity = Math.max(this._musicFloor, Math.min(1, engaged * 0.28));
       G.audio.setIntensity(this.combatIntensity);
 
+      this._scanThreatProximity();
+
       this.world.update(dt, this.player.feetPos);
+    }
+
+    /* v0.2 §1.4: an audio sting + a screen-edge pulse the first moment an
+       alerted enemy closes inside 10 m — a danger-close cue that doubles as an
+       accessibility aid. Auto-disabled on the realistic preset (and with the
+       threat ring off), by design. */
+    _scanThreatProximity() {
+      const realistic = G.Realism && G.Realism().preset === 'realistic';
+      if (G.Settings.data.access.threatRing === false || realistic ||
+          !this.player || !this.player.alive || this.cinematic.active) {
+        if (this._nearThreats) this._nearThreats.clear();
+        return;
+      }
+      const prev = this._nearThreats || (this._nearThreats = new Set());
+      const now = new Set();
+      const pp = this.player.pos;
+      const facingDeg = ((-this.player.yaw * 180 / Math.PI) % 360 + 360) % 360;
+      const ALERT = ['engage', 'windup', 'recover', 'investigate', 'search'];
+      for (const n of this.enemies.npcs) {
+        if (!n.alive || n.faction !== 'enemy' || !n.ai) continue;
+        if (!ALERT.includes(n.ai.state)) continue;
+        if (U.flatDist(n.pos, pp) > 10) continue;
+        now.add(n);
+        if (!prev.has(n)) {                      // newly danger-close → warn once
+          const bearing = (Math.atan2(n.pos.x - pp.x, -(n.pos.z - pp.z)) * 180 / Math.PI + 360) % 360;
+          const dir = ((bearing - facingDeg + 540) % 360) - 180;
+          G.audio.threatSting();
+          G.UIBus.threatPing(dir);
+        }
+      }
+      this._nearThreats = now;
     }
 
     render(dt) {

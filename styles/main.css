@@ -347,6 +347,17 @@ button { font-family: inherit; cursor: pointer; }
   animation: pulse-low 0.9s infinite alternate;
 }
 
+/* danger-close threat pulse: a one-shot glow on the screen edge nearest the
+   newly-arrived enemy (v0.2 §1.4) */
+.hud-threat-pulse {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  animation: threat-pulse 0.7s ease-out forwards;
+}
+.hud-threat-pulse.left   { background: linear-gradient(90deg, rgba(214,64,40,0.55) 0%, transparent 24%); }
+.hud-threat-pulse.right  { background: linear-gradient(270deg, rgba(214,64,40,0.55) 0%, transparent 24%); }
+.hud-threat-pulse.front  { background: radial-gradient(ellipse at 50% 12%, rgba(214,64,40,0.5) 0%, transparent 45%); }
+@keyframes threat-pulse { 0% { opacity: 0; } 22% { opacity: 1; } 100% { opacity: 0; } }
+
 /* --- cinematic letterbox --- */
 .hud-letterbox-top, .hud-letterbox-bot {
   position: absolute; left: 0; right: 0; height: 11vh; background: #000; z-index: 5;

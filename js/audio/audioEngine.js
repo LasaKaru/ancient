@@ -268,6 +268,11 @@
       this._burst({ dur: 0.35, gain: 0.16, noise: 'pink', filter: { type: 'lowpass', freq: 500 } });
     }
     stagger() { if (!this.ensure()) return; this._tone({ freq: 320, freqEnd: 140, dur: 0.3, gain: 0.18, type: 'square' }); }
+    threatSting() {   // a short low "danger close" pulse (v0.2 §1.4)
+      if (!this.ensure()) return;
+      this._tone({ freq: 150, freqEnd: 96, dur: 0.26, gain: 0.16, type: 'sawtooth', attack: 0.008 });
+      this._tone({ freq: 300, freqEnd: 190, dur: 0.18, gain: 0.07, type: 'triangle', delay: 0.02 });
+    }
     interact() { if (!this.ensure()) return; this._tone({ freq: 523, dur: 0.08, gain: 0.14, type: 'triangle' }); this._tone({ freq: 659, dur: 0.14, gain: 0.14, type: 'triangle', delay: 0.08 }); }
     whistle() {
       if (!this.ensure()) return;

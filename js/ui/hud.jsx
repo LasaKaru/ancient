@@ -25,6 +25,7 @@
       objectives: [],
       trackerOpen: true,
       damageKey: 0,
+      threatKey: 0, threatDir: 0,   // screen-edge danger pulse (v0.2 §1.4)
     },
     _subs: new Set(),
     set(patch) {
@@ -39,6 +40,8 @@
     titleCard(card) { this.set({ titleCard: { ...card, until: this.now() + (card.dur || 6) } }); },
     bossBar(name, frac) { this.set({ boss: name ? { name, frac } : null }); },
     damageFlash() { this.set({ damageKey: this.state.damageKey + 1 }); },
+    // dir: signed bearing offset in degrees (−left … +right of centre)
+    threatPing(dir = 0) { this.set({ threatKey: this.state.threatKey + 1, threatDir: dir }); },
     setObjectives(list) { this.set({ objectives: list }); },
     toggleTracker() { this.set({ trackerOpen: !this.state.trackerOpen }); },
   };
@@ -135,6 +138,12 @@
       // damage / low-hp overlays (keyed remount restarts the flash animation)
       h('div', { key: 'dmg' + S.damageKey, className: 'hud-damage-vignette' + (S.damageKey ? ' hit' : '') }),
       hpFrac < 0.3 && snap.alive ? h('div', { className: 'hud-lowhp-vignette' }) : null,
+
+      // danger-close threat pulse on the screen edge (keyed remount = restart)
+      S.threatKey ? h('div', {
+        key: 'threat' + S.threatKey,
+        className: 'hud-threat-pulse ' + (S.threatDir < -25 ? 'left' : S.threatDir > 25 ? 'right' : 'front'),
+      }) : null,
 
       // cinematic letterbox
       cine ? h('div', { className: 'hud-letterbox-top' }) : null,

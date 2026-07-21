@@ -81,8 +81,11 @@ loot pickups from fallen elites, level-authored weapon racks.
 - ✅ HUD **threat ring** around the crosshair/compass: directional pips for enemies in
   detection states (grey = suspicious, orange = searching, red = engaged) — doubles as an
   accessibility aid for players who can't rely on audio cues.
-- ☐ Audio sting + controller-style screen-edge pulse when an unseen enemy enters 10 m.
-- ☐ Toggleable and scalable in Settings → Accessibility; auto-disabled in "realistic" preset.
+- ✅ Audio sting + controller-style **screen-edge pulse** the first moment an alerted
+  enemy closes inside 10 m — the pulse lights the edge nearest its bearing (left / right /
+  front), fires once per arrival, and is a `G.UIBus.threatPing` + `audio.threatSting`.
+- ✅ Toggleable in Settings → Accessibility (shares the threat-ring toggle); auto-disabled
+  in the "realistic" preset by design.
 
 ---
 
