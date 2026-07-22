@@ -405,6 +405,11 @@
         this.player.maxHp = 100 + G.Skills.bonusHp();
         this.player.hp = this.player.maxHp;
       }
+      // secret codes: carry unlocked cheats into the new battle
+      if (G.Cheats) {
+        this.player.godMode = this.player.godMode || !!G.Cheats.godMode;
+        if (G.Cheats.musket && this.combat && this.combat.musketUnlocked) this.combat.musketUnlocked();
+      }
       // living-world layer: flowers, wandering animals, herb plants
       if (G.Wildlife) G.Wildlife.autoPopulate(this, this.def.nature || {});
       // ambient civilian crowd (v0.3 §2.4) — a living street to blend into
@@ -603,6 +608,7 @@
       this.combat.arrows = Math.max(this.combat.arrows, cp.arrows);
       this.combat.nocked = this.combat.arrows > 0;
       this.combat.javelins = this.combat.javelinMax;  // fresh cast of javelins
+      if (G.Cheats && G.Cheats.musket) { this.combat.shots = this.combat.shotMax; this.combat.loaded = true; }  // powder & shot resupply
       this.combat.drawing = false; this.combat.drawPct = 0;
       this.missions.restore(cp.missions);
       this.noises.length = 0;
@@ -860,11 +866,14 @@
         current: c.weapon !== 'bow' && c.cfg === d,
       }));
       slots.push({ icon: '🏹', unlocked: true, current: c.weapon === 'bow' });
+      if (G.Cheats && G.Cheats.musket) slots.push({ icon: '🔫', unlocked: true, current: c.weapon === 'musket' });
       return {
         hp: p.hp, maxHp: p.maxHp, stamina: p.stamina, maxStamina: p.maxStamina,
         exhausted: p.exhausted, alive: p.alive,
         weapon: c.weapon, weaponName: info.weaponName, weaponIcon: info.weaponIcon,
         arrows: c.arrows, quiverMax: c.quiverMax,
+        shots: c.shots, shotMax: c.shotMax, loaded: c.loaded,
+        reloadPct: c.weapon === 'musket' && !c.loaded ? U.clamp(1 - c.reloadT / c.RELOAD, 0, 1) : 1,
         drawPct: c.drawPct, slots,
         herbs: p.herbs,
         javelins: c.javelins, shield: p.shieldEquipped,
@@ -929,6 +938,51 @@
     }
   }
 
+  /* ---- co-op host: spawn + drive the ally Giant the guest possesses ---- */
+  function coopDriveHost(engine, dt) {
+    const peer = G.coopPeer;
+    if (!peer) return;
+    // spawn the guest's Giant once the host battle is underway, and tell the
+    // guest which entity (netId) it commands
+    if (!engine.__coopGiant && engine.player && engine.player.pos) {
+      const p = engine.player.pos;
+      const g = engine.enemies.spawn({
+        faction: 'ally', type: 'elite', pos: [p.x + 2, p.z + 1.5],
+        palette: 'royal', cape: true, plume: true, hp: 320,
+        name: (G.coopGuestName || 'Ally') + ' (co-op)', showName: true, followPlayer: false,
+      });
+      if (g) {
+        g.ai = null; g.possessed = true; engine.__coopGiant = g;
+        try { peer.send({ t: 'possess', id: G.Coop.netId(g), name: G.coopGuestName || 'Ally' }); } catch (_) {}
+      }
+    }
+    const gi = engine.__coopGiant;
+    if (!gi) return;
+    if (gi.__atkCd) gi.__atkCd = Math.max(0, gi.__atkCd - dt);
+    if (!gi.alive) return;
+    const inp = G.__coopInput;
+    if (!inp) { gi.setMove(null, dt); return; }
+    gi.yaw = inp.y || 0;
+    const mv = inp.m || [0, 0];
+    if (Math.hypot(mv[0], mv[1]) > 0.05) {
+      const fwd = new THREE.Vector3(Math.sin(gi.yaw), 0, Math.cos(gi.yaw));
+      const right = new THREE.Vector3(Math.cos(gi.yaw), 0, -Math.sin(gi.yaw));
+      const dir = fwd.multiplyScalar(mv[0]).add(right.multiplyScalar(mv[1]));
+      if (dir.lengthSq() > 0.001) {
+        dir.normalize();
+        const gp = gi.group.position;
+        gi.setMove(new THREE.Vector3(gp.x + dir.x * 3, 0, gp.z + dir.z * 3), dt, 4.2);
+      } else gi.setMove(null, dt);
+    } else gi.setMove(null, dt);
+    if ((inp.a & 1) && !gi.__atkCd) {
+      gi.__atkCd = 0.55;
+      gi.rig.playStrike && gi.rig.playStrike();
+      for (const e of engine.enemies.npcs) {
+        if (e.alive && e.faction === 'enemy' && U.flatDist(e.pos, gi.pos) < 2.6) { e.takeDamage(34, { type: 'melee', from: gi }); break; }
+      }
+    }
+  }
+
   /* ===================== R3F engine mount ===================== */
   function EngineMount({ levelId, bridge, engineRef }) {
     const { scene, camera, gl } = useThree();
@@ -936,12 +990,25 @@
       const engine = new GameEngine({ scene, camera, gl, levelId, bridge });
       engineRef.current = engine;
       bridge.onEngineReady(engine);
-      return () => { engine.dispose(); engineRef.current = null; };
+      return () => {
+        // tell a co-op guest the battle is over, then tear down
+        if (G.coopHosting && G.coopPeer) { try { G.coopPeer.send({ t: 'end' }); } catch (_) {} }
+        G.coopHosting = false;
+        engine.dispose(); engineRef.current = null;
+      };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [levelId]);
     useFrame((state, dt) => {
       const engine = engineRef.current;
-      if (engine) { engine.update(dt); engine.render(dt); }
+      if (!engine) return;
+      engine.update(dt); engine.render(dt);
+      // host-authoritative co-op: drive the guest's Giant, then stream the
+      // battle snapshot back to the guest at ~15 Hz
+      if (G.coopHosting && G.coopPeer && G.coopPeer.connected && G.Coop) {
+        coopDriveHost(engine, dt);
+        engine.__coopAcc = (engine.__coopAcc || 0) + dt;
+        if (engine.__coopAcc >= 1 / 15) { engine.__coopAcc = 0; try { G.coopPeer.send(G.Coop.snapshot(engine)); } catch (_) {} }
+      }
     }, 1);
     return null;
   }
@@ -1165,6 +1232,20 @@
       G.audio.setAmbience('none');
       G.audio.setMusicMode('menu');
     };
+    // co-op: host drops straight into the shared battle (broadcasts snapshots);
+    // guest drops into the spectate view fed by that stream.
+    const startCoopHost = (id) => {
+      G.coopHosting = true;
+      G.__coopInput = null;
+      if (G.coopPeer) G.coopPeer.on('message', (m) => { if (m && m.t === 'i') G.__coopInput = m; });
+      setLevelId(id); setSession((s) => s + 1);
+      setSummary(null); setDeath(null); setPaused(false);
+      setScreen('game');
+    };
+    const joinCoopGuest = (id, hostName) => {
+      G.coopGuestLevel = id; G.coopGuestHost = hostName || null;
+      setScreen('coopGuest');
+    };
 
     const children = [];
 
@@ -1229,6 +1310,8 @@
         },
         onMap: () => setScreen('map'),
         onLegends: () => setScreen('legends'),
+        onCoop: G.UI.CoopLobby ? () => setScreen('coop') : null,
+        onCodes: G.UI.CodesMenu ? () => setScreen('codes') : null,
         onNewGame: (profile) => { G.GameState.resetCampaign(profile); startLevel(G.Levels.order[0]); },
         onContinue: () => {
           const idx = Math.min(G.GameState.unlocked, 5) - 1;
@@ -1240,6 +1323,30 @@
         onSelectSlot: (s) => { G.Saves.use(s); force(); },
         onDeleteSlot: (s) => { G.Saves.del(s); if (G.GameState.slot === s) G.Saves.use(s); force(); },
         activeSlot: G.GameState.slot,
+      }));
+    }
+
+    if (screen === 'coop' && G.UI.CoopLobby) {
+      children.push(h(G.UI.CoopLobby, {
+        key: 'coop',
+        onBack: () => setScreen('menu'),
+        onHostStart: startCoopHost,
+        onGuestJoin: joinCoopGuest,
+      }));
+    }
+
+    if (screen === 'codes' && G.UI.CodesMenu) {
+      children.push(h(G.UI.CodesMenu, { key: 'codes', onBack: () => setScreen('menu') }));
+    }
+
+    if (screen === 'coopGuest' && G.UI.CoopGuestView) {
+      const def = G.Levels.defs[G.coopGuestLevel] || {};
+      children.push(h(G.UI.CoopGuestView, {
+        key: 'coopGuest',
+        atmo: def.atmosphere || null,
+        hostName: G.coopGuestHost,
+        levelTitle: def.title || '',
+        onLeave: () => { try { G.coopPeer && G.coopPeer.close(); } catch (_) {} G.coopPeer = null; setScreen('menu'); },
       }));
     }
 
@@ -1311,6 +1418,7 @@
 
   /* ============================== BOOT ============================== */
   G.boot = function () {
+    if (G.Codes) G.Codes.load();   // re-apply any secret codes unlocked before
     const root = ReactDOMClient.createRoot(document.getElementById('root'));
     root.render(h(App));
     // wake audio on the first user gesture anywhere

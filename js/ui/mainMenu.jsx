@@ -77,7 +77,7 @@
   }
 
   /* ------------------------- menu panels ------------------------- */
-  function MainMenu({ progress, onNewGame, onContinue, onChapter, onSettings, onMap, onLegends, onSelectSlot, onDeleteSlot, activeSlot }) {
+  function MainMenu({ progress, onNewGame, onContinue, onChapter, onSettings, onMap, onLegends, onCoop, onCodes, onSelectSlot, onDeleteSlot, activeSlot }) {
     const [view, setView] = React.useState('root'); // root | newgame | chapters | credits | slots
     const [name, setName] = React.useState(progress.profile?.name || 'Abhaya');
     const [color, setColor] = React.useState(progress.profile?.armorColor || ARMOR_COLORS[0].hex);
@@ -151,6 +151,8 @@
         h('button', { className: 'menu-btn', disabled: !hasSave, onClick: click(onContinue) }, G.t('menu.continue')),
         onMap ? h('button', { className: 'menu-btn', onClick: click(onMap) }, G.t('menu.map')) : null,
         onLegends ? h('button', { className: 'menu-btn', onClick: click(onLegends) }, G.t('menu.legends')) : null,
+        onCoop ? h('button', { className: 'menu-btn', onClick: click(onCoop) }, 'Co-op · Connect a Friend') : null,
+        onCodes ? h('button', { className: 'menu-btn', onClick: click(onCodes) }, 'Secret Codes') : null,
         h('button', { className: 'menu-btn', disabled: !hasSave, onClick: click(() => setView('chapters')) }, G.t('menu.chapters')),
         onSelectSlot ? h('button', { className: 'menu-btn', onClick: click(() => setView('slots')) }, `${G.t('menu.saveSlots')} (${(activeSlot | 0) + 1})`) : null,
         h('button', { className: 'menu-btn', onClick: click(onSettings) }, G.t('menu.settings')),

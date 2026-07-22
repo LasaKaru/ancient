@@ -53,6 +53,14 @@ combat, skills, third-person play, day-by-day campaigns, and multiplayer.
 | ✅ Shield (equippable) | Defense | Raise the guard with **H**: a passive block arc (no RMB-hold) that soaks frontal melee **and turns aside arrows** a bare parry can't, folds behind an active block for near-impunity, slows the pace, and enables a **shield-bash** (left-click) that staggers and shoves a front cone |
 | ✅ Javelin bundle | Ranged sidearm | **Z** hurls one of 3 heavy arcing casts between melee exchanges without switching off your blade; HUD stock counter; refilled at checkpoints |
 | ✅ Fire arrows | Bow upgrade | Skill unlock: +35% damage, 2× vs. wooden structures |
+| ✅ **Matchlock musket** (ancient gun) | Ranged / gunpowder | A detailed first-person matchlock (barrel + brass bands, lock-plate with a smouldering match cord, ramrod, muzzle flash): slot **6**, a single near-hitscan ball at 82 dmg, hip-fire scatter vs. aim-down accuracy (RMB), heavy recoil, and a long ~2.4 s reload — in the spirit of the Portuguese/Kandyan gunpowder era. Unlocked with the secret code **GINIAYUDHA**. |
+
+**Secret codes** (`js/codes.js` — Main Menu → *Secret Codes*): thematic word-codes that
+unlock hidden weapons and abilities, persisted per browser. **GINIAYUDHA** frees the
+matchlock musket · **SINHAYA** the Lion's Fang (2× sword/dagger damage) · **AMARA** the
+Deathless (toggle invulnerability) · **WEGAYA** Fleet of Foot (swift) · **WEDIPUPURA**
+Endless Quiver & Powder (no ammo cost) · **DASAYODHA** the Ten Champions (every chapter +
+the legend + Renown + all blades).
 
 Systems work: weapon wheel / number-key quick slots, per-weapon damage-type vs.
 armor-type table, per-weapon movesets on the existing rig (player FP + NPC),
@@ -112,6 +120,16 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   `HumanoidRig` as the player body (player's sash colour) with the FP arms hidden;
   camera collision probe against the physics world; tighter over-shoulder framing
   while drawing the bow; body rides the howdah when mounted.
+- ✅ **Character-fidelity pass** — the shared `HumanoidRig` (every soldier, king,
+  civilian, the third-person player body, the ghost spectre) rebuilt from plain
+  capsules into an articulated, layered figure: jointed legs (thigh → knee-cop →
+  greave → sabaton boot with a toe), a pelvis + belt-and-buckle + hanging
+  faulds/tassets, a banded lamellar cuirass with a raised collar, gilt trim ring
+  and chest medallion, gorget-guarded neck, pauldron → vambrace → sculpted
+  five-box hands, and a real face (whites-and-iris eyes, angled brows, nose,
+  mouth, swept-back hair, jaw beard). Same-material sub-meshes are merged
+  (`BGU.mergeGeometries`) to hold the draw-call count down; the animation state
+  machine is untouched (all articulated groups preserved).
 - ☐ Player rig full traversal animations (§4) and finishers in both cameras.
 
 ### 2.3 Day/night & day-by-day campaign structure (◐ shipped v0.3 — calendar + drifting sun)
@@ -182,6 +200,12 @@ settings screen (new Realism tab) and directly on the pause menu, driving live d
   Completed chapters show ✓ seals.
 - ✅ Era rail (543 BCE → 1818 CE) filtering conflicts by chronicle period —
   Anuradhapura → Polonnaruwa → Transitional → Kandyan → British.
+- ✅ **Every historical pin is now playable** — all 17 chart pins launch a mission
+  (the Dutugemunu campaign, the Sigiriya legend, and 15 standalone Chronicles from
+  110 CE to 1818), so the chart is a complete, unbroken campaign selector.
+- ✅ **Campaign capstone** — a "wars of the island won" progress readout in the era
+  rail (won / total + a gilt bar), and a **chronicle-complete** epilogue banner when
+  every grounded war is cleared.
 - ✅ Multiple **save slots** (`G.Saves` in `js/app.js`): three independent campaigns keyed
   in localStorage, chosen from a **Save Slots** menu that shows each slot's hero, day and
   wins; a legacy single-save migrates into slot 0 so returning players keep their progress.
@@ -230,30 +254,31 @@ chronicles (Dipavamsa/Mahavamsa/Culavamsa/Rajavaliya) and the Wikipedia war list
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
 | ✅ **Vijithapura** (162–161 BCE) — *shipped as core Chapter III* | Dutugemunu | The four-month siege of Vijithapura / Vijitanagara with Kandula at the gate is the shipped campaign's Chapter III ("The Gates of Vijitanagara"). |
+| ✅ **The First Tiger** (110 CE) — *shipped* | Rajarata coast muster | The early Chola raid the chronicles record as a Chola success, played as a dawn coastal defence: drive the raiders off the strand, cut the bound townsfolk free before they are loaded, and break the raid-captain — the raid Gajabahu avenges ten years hence. Launched from the **110 Chola Invasion** map pin. |
 | ✅ **Gajabahu's Crossing** (c. 120 CE) — *shipped v0.6* | Gajabahu I fights beside you | Beach landing among the war-canoes, storming the palisaded Chola camp, breaking the captive pens (freed captives run for the boats), slaying the camp commander, optional store-burning |
-| ☐ **The Pandyan Sack** (846 CE) | Defender of Anuradhapura under Sena I | Fighting withdrawal, Battle of Mahatalita, save the relics |
-| ☐ **Udaya's Counterstroke** (946 CE) | General Viduragga | Repel Parantaka I, cross-strait raid to recover the plunder |
-| ◐ **The Great Conquest & Resistance** (992–1070) | Ruhuna resistance → Vijayabahu I | ✅ *Liberation of Polonnaruwa (1070) shipped v0.6*: stealth-or-steel patrol clearing, citadel gate breach with the resistance rising, the occupation governor, raising the lion banner. ☐ Fall-of-Anuradhapura + guerrilla-years missions |
+| ✅ **The Pandyan Sack** (846 CE) — *shipped* | Defender of Anuradhapura under Sena I | Srimara's sack, played as a defence of the relics: carry the casket from the great stupa to the inner shrine refuge, hold the sacred precinct through three waves, shepherd the fleeing monks, and break Srimara's champion at the gate. Launched from the **Pandyan Sack** map pin. |
+| ✅ **Udaya's Counterstroke** (946 CE) — *shipped* | General Viduragga | The cross-strait recovery raid: land on the Chola shore beside Viduragga, storm the shore guard, send porters to run the plundered treasure-chests down to the boats, free the penned captives, and cut down the Chola shore-captain who holds the treasury. Launched from the **946 CE** map pin. |
+| ✅ **The Great Conquest & Resistance** (992–1070) — *shipped* | Ruhuna resistance → Vijayabahu I | ✅ *The Fall of Anuradhapura (c.993) shipped*: the last night of the old kingdom — hold the sacred precinct, bear the regalia south to the Ruhuna road, see the people away, and make the Chola general pay; the city falls (history's outcome) but the crown escapes south to rise again. ✅ *Liberation of Polonnaruwa (1070) shipped v0.6*: stealth-or-steel patrol clearing, citadel gate breach with the resistance rising, the occupation governor, raising the lion banner. ☐ guerrilla-years missions remain open. |
 
 ### v0.7 — Chronicles III: The Transitional Kingdoms (incl. **Kurunegala**) — ◐ shipped
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
-| ☐ **Dambadeniya Shield** (1247–1270) | Parakramabahu II's guard | Repel Chandrabhanu's two Tambralinga invasions and the Pandyan expeditions |
+| ✅ **Dambadeniya Shield** (1247–1270) — *shipped* | Parakramabahu II's guard | A two-phase defence of Chandrabhanu's Javaka invasion: bear the Tooth Relic up to the summit shrine, HOLD the rock-gate through two assault waves, then SALLY down to the invasion shore to cast down Chandrabhanu's war-standard and break the man himself — rallying the gate defenders as you go. Launched from the **Tambralinga Invasions** map pin. |
 | ✅ **Yapahuwa & the Tooth** (1277–1288) — *shipped v0.7* | You escort Bhikkhu Ananda | The fortress is lost (history's own outcome, not rewritten) — you buy the time for the Relic-bearer to reach the sally-port: hold the gate, escort him up the great stair, hold the summit, rescue temple guards en route. Frames the historical embassy-recovery as the mission's epilogue. |
-| ☐ **Kotte Rising** (1411–1454) | Prince Sapumal / Parakramabahu VI's forces | Ming–Kotte war aftermath, defence against Vijayanagara raids, conquest of Jaffna |
+| ✅ **Kotte Rising** (1411–1454) — *shipped* | Prince Sapumal / Parakramabahu VI's forces | The conquest of Jaffna, played as the storming of Nallur: break the gate-guard, then take the city quarter by quarter (raise the Kotte lion over three positions), spare the palace scribes, and depose the Arya Chakravarti king in his citadel. Launched from the **Kotte Conquest of Jaffna** map pin. ☐ Ming–Kotte 1411 + Vijayanagara-raid missions remain open. |
 
 ### v0.8 — Chronicles II: Polonnaruwa Ascendant — ☐ planned
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
-| ☐ **Parakramabahu's Wars** (1153–1186) | Parakramabahu the Great's champion | Unification of the three lands, overseas expeditions (Pagan war 1164, Pandyan intervention 1169–77) |
+| ✅ **Parakramabahu's Wars** (1153–1186) — *shipped* | Parakramabahu the Great's champion | A field action of the unification war: force a river ford against the rival claimant's shield-line, throw down the camp gate-barricades (a rideable war elephant waits to charge them), raise the lion banner over the captured court, break the pretender's champion, and rally the fallen. Launched from the **1153–1186** map pin. ☐ overseas expeditions (Pagan 1164, Pandyan intervention) remain open. |
 | ✅ **The Broken Throne** (1215) — *shipped* | Last guard of Polonnaruwa | The night of Magha's sack, played as an honest fighting withdrawal: hold the citadel gate, escort the Relic-bearer over the causeway to the south sally-port, hold the crossing, and cut down Magha's war-captain — the city falls (history's own outcome) but the Sacred Tooth and the royal line escape south. Launched from the **Kalinga Magha** map pin. |
 
 ### v0.9 — Chronicles IV: Muskets on the Shore (European wars & **Kandy**) — ◐ shipped
 | Campaign | Playable era/hero | Key missions |
 |---|---|---|
 | ◐ **Sitawaka Lion** (1551–1593) | Sitawaka/Kotte-era warrior | ✅ *Battle of Mulleriyawa (1559) shipped v0.7*: break a Portuguese musket skirmish line before it reloads, spike its two gun emplacements, rescue pinned soldiers, break the field commander. ☐ Sieges of Kotte, Danture |
-| ☐ **Kandyan Defiance** (1670–1766) | **Kandyan Kingdom** ranger | Kandyan–Dutch wars: forest ambush warfare, Rajasinha II's offensives |
-| ◐ **The Last Kingdom** (1803–1818) | Kandyan guerrilla under Keppetipola | ✅ *The Passes of 1803 shipped v0.7*: ambush the British vanguard, burn the baggage train, cut down the column's officer, seal the pass, free pressed porters — the First Anglo-Kandyan War told as a retreat harried to pieces. ☐ 1815 fall, 1818 Uva–Wellassa rising (the series' solemn finale) |
+| ✅ **Kandyan Defiance** (1670–1766) — *shipped* | **Kandyan Kingdom** ranger | A moonlit night raid on a Dutch Company stockade: slip the sally-port watch, spike the Company guns, fire the powder magazine (the set-piece), free the pressed villagers, and cut down the Dutch commander before the coast sends relief — Dutch matchlock gunners (`AI_TYPES.gunner`) man the walls. Launched from the **Kandyan–Dutch Wars** map pin. |
+| ◐ **The Last Kingdom** (1803–1818) | Kandyan guerrilla under Keppetipola | ✅ *The Passes of 1803 shipped v0.7*: ambush the British vanguard, burn the baggage train, cut down the column's officer, seal the pass, free pressed porters — the First Anglo-Kandyan War told as a retreat harried to pieces. ✅ *The Uva Rising (1818) shipped — the series' solemn finale*: fight beside Keppetipola in the last defiance — raise the flag over Wellassa, break the redcoat outpost, see the people away into the hills, and cut down the reprisal's major; history's outcome (the kingdom ends) is kept, only the people and the memory saved. Launched from the **Fall of Kandy & the Uva Rising** map pin. ☐ 1815 convention/fall of Kandy mission remains open. |
 
 *New systems these require:* naval landing set pieces ✅ (`Build.boat`, shipped v0.6),
 elephant riding ✅ (shipped v0.2), early gunpowder enemies ✅ — `AI_TYPES.gunner`
@@ -304,10 +329,47 @@ Browser + no-build-step makes this the hardest pillar; staged to keep each relea
    weapon and action at 8 Hz, and beating the stored score overwrites the ghost. Take the
    same code again and a translucent cyan spectre of your best run fights the identical
    waves beside you (keyed by code in localStorage, so a ghost only haunts its own fight).
-2. ☐ **Phase M2 — P2P co-op (WebRTC):** 2-player co-op in wave-defense and Chronicles
+2. ◐ **Phase M2 — P2P co-op (WebRTC):** 2-player co-op in wave-defense and Chronicles
    missions via WebRTC DataChannels; manual copy-paste signalling keeps the no-server
    promise, an optional tiny signalling relay (documented, self-hostable) makes it
    one-click. Host-authoritative sim, second player possesses an ally Giant.
+   ✅ **Networking foundation shipped & verified** — `js/net/webrtc.js` (`G.Net` /
+   `G.NetPeer`): a no-server, manual-signalling WebRTC transport that opens an ordered
+   DataChannel from a single copy-paste invite/reply code (non-trickle ICE bakes the
+   candidates into the code; a public STUN aids NAT traversal, none needed on LAN/
+   loopback). `js/net/coopSession.js` (`G.Coop`): the host-authoritative wire protocol —
+   a compact battle **snapshot** (host player + every NPC transform / hp / liveness) and
+   a guest **input** message (move / facing / action bits). Verified headless: two peers
+   connect with no signalling server, a live in-engine snapshot crosses host→guest with
+   the guest's mirror matching the host's NPC transforms exactly, and guest input
+   round-trips intact (0 page errors).
+   ✅ **Co-op lobby shipped & verified** — `js/ui/coopLobby.jsx` (a "Co-op · Connect a
+   Friend" entry on the main menu): a no-server Host/Join flow — the host mints a
+   copy-paste **invite** code, the guest pastes it and mints a **reply**, the host pastes
+   that back and connects. On link the peers exchange names and run a 2 s heartbeat, so
+   the lobby shows "⚔ Linked with &lt;name&gt; · &lt;latency&gt; ms". Verified **end to end
+   across two independent headless browsers** trading codes through the real UI (7/7:
+   both open the lobby, host mints the invite, guest mints the reply, both reach Linked,
+   names are exchanged, and round-trip latency is reported) — 0 page errors.
+   ✅ **Co-op spectate shipped & verified** — from the lobby the host clicks *Begin Co-op
+   Battle* (launches a wave defence as host, streaming snapshots at ~15 Hz via a hook in
+   the R3F engine loop); the guest drops into `js/ui/coopGuestView.jsx` — a live 3D view
+   that rebuilds the host's battle from the snapshot stream (one `HumanoidRig` mirror per
+   netId, lightly interpolated) with the camera trailing the host. Verified **end to end
+   across two headless browsers** (6/6): host + guest link, host launches and hosts,
+   guest drops into spectate, the host battle streams into the guest mirror (host player +
+   every NPC), and the stream stays live and continuous — 0 page errors.
+   ✅ **Co-op possession shipped & verified** — on *Begin Co-op Battle* the host spawns an
+   ally Giant (its AI nulled), assigns it to the guest (a `possess` message with the
+   netId), and drives it each host frame from the guest's `input` message (move / turn /
+   strike) via `coopDriveHost` in the engine loop; the guest captures WASD-move / A/D-turn
+   / Space-strike, sends input at ~20 Hz, and its camera trails the Giant it commands.
+   Verified **end to end across two separate browsers** (5/5): the host assigns a
+   matching-netId Giant, the guest's *forward* input moves that Giant ~6 m forward in the
+   host's authoritative sim, and the guest's mirror reflects the new position — 0 errors.
+   So M2 co-op is genuinely two-player: one hosts and plays, the other joins by code and
+   commands an ally Giant in the same fight, no server between them.
+   ☐ Remaining: richer guest combat parity + a co-op summary; then PvP duels (M3).
 3. ☐ **Phase M3 — PvP duels:** 1v1 parry-duel arenas (Elara-kit movesets), best-of-five,
    with era-champion cosmetics.
 4. ☐ **Phase M4 (stretch):** 4-player siege co-op (attack/defend Vijithapura).

@@ -54,7 +54,8 @@
       id: 'chola110', era: 'anuradhapura', at: [0.50, 0.22], year: '110 CE',
       name: '110 Chola Invasion', sides: 'Anuradhapura Kingdom vs. Early Cholas',
       result: 'Chola victory',
-      desc: 'A Chola expedition falls upon Rajarata and carries away captives across the strait.',
+      desc: 'A Chola expedition falls upon Rajarata and carries away captives across the strait. Play the coastal defence at dawn: drive the raiders off the strand, cut the bound townsfolk free before they are loaded, and break the raid-captain — the raid that Gajabahu will avenge ten years hence.',
+      playable: 'firstCholaRaid',
     },
     {
       id: 'gajabahu', era: 'anuradhapura', at: [0.40, 0.16], year: '~120 CE',
@@ -67,19 +68,22 @@
       id: 'pandya846', era: 'anuradhapura', at: [0.44, 0.26], year: '846 CE',
       name: 'The Pandyan Sack', sides: 'Anuradhapura Kingdom (Sena I) vs. Pandya dynasty (Srimara Srivallabha)',
       result: 'Pandyan victory — Anuradhapura plundered',
-      desc: 'Srimara Srivallabha broke the Sinhalese line at Mahatalita and plundered the sacred city, until treaty restored the land.',
+      desc: 'Srimara Srivallabha broke the Sinhalese line at Mahatalita and plundered the sacred city, until treaty restored the land. Play the defence of the relics: carry the casket to the inner refuge and hold the sacred precinct through the onslaught.',
+      playable: 'pandyanSack',
     },
     {
       id: 'chola946', era: 'anuradhapura', at: [0.52, 0.27], year: '946 CE',
       name: "Udaya's Counterstroke", sides: 'Anuradhapura Kingdom (Udaya IV, General Viduragga) vs. Chola Empire (Parantaka I)',
       result: 'Anuradhapura victory — the plunder recovered',
-      desc: 'Parantaka I sacked the capital but could not hold it; General Viduragga struck back into Chola country and compelled the return of what was seized.',
+      desc: 'Parantaka I sacked the capital but could not hold it; General Viduragga struck back into Chola country and compelled the return of what was seized. Play the recovery raid: storm the shore, get the plundered chests down to the boats, and break the Chola shore-captain.',
+      playable: 'udayaCounterstroke',
     },
     {
       id: 'conquest', era: 'anuradhapura', at: [0.47, 0.36], year: '992–1017',
       name: 'The Chola Conquest', sides: 'Anuradhapura Kingdom & Pandyan allies vs. Chola Empire (Rajaraja I, Rajendra I)',
       result: 'Chola victory — Anuradhapura destroyed, Rajarata annexed',
-      desc: 'The thousand-year city fell. Polonnaruwa became a Chola provincial capital and the north lay under the tiger banner for two generations.',
+      desc: 'The thousand-year city fell. Polonnaruwa became a Chola provincial capital and the north lay under the tiger banner for two generations. Play the last night of the old kingdom: hold the sacred precinct, bear the regalia south to the Ruhuna road, see the people away, and make the Chola general pay — the crown survives in the south to rise again as Vijayabahu.',
+      playable: 'cholaConquest',
     },
     {
       id: 'vijayabahu', era: 'polonnaruwa', at: [0.56, 0.40], year: '1017–1070',
@@ -92,7 +96,8 @@
       id: 'parakramabahu', era: 'polonnaruwa', at: [0.58, 0.44], year: '1153–1186',
       name: "Parakramabahu's Wars", sides: 'Polonnaruwa Kingdom (Parakramabahu the Great) vs. Pagan kingdom · Chola & Pandya interventions',
       result: 'Victory abroad and at home',
-      desc: 'The great unifier turned the island\'s strength outward — expeditions against Pagan in Burma (1164) and into the Pandyan civil war, while the tanks and walls of Polonnaruwa rose to their height.',
+      desc: 'The great unifier turned the island\'s strength outward — expeditions against Pagan in Burma (1164) and into the Pandyan civil war, while the tanks and walls of Polonnaruwa rose to their height. Play a battle of the unification war: force the river ford, throw down the rival\'s gate (ride the war elephant through it), raise the lion over his court, and break the pretender\'s champion.',
+      playable: 'parakramabahuWars',
     },
     {
       id: 'magha', era: 'polonnaruwa', at: [0.53, 0.34], year: '1215',
@@ -105,7 +110,8 @@
       id: 'tambralinga', era: 'transitional', at: [0.37, 0.55], year: '1247 & 1262',
       name: 'The Tambralinga Invasions', sides: 'Kingdom of Dambadeniya (Parakramabahu II) vs. Tambralinga (Chandrabhanu)',
       result: 'Both invasions repelled',
-      desc: 'Twice Chandrabhanu of Tambralinga landed seeking the Tooth Relic; twice Dambadeniya threw him back into the sea.',
+      desc: 'Twice Chandrabhanu of Tambralinga landed seeking the Tooth Relic; twice Dambadeniya threw him back into the sea. Play the defence: bear the Tooth up to the summit shrine, hold the rock-gate through the Javaka assault, then sally down to the sand to cast down his standard and break him.',
+      playable: 'dambadeniyaShield',
     },
     {
       id: 'yapahuwa', era: 'transitional', at: [0.43, 0.50], year: '1277–1288',
@@ -118,7 +124,8 @@
       id: 'kotteJaffna', era: 'transitional', at: [0.42, 0.10], year: '1449–1454',
       name: 'The Kotte Conquest of Jaffna', sides: 'Kingdom of Kotte (Prince Sapumal) vs. Jaffna kingdom & Vanni chiefs',
       result: 'Kotte victory',
-      desc: 'Parakramabahu VI\'s adopted son Sapumal took the northern kingdom, and for a span one throne again spoke for the whole island.',
+      desc: 'Parakramabahu VI\'s adopted son Sapumal took the northern kingdom, and for a span one throne again spoke for the whole island. Play the storming of Nallur: break the gate-guard, raise the Kotte lion over the three quarters, spare the scribes, and depose the Arya Chakravarti king in his citadel.',
+      playable: 'kotteRising',
     },
     {
       id: 'mulleriyawa', era: 'transitional', at: [0.32, 0.66], year: '1559',
@@ -131,7 +138,8 @@
       id: 'kandyDutch', era: 'kandy', at: [0.48, 0.62], year: '1670–1766',
       name: 'The Kandyan–Dutch Wars', sides: 'Kingdom of Kandy (Rajasinha II, Kirti Sri Rajasinha) vs. Dutch East India Company',
       result: 'Dutch hold the coasts; the mountain kingdom endures',
-      desc: 'A century of forest ambush and burned lowlands: the Company took every harbour, but the drums in the hills never stopped.',
+      desc: 'A century of forest ambush and burned lowlands: the Company took every harbour, but the drums in the hills never stopped. Play a night raid on a Company stockade: slip the sally-port watch, spike the guns, fire the powder magazine, free the pressed villagers, and cut down the Dutch commander before dawn.',
+      playable: 'kandyanDefiance',
     },
     {
       id: 'kandy1803', era: 'kandy', at: [0.46, 0.66], year: '1803–1805',
@@ -144,7 +152,8 @@
       id: 'uva1818', era: 'british', at: [0.52, 0.68], year: '1815–1818',
       name: 'The Fall of Kandy & the Uva Rising', sides: 'Kingdom of Kandy (Keppetipola Disawe) vs. United Kingdom (Brownrigg)',
       result: 'British victory — the last kingdom ends',
-      desc: 'The convention of 1815 gave the kingdom away; the great rising of 1817–18 in Uva–Wellassa fought to take it back, and its suppression closed two thousand three hundred years of Lankan kingship.',
+      desc: 'The convention of 1815 gave the kingdom away; the great rising of 1817–18 in Uva–Wellassa fought to take it back, and its suppression closed two thousand three hundred years of Lankan kingship. Play the last defiance: raise the flag, break the redcoat outpost, see the people of Wellassa away into the hills, and cut down the reprisal\'s major — the crown cannot be saved, only the memory.',
+      playable: 'uvaRising',
     },
   ];
   G.WARS = WARS;
@@ -364,7 +373,23 @@
       return 'record';
     };
 
+    // ---- campaign-wide progress: how many of the island's wars are won ----
+    // Counts every grounded, playable war (the main campaign + each standalone
+    // Chronicle); the Sigiriya legend is a bonus and sits outside the tally.
+    const grounded = WARS.filter((w) => w.playable && !w.legend);
+    const warsWon = grounded.filter((w) => pinState(w) === 'done').length;
+    const warsTotal = grounded.length;
+    const allWon = warsTotal > 0 && warsWon === warsTotal;
+
     return h('div', { className: 'screen map-screen fade-in' },
+      // capstone: the whole chronicle won, 110 CE → 1818
+      allWon ? h('div', { className: 'map-capstone' },
+        h('div', { className: 'map-capstone-h' }, 'THE WHOLE CHRONICLE IS WON'),
+        h('div', { className: 'map-capstone-body' },
+          'From the first tiger on the strand to the last flag over Wellassa, every ' +
+          'war of the island has answered to your sword. Two thousand three hundred ' +
+          'years of kings and invasions, held in one hand. The chronicle is complete — ' +
+          'but the drums, they say, are never quite silent.')) : null,
       h('div', { className: 'map-chart-wrap' },
         chart ? h('img', { className: 'map-chart', src: chart, alt: 'Taprobane' }) : null,
         // war pins
@@ -387,6 +412,11 @@
       // era filter rail
       h('div', { className: 'map-eras' },
         h('div', { className: 'map-eras-h' }, 'CHRONICLE ERAS'),
+        h('div', { className: 'map-progress' + (allWon ? ' complete' : '') },
+          h('div', { className: 'map-progress-count' }, warsWon + ' / ' + warsTotal),
+          h('div', { className: 'map-progress-label' }, allWon ? 'the whole chronicle is won' : 'wars of the island won'),
+          h('div', { className: 'map-progress-bar' },
+            h('div', { className: 'map-progress-fill', style: { width: (warsTotal ? (warsWon / warsTotal * 100) : 0) + '%' } }))),
         ERAS.map((e) => h('button', {
           key: e.id,
           className: 'map-era-btn' + (era === e.id ? ' on' : ''),

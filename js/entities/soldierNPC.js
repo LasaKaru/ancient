@@ -71,6 +71,16 @@
       const clothAltMat = M.std({ color: P.clothAlt, rough: 0.92 });
       const armorMat = P.armor ? M.std({ color: P.armor, rough: P.armorRough, metal: P.armorMetal }) : clothAltMat;
       const trimMat = M.std({ color: P.trim, rough: 0.3, metal: 0.9 });
+      // detail materials (v1.2 humanoid pass): face, hair, leather, boots
+      const BGU = window.__MODULES__.BGU;
+      const merge = (geos) => BGU.mergeGeometries(geos, false);
+      const eyeWhiteMat = M.std({ color: 0xece7d8, rough: 0.35 });
+      const featureMat = M.std({ color: 0x2a1c12, rough: 0.6 });     // iris, brows, mouth
+      const hairMat = M.std({ color: 0x140d08, rough: 0.95, flat: true });
+      const leatherMat = M.std({ color: P.armor ? 0x4a3420 : 0x5a4226, rough: 0.8, metal: 0.05 });
+      const bootMat = M.std({ color: 0x3f2917, rough: 0.85 });
+      const rivetMat = P.armor ? trimMat : leatherMat;
+      const bearded = this.opts.palette === 'enemy' || this.opts.palette === 'boss' || this.opts.plume;
 
       const root = new THREE.Group();       // origin at the feet
       this.root = root;
@@ -83,17 +93,30 @@
       const mkLeg = (side) => {
         const thigh = new THREE.Group();
         thigh.position.set(side * 0.11, 0, 0);
-        const thighMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.085, 0.34, 3, 6), clothMat);
+        const thighMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.088, 0.34, 4, 8), clothMat);
         thighMesh.position.y = -0.21;
         thigh.add(thighMesh);
         const shin = new THREE.Group();
         shin.position.y = -0.45;
-        const shinMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.065, 0.34, 3, 6), skinMat);
+        const shinMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.062, 0.34, 4, 8), skinMat);
         shinMesh.position.y = -0.2;
         shin.add(shinMesh);
-        const foot = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.22), M.std({ color: 0x5c3a22, rough: 0.8 }));
-        foot.position.set(0, -0.43, 0.05);
-        shin.add(foot);
+        const knee = new THREE.Mesh(new THREE.SphereGeometry(0.072, 8, 6), P.armor ? armorMat : skinMat);
+        knee.position.y = -0.02; knee.scale.set(1, 0.9, 1.05);
+        shin.add(knee);
+        if (P.armor) {   // greave: a curved shin plate + knee cop
+          const greave = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.06, 0.32, 8, 1, false, -0.9, 1.8), armorMat);
+          greave.position.set(0, -0.2, 0.012);
+          shin.add(greave);
+        } else {         // wrapped cloth shin binding
+          const wrap = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.2, 8), leatherMat);
+          wrap.position.y = -0.26; shin.add(wrap);
+        }
+        // boot / sabaton
+        const boot = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.075, 0.26), P.armor ? armorMat : bootMat);
+        boot.position.set(0, -0.44, 0.05); shin.add(boot);
+        const toe = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.05, 0.08), P.armor ? armorMat : bootMat);
+        toe.position.set(0, -0.455, 0.19); shin.add(toe);
         thigh.add(shin);
         this.hips.add(thigh);
         return { thigh, shin };
@@ -101,44 +124,136 @@
       this.legL = mkLeg(-1);
       this.legR = mkLeg(1);
 
-      // sarong drape over the hips
-      const sarong = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.23, 0.42, 10), clothMat);
+      // pelvis + sarong drape over the hips
+      const pelvis = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.06, 3, 8), P.armor ? leatherMat : skinMat);
+      pelvis.rotation.z = Math.PI / 2; pelvis.scale.set(1, 1.5, 0.8); pelvis.position.y = 0.02;
+      this.hips.add(pelvis);
+      const sarong = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.235, 0.42, 12), clothMat);
       sarong.position.y = -0.18;
       this.hips.add(sarong);
+      // waist belt + buckle
+      const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.185, 0.195, 0.06, 12), leatherMat);
+      belt.position.y = 0.02; belt.scale.z = 0.9; this.hips.add(belt);
+      const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.05, 0.02), trimMat);
+      buckle.position.set(0, 0.02, 0.2); this.hips.add(buckle);
+      if (P.armor) {   // faulds / tassets — armoured plates hanging at the hips
+        const faulds = [];
+        for (let i = 0; i < 6; i++) {
+          const a = (i / 6) * Math.PI * 2;
+          const plate = new THREE.BoxGeometry(0.09, 0.14, 0.02);
+          plate.rotateY(-a); plate.translate(Math.sin(a) * 0.19, -0.09, Math.cos(a) * 0.19);
+          faulds.push(plate);
+        }
+        this.hips.add(new THREE.Mesh(merge(faulds), armorMat));
+      }
 
       // -- torso --
       this.chest = new THREE.Group();
       this.chest.position.y = 0.16;
       this.hips.add(this.chest);
-      const torsoMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.17, 0.3, 4, 8), P.armor ? armorMat : skinMat);
+      const torsoMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.172, 0.3, 5, 10), P.armor ? armorMat : skinMat);
       torsoMesh.position.y = 0.26;
-      torsoMesh.scale.set(1.15, 1, 0.85);
+      torsoMesh.scale.set(1.18, 1, 0.82);
       this.chest.add(torsoMesh);
       if (P.armor) {
-        // lamellar rows suggested by thin trim bands
-        for (let i = 0; i < 3; i++) {
-          const band = new THREE.Mesh(new THREE.CylinderGeometry(0.2 - i * 0.008, 0.205 - i * 0.008, 0.035, 10), i === 0 ? trimMat : M.std({ color: P.helm, rough: 0.45, metal: 0.8 }));
-          band.position.y = 0.14 + i * 0.11;
-          band.scale.z = 0.85;
-          this.chest.add(band);
+        // a cuirass: merged lamellar rows + a raised pectoral + collar
+        const cuirass = [];
+        for (let i = 0; i < 4; i++) {
+          const band = new THREE.CylinderGeometry(0.202 - i * 0.006, 0.206 - i * 0.006, 0.05, 12);
+          band.scale(1.05, 1, 0.86); band.translate(0, 0.1 + i * 0.09, 0);
+          cuirass.push(band);
         }
+        const collar = new THREE.CylinderGeometry(0.12, 0.16, 0.06, 12); collar.scale(1.05, 1, 0.86); collar.translate(0, 0.46, 0);
+        cuirass.push(collar);
+        this.chest.add(new THREE.Mesh(merge(cuirass), M.std({ color: P.helm, rough: 0.42, metal: 0.82 })));
+        // gilt trim edge + a chest medallion
+        const trimRing = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.012, 6, 16), trimMat);
+        trimRing.rotation.x = Math.PI / 2; trimRing.position.y = 0.48; trimRing.scale.set(1.05, 0.86, 1); this.chest.add(trimRing);
+        const medallion = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.012, 10), trimMat);
+        medallion.rotation.x = Math.PI / 2; medallion.position.set(0, 0.3, 0.16); this.chest.add(medallion);
+      } else {
+        // civilian: a shoulder sash across the chest
+        const sash = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.5, 0.02), clothAltMat);
+        sash.rotation.z = 0.4; sash.position.set(0, 0.28, 0.15); this.chest.add(sash);
       }
 
       // -- head --
       this.neck = new THREE.Group();
       this.neck.position.y = 0.52;
       this.chest.add(this.neck);
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 10, 8), skinMat);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 10), skinMat);
       head.position.y = 0.12;
+      head.scale.set(0.98, 1.06, 1.0);           // a touch of skull shape
       this.neck.add(head);
       this.headMesh = head;
+      const HY = 0.12;                            // head centre in neck space
+
+      // -- neck column + (armoured) gorget --
+      const neckCol = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.068, 0.13, 8), skinMat);
+      neckCol.position.y = 0.02;
+      this.neck.add(neckCol);
+      if (P.armor) {
+        const gorget = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.1, 0.06, 10), armorMat);
+        gorget.position.y = -0.02;
+        this.neck.add(gorget);
+      }
+
+      // -- face: merged skin features, whites of the eyes, dark features, hair --
+      {
+        const skinParts = [];
+        const nose = new THREE.ConeGeometry(0.03, 0.08, 5); nose.rotateX(Math.PI / 2); nose.translate(0, HY - 0.005, 0.128);
+        skinParts.push(nose);
+        for (const sx of [-1, 1]) {
+          const ear = new THREE.SphereGeometry(0.03, 6, 5); ear.scale(0.55, 1, 0.6); ear.translate(sx * 0.126, HY + 0.01, 0.006);
+          skinParts.push(ear);
+        }
+        const brow = new THREE.BoxGeometry(0.14, 0.022, 0.03); brow.translate(0, HY + 0.062, 0.104);
+        skinParts.push(brow);
+        const faceSkin = new THREE.Mesh(merge(skinParts), skinMat);
+        this.neck.add(faceSkin);
+
+        const eyeParts = [];
+        for (const sx of [-1, 1]) { const w = new THREE.SphereGeometry(0.024, 7, 6); w.scale(1, 0.78, 0.6); w.translate(sx * 0.05, HY + 0.02, 0.108); eyeParts.push(w); }
+        this.neck.add(new THREE.Mesh(merge(eyeParts), eyeWhiteMat));
+
+        const darkParts = [];
+        for (const sx of [-1, 1]) { const iris = new THREE.SphereGeometry(0.012, 6, 5); iris.translate(sx * 0.05, HY + 0.02, 0.121); darkParts.push(iris); }
+        for (const sx of [-1, 1]) { const b = new THREE.BoxGeometry(0.052, 0.013, 0.012); b.rotateZ(sx * 0.12); b.translate(sx * 0.05, HY + 0.045, 0.116); darkParts.push(b); }
+        const mouth = new THREE.BoxGeometry(0.058, 0.013, 0.012); mouth.translate(0, HY - 0.058, 0.114); darkParts.push(mouth);
+        this.neck.add(new THREE.Mesh(merge(darkParts), featureMat));
+
+        // hair (skipped under a closed helm, which covers it anyway) — a
+        // swept-back cap that leaves the forehead & face bare
+        if (!(this.opts.helmet && P.helm)) {
+          const hairParts = [];
+          const cap = new THREE.SphereGeometry(0.144, 12, 9, 0, Math.PI * 2, 0, Math.PI * 0.6); cap.scale(1, 1, 1.02); cap.translate(0, HY + 0.03, -0.03);
+          hairParts.push(cap);
+          if (this.opts.crown || this.opts.palette === 'royal') { const knot = new THREE.SphereGeometry(0.05, 8, 6); knot.translate(0, HY + 0.15, -0.02); hairParts.push(knot); }
+          this.neck.add(new THREE.Mesh(merge(hairParts), hairMat));
+        }
+        if (bearded) {   // a jaw / chin beard that leaves the cheeks bare
+          const beard = new THREE.SphereGeometry(0.122, 10, 8, 0, Math.PI * 2, Math.PI * 0.62, Math.PI * 0.3);
+          beard.scale(0.92, 1.05, 0.98); beard.translate(0, HY - 0.012, 0.022);
+          this.neck.add(new THREE.Mesh(beard, hairMat));
+        }
+      }
       if (this.opts.helmet && P.helm) {
-        const helm = new THREE.Mesh(new THREE.SphereGeometry(0.145, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), M.std({ color: P.helm, rough: 0.35, metal: 0.85 }));
-        helm.position.y = 0.15;
-        this.neck.add(helm);
+        const helmMat = M.std({ color: P.helm, rough: 0.35, metal: 0.85 });
+        const helmParts = [];
+        const dome = new THREE.SphereGeometry(0.148, 12, 9, 0, Math.PI * 2, 0, Math.PI * 0.52); dome.translate(0, HY + 0.03, 0);
+        helmParts.push(dome);
+        const rim = new THREE.TorusGeometry(0.146, 0.016, 6, 16); rim.rotateX(Math.PI / 2); rim.translate(0, HY + 0.035, 0);
+        helmParts.push(rim);
+        const nasal = new THREE.BoxGeometry(0.022, 0.11, 0.02); nasal.translate(0, HY + 0.01, 0.142);
+        helmParts.push(nasal);
+        for (const sx of [-1, 1]) { const cheek = new THREE.BoxGeometry(0.03, 0.09, 0.05); cheek.translate(sx * 0.12, HY - 0.01, 0.055); helmParts.push(cheek); }
+        this.neck.add(new THREE.Mesh(merge(helmParts), helmMat));
+        // a crest ridge or a plume socket
+        const crest = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.03, 8), trimMat);
+        crest.position.y = HY + 0.17; this.neck.add(crest);
         if (this.opts.plume) {
-          const plume = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.28, 6), M.std({ color: P.cloth, rough: 0.9 }));
-          plume.position.y = 0.34;
+          const plume = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.3, 7), M.std({ color: P.cloth, rough: 0.9 }));
+          plume.position.y = HY + 0.33; plume.rotation.x = -0.15;
           this.neck.add(plume);
         }
       }
@@ -155,20 +270,39 @@
       const mkArm = (side) => {
         const shoulder = new THREE.Group();
         shoulder.position.set(side * 0.24, 0.42, 0);
-        const upper = new THREE.Mesh(new THREE.CapsuleGeometry(0.06, 0.22, 3, 6), P.armor ? armorMat : skinMat);
+        const upper = new THREE.Mesh(new THREE.CapsuleGeometry(0.058, 0.22, 4, 8), P.armor ? armorMat : skinMat);
         upper.position.y = -0.15;
         shoulder.add(upper);
-        if (P.armor) {
-          const pauldron = new THREE.Mesh(new THREE.SphereGeometry(0.095, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2), M.std({ color: P.helm, rough: 0.4, metal: 0.85 }));
+        if (P.armor) {   // layered pauldron
+          const pMat = M.std({ color: P.helm, rough: 0.4, metal: 0.85 });
+          const pauldron = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 7, 0, Math.PI * 2, 0, Math.PI * 0.6), pMat);
           shoulder.add(pauldron);
+          const lame = new THREE.Mesh(new THREE.CylinderGeometry(0.098, 0.086, 0.05, 10), pMat);
+          lame.position.y = -0.06; shoulder.add(lame);
         }
         const elbow = new THREE.Group();
         elbow.position.y = -0.3;
-        const fore = new THREE.Mesh(new THREE.CapsuleGeometry(0.05, 0.2, 3, 6), skinMat);
+        const fore = new THREE.Mesh(new THREE.CapsuleGeometry(0.048, 0.2, 4, 8), skinMat);
         fore.position.y = -0.14;
         elbow.add(fore);
+        const elbowCap = new THREE.Mesh(new THREE.SphereGeometry(0.056, 8, 6), P.armor ? armorMat : skinMat);
+        elbow.add(elbowCap);
+        if (P.armor) {   // vambrace on the forearm
+          const vamb = new THREE.Mesh(new THREE.CylinderGeometry(0.056, 0.048, 0.18, 8), armorMat);
+          vamb.position.y = -0.15; elbow.add(vamb);
+        } else {
+          const wrap = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.045, 0.1, 8), leatherMat);
+          wrap.position.y = -0.2; elbow.add(wrap);
+        }
         const hand = new THREE.Group();
         hand.position.y = -0.28;
+        // a sculpted hand: palm + thumb + a merged finger block (glove/gauntlet)
+        const handMat = P.armor ? armorMat : skinMat;
+        const palmParts = [];
+        const palm = new THREE.BoxGeometry(0.055, 0.09, 0.045); palm.translate(0, -0.03, 0); palmParts.push(palm);
+        const fingers = new THREE.BoxGeometry(0.055, 0.06, 0.035); fingers.translate(0, -0.095, 0.004); palmParts.push(fingers);
+        const thumb = new THREE.BoxGeometry(0.022, 0.05, 0.03); thumb.rotateZ(side * 0.5); thumb.translate(side * 0.035, -0.04, 0.01); palmParts.push(thumb);
+        hand.add(new THREE.Mesh(merge(palmParts), handMat));
         elbow.add(hand);
         shoulder.add(elbow);
         this.chest.add(shoulder);

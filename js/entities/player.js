@@ -154,6 +154,44 @@
       }
       this.group.add(this.bowArms);
 
+      /* ----------------- ancient gun: matchlock musket ----------------- */
+      // a detailed first-person matchlock: barrel + fore-stock + angled butt, a
+      // lock-plate with the S-shaped serpentine holding a smouldering match cord,
+      // a ramrod under the barrel, and a muzzle flash flashed on fire.
+      this.musketArms = new THREE.Group();
+      {
+        const gun = new THREE.Group();
+        const iron = M.std({ color: 0x2b2825, rough: 0.32, metal: 0.85 });
+        const brass = M.std({ color: 0x8a6a2c, rough: 0.35, metal: 0.8 });
+        const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.019, 0.023, 1.02, 10), iron);
+        barrel.rotation.x = Math.PI / 2; barrel.position.set(0, 0.02, -0.42);
+        const band1 = new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.006, 5, 10), brass); band1.rotation.y = Math.PI / 2; band1.position.set(0, 0.02, -0.55);
+        const band2 = new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.006, 5, 10), brass); band2.rotation.y = Math.PI / 2; band2.position.set(0, 0.02, -0.2);
+        const fore = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.06, 0.68), wood); fore.position.set(0, -0.02, -0.08);
+        const wrist = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.07, 0.2), wood); wrist.position.set(0, -0.045, 0.28); wrist.rotation.x = 0.18;
+        const butt = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.12, 0.2), wood); butt.position.set(0, -0.085, 0.44); butt.rotation.x = 0.4;
+        const lock = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.055, 0.11), iron); lock.position.set(0.032, 0.0, 0.02);
+        const serpentine = new THREE.Mesh(new THREE.TorusGeometry(0.028, 0.006, 5, 8, Math.PI * 1.1), iron);
+        serpentine.position.set(0.036, 0.035, 0.05); serpentine.rotation.set(0, Math.PI / 2, -0.4);
+        const match = new THREE.Mesh(new THREE.SphereGeometry(0.013, 6, 5), M.std({ color: 0xff8a30, emissive: 0xff5a10, emissiveIntensity: 2.2, rough: 1 }));
+        match.position.set(0.05, 0.055, 0.03);
+        const trigger = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.03, 0.012), iron); trigger.position.set(0, -0.06, 0.06);
+        const ramrod = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.78, 5), M.std({ color: 0x6a4a28, rough: 0.85 }));
+        ramrod.rotation.x = Math.PI / 2; ramrod.position.set(0, -0.05, -0.2);
+        const handR = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), skin); handR.position.set(0.01, -0.06, 0.24);
+        const handL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), skin); handL.position.set(0, -0.03, -0.16);
+        gun.add(barrel, band1, band2, fore, wrist, butt, lock, serpentine, match, trigger, ramrod, handR, handL);
+        this.muzzleFlash = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.24, 7), M.std({ color: 0xffe08a, emissive: 0xffb020, emissiveIntensity: 3, rough: 1 }));
+        this.muzzleFlash.rotation.x = -Math.PI / 2; this.muzzleFlash.position.set(0, 0.02, -1.0); this.muzzleFlash.visible = false;
+        gun.add(this.muzzleFlash);
+        this.musketGun = gun;
+        this.musketArms.add(gun);
+      }
+      this.musketArms.visible = false;
+      this._musketKick = 0;         // recoil kick (1 → 0)
+      this._flashT = 1;             // muzzle-flash timer (0 → 1, flash while < 0.3)
+      this.group.add(this.musketArms);
+
       /* ---------------------- off-hand shield ---------------------- */
       // a round rattan-and-bronze buckler carried on the left, shown while the
       // guard is raised (H). Independent of the weapon in the right hand.
@@ -199,9 +237,10 @@
       this._pendingWeapon = weapon;
     }
     _applyWeaponVisibility(weapon) {
-      this.swordArm.visible = weapon !== 'bow';
+      this.swordArm.visible = weapon !== 'bow' && weapon !== 'musket';
       this.bowArms.visible = weapon === 'bow';
-      if (weapon !== 'bow' && this.meleeModels) {
+      if (this.musketArms) this.musketArms.visible = weapon === 'musket';
+      if (this.swordArm.visible && this.meleeModels) {
         for (const [id, m] of Object.entries(this.meleeModels)) m.visible = id === weapon;
       }
     }
@@ -211,6 +250,7 @@
     playShieldBash() { this._bashT = 0; if (this.engine.tpMode) this.tpBody.playStrike(); }
     playThrow() { this._throwT = 0; if (this.engine.tpMode) this.tpBody.playStrike(); }
     playFinisher() { this._finisherT = 0; if (this.engine.tpMode) this.tpBody.playStrike(); }
+    playMusketFire() { this._musketKick = 1; this._flashT = 0; if (this.engine.tpMode && this.tpBody.playStrike) this.tpBody.playStrike(); }
 
     update(dt) {
       const eng = this.engine, combat = eng.combat, player = eng.player;
@@ -326,6 +366,22 @@
         // bow tilts slightly with draw
         this.bowRoot.position.set(0, 0, -0.1);
         this.bowRoot.rotation.z = U.lerp(0.25, 0.02, draw);
+      }
+
+      /* ----------------------- musket pose ----------------------- */
+      if (this.musketArms.visible) {
+        this._musketKick = Math.max(0, this._musketKick - dt / 0.25);   // recoil settle
+        this._flashT = Math.min(1, this._flashT + dt / 0.12);
+        this.muzzleFlash.visible = this._flashT < 0.35;
+        if (this.muzzleFlash.visible) this.muzzleFlash.scale.setScalar(0.8 + Math.random() * 0.7);
+        const aim = (player && combat.secondaryHeld) ? 1 : 0;
+        const kick = this._musketKick;
+        const cx = U.lerp(0.2, 0.02, aim);
+        const cy = U.lerp(-0.22, -0.12, aim) + kick * 0.05;
+        const cz = -0.42 + kick * 0.12;
+        const st = aim ? 0.3 : 1;
+        this.musketArms.position.set(cx + swayX * st, cy + (swayY + bob) * st - lower, cz);
+        this.musketArms.rotation.set(U.lerp(0.12, 0.0, aim) - kick * 0.5, U.lerp(-0.2, -0.02, aim), 0);
       }
     }
 

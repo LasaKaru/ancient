@@ -129,6 +129,7 @@
           const id = Object.keys(G.MELEE).find((k) => G.MELEE[k].slot === slot);
           if (id) eng.combat.selectMelee(id);
         }
+        else if (e.code === 'Digit6') eng.combat.selectMusket();
       };
       this._onKeyUp = (e) => {
         this.keysDown.delete(e.code);
@@ -253,6 +254,7 @@
 
       let speed = 4.3;
       if (this.sprinting) speed = 7.2;
+      if (G.Cheats && G.Cheats.swift) speed *= 1.6;   // secret code: Fleet of Foot
       if (this.crouching) speed = 2.2;
       if (this.engine.combat.isBlockingOrDrawing()) speed *= 0.55;
       if (this.shieldEquipped) speed *= 0.78;    // a raised shield weighs on the pace
