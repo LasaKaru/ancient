@@ -405,6 +405,11 @@
         this.player.maxHp = 100 + G.Skills.bonusHp();
         this.player.hp = this.player.maxHp;
       }
+      // secret codes: carry unlocked cheats into the new battle
+      if (G.Cheats) {
+        this.player.godMode = this.player.godMode || !!G.Cheats.godMode;
+        if (G.Cheats.musket && this.combat && this.combat.musketUnlocked) this.combat.musketUnlocked();
+      }
       // living-world layer: flowers, wandering animals, herb plants
       if (G.Wildlife) G.Wildlife.autoPopulate(this, this.def.nature || {});
       // ambient civilian crowd (v0.3 §2.4) — a living street to blend into
@@ -603,6 +608,7 @@
       this.combat.arrows = Math.max(this.combat.arrows, cp.arrows);
       this.combat.nocked = this.combat.arrows > 0;
       this.combat.javelins = this.combat.javelinMax;  // fresh cast of javelins
+      if (G.Cheats && G.Cheats.musket) { this.combat.shots = this.combat.shotMax; this.combat.loaded = true; }  // powder & shot resupply
       this.combat.drawing = false; this.combat.drawPct = 0;
       this.missions.restore(cp.missions);
       this.noises.length = 0;
@@ -860,11 +866,14 @@
         current: c.weapon !== 'bow' && c.cfg === d,
       }));
       slots.push({ icon: '🏹', unlocked: true, current: c.weapon === 'bow' });
+      if (G.Cheats && G.Cheats.musket) slots.push({ icon: '🔫', unlocked: true, current: c.weapon === 'musket' });
       return {
         hp: p.hp, maxHp: p.maxHp, stamina: p.stamina, maxStamina: p.maxStamina,
         exhausted: p.exhausted, alive: p.alive,
         weapon: c.weapon, weaponName: info.weaponName, weaponIcon: info.weaponIcon,
         arrows: c.arrows, quiverMax: c.quiverMax,
+        shots: c.shots, shotMax: c.shotMax, loaded: c.loaded,
+        reloadPct: c.weapon === 'musket' && !c.loaded ? U.clamp(1 - c.reloadT / c.RELOAD, 0, 1) : 1,
         drawPct: c.drawPct, slots,
         herbs: p.herbs,
         javelins: c.javelins, shield: p.shieldEquipped,
@@ -1302,6 +1311,7 @@
         onMap: () => setScreen('map'),
         onLegends: () => setScreen('legends'),
         onCoop: G.UI.CoopLobby ? () => setScreen('coop') : null,
+        onCodes: G.UI.CodesMenu ? () => setScreen('codes') : null,
         onNewGame: (profile) => { G.GameState.resetCampaign(profile); startLevel(G.Levels.order[0]); },
         onContinue: () => {
           const idx = Math.min(G.GameState.unlocked, 5) - 1;
@@ -1323,6 +1333,10 @@
         onHostStart: startCoopHost,
         onGuestJoin: joinCoopGuest,
       }));
+    }
+
+    if (screen === 'codes' && G.UI.CodesMenu) {
+      children.push(h(G.UI.CodesMenu, { key: 'codes', onBack: () => setScreen('menu') }));
     }
 
     if (screen === 'coopGuest' && G.UI.CoopGuestView) {
@@ -1404,6 +1418,7 @@
 
   /* ============================== BOOT ============================== */
   G.boot = function () {
+    if (G.Codes) G.Codes.load();   // re-apply any secret codes unlocked before
     const root = ReactDOMClient.createRoot(document.getElementById('root'));
     root.render(h(App));
     // wake audio on the first user gesture anywhere

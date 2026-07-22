@@ -180,8 +180,14 @@
         snap.weapon === 'bow'
           ? h('div', { className: 'hud-arrows' }, `${snap.arrows} `, h('span', { className: 'cap' }, `/ ${snap.quiverMax}`))
           : null,
+        snap.weapon === 'musket'
+          ? h('div', { className: 'hud-arrows' }, snap.loaded ? '● LOADED  ' : '○ reloading  ', h('span', { className: 'cap' }, `${snap.shots} shot`))
+          : null,
         snap.weapon === 'bow' && snap.drawPct > 0
           ? h('div', { className: 'hud-draw-meter' }, h('div', { className: 'fill', style: { width: (snap.drawPct * 100) + '%' } }))
+          : null,
+        snap.weapon === 'musket' && !snap.loaded
+          ? h('div', { className: 'hud-draw-meter' }, h('div', { className: 'fill', style: { width: (snap.reloadPct * 100) + '%' } }))
           : null,
       ) : null,
 

@@ -52,8 +52,21 @@
       this.drawPct = 0;
       this.nocked = true;
 
+      // ancient gun — matchlock musket (unlocked via the secret code GINIAYUDHA):
+      // a single slow, hard-hitting ball with a long reload, in the spirit of the
+      // Portuguese/Kandyan gunpowder era.
+      this.shots = 6;
+      this.shotMax = 8;
+      this.loaded = true;
+      this.reloadT = 0;
+      this.RELOAD = 2.4;
+
       this._buildArrowPool();
     }
+
+    /* the secret code grants the musket; top up the balls when it does */
+    musketUnlocked() { if (this.shots <= 0) this.shots = this.shotMax; this.loaded = true; }
+    get _noAmmoCost() { return !!(G.Cheats && G.Cheats.infiniteAmmo); }
 
     /* ------------------------- arrow pool ------------------------- */
     _buildArrowPool() {
@@ -132,7 +145,18 @@
 
     /* ----------------------- input handlers ----------------------- */
     get cfg() { return MELEE[this.weapon] || MELEE.sword; }
-    get isMelee() { return this.weapon !== 'bow'; }
+    get isMelee() { return this.weapon !== 'bow' && this.weapon !== 'musket'; }
+
+    /** Draw the ancient gun (slot 6) — only once the secret code has freed it. */
+    selectMusket() {
+      if (this.attacking) return;
+      if (!(G.Cheats && G.Cheats.musket)) { this.engine.ui.toast('THE FIRE-WEAPON IS SEALED — SEEK ITS SECRET CODE'); G.audio.ui(); return; }
+      if (this.weapon === 'musket') return;
+      this.drawing = false; this.drawPct = 0; this.secondaryHeld = false;
+      this.weapon = 'musket';
+      G.audio.interact();
+      this.engine.playerRig && this.engine.playerRig.onWeaponSwitch('musket');
+    }
 
     isBlockingOrDrawing() {
       return (this.isMelee && this.secondaryHeld) || (this.weapon === 'bow' && this.drawing);
@@ -167,9 +191,49 @@
       } else if (this.weapon === 'bow') {
         if (this.drawing && this.drawPct > 0.2) this._releaseArrow();
         else G.audio.ui();
+      } else if (this.weapon === 'musket') {
+        this._fireMusket();
       }
     }
     primaryUp() {}
+
+    /* --------------------- ancient gun: matchlock musket --------------------- */
+    _fireMusket() {
+      const player = this.engine.player;
+      if (!player.alive) return;
+      if (!this.loaded) {                                   // still ramming the ball home
+        if (this.reloadT > 0) { G.audio.ui(); return; }
+      }
+      if (this.shots <= 0 && !this._noAmmoCost) { this.engine.ui.toast('NO SHOT LEFT'); G.audio.ui(); return; }
+      if (!this.loaded) return;
+      // fire
+      if (!this._noAmmoCost) this.shots--;
+      this.loaded = false;
+      this.reloadT = this.RELOAD / ((G.Skills && G.Skills.owned('quick_draw')) ? 1.25 : 1);
+      G.audio.musketShot && G.audio.musketShot();
+      this.engine.noiseEvent(player.pos, 26);              // a gunshot carries far
+      player.viewShake = Math.max(player.viewShake, 0.75); // heavy recoil
+      this.engine.playerRig && this.engine.playerRig.playMusketFire && this.engine.playerRig.playMusketFire();
+
+      const dir = new THREE.Vector3();
+      this.engine.camera.getWorldDirection(dir);
+      // aiming down the barrel (secondary held) tightens the ball; hip-fire scatters
+      const spread = this.secondaryHeld ? 0.006 : 0.03;
+      dir.x += (Math.random() - 0.5) * spread; dir.y += (Math.random() - 0.5) * spread; dir.z += (Math.random() - 0.5) * spread;
+      const from = this.engine.tpMode
+        ? player.pos.clone().addScaledVector(dir, 0.8)
+        : this.engine.camera.position.clone().addScaledVector(dir, 0.6);
+      from.y -= 0.05;
+      this.fireArrow({
+        from, dir,
+        speed: 140,                                         // near-hitscan ball
+        owner: player,
+        damage: 82 * (G.Realism ? G.Realism().damageDealt : 1),
+        bullet: true,
+      });
+    }
+
+    addShots(n) { this.shots = Math.min(this.shotMax, this.shots + n); }
 
     /* -------- finisher (v0.5): the emphasised kill flourish shared by stealth
        assassinations and parry ripostes (a strike into a staggered foe) -------- */
@@ -221,7 +285,7 @@
       const eng = this.engine, player = eng.player;
       if (!player.alive || this.attacking) return;
       if (this.javelins <= 0) { eng.ui.toast('NO JAVELINS LEFT'); G.audio.ui(); return; }
-      this.javelins--;
+      if (!this._noAmmoCost) this.javelins--;
       G.audio.swordSwing();
       eng.noiseEvent(player.pos, 10);
       this.engine.playerRig?.playThrow && this.engine.playerRig.playThrow();
@@ -353,6 +417,7 @@
         if (to.dot(fwd) < cfg.arc) return;
         hitSomething = true;
         let dmg = cfg.dmg[this.combo] * (G.Realism ? G.Realism().damageDealt : 1);
+        if (G.Cheats && G.Cheats.lionFang && (this.weapon === 'sword' || this.weapon === 'dagger')) dmg *= 2.0;  // the Lion's Fang
         // riposte: a strike into a staggered (e.g. just-parried) foe is a finisher
         if (!isStruct && t.ai && t.ai.state === 'stagger' && !riposteTarget) { dmg *= 2.2; riposteTarget = t; }
         if (isStruct && cfg.structDmg) dmg *= cfg.structDmg;
@@ -389,7 +454,7 @@
     _releaseArrow() {
       const player = this.engine.player;
       if (this.arrows <= 0) return;
-      this.arrows--;
+      if (!this._noAmmoCost) this.arrows--;
       const power = this.drawPct;
       this.drawing = this.secondaryHeld && this.arrows > 0; // keep drawing next arrow if still holding
       this.drawPct = 0;
@@ -463,8 +528,15 @@
         const drawTime = DRAW_TIME / ((G.Skills && G.Skills.owned('quick_draw')) ? 1.3 : 1);
         this.drawPct = Math.min(1, this.drawPct + dt / drawTime);
       }
-      // aim-down zoom once drawing (deeper when fully drawn — the "hold" reward)
-      const zoom = this.weapon === 'bow' ? -(this.drawPct * 9 + (this.drawPct >= 1 ? 4 : 0)) : 0;
+      // musket: ram the next ball home over a long reload (a matchlock is slow)
+      if (this.weapon === 'musket' && !this.loaded && player.alive) {
+        if (this.reloadT > 0) this.reloadT -= dt;
+        if (this.reloadT <= 0 && (this.shots > 0 || this._noAmmoCost)) { this.loaded = true; G.audio.musketCock && G.audio.musketCock(); }
+      }
+      // aim-down zoom once drawing / sighting (deeper on a fully-drawn bow — the "hold" reward)
+      let zoom = 0;
+      if (this.weapon === 'bow') zoom = -(this.drawPct * 9 + (this.drawPct >= 1 ? 4 : 0));
+      else if (this.weapon === 'musket' && this.secondaryHeld) zoom = -12;
       player.fovOffset = U.damp(player.fovOffset, zoom, 8, dt);
 
       // integrate arrows
@@ -564,10 +636,11 @@
 
     hudInfo() {
       const def = this.isMelee ? this.cfg : null;
+      const musket = this.weapon === 'musket';
       return {
         weapon: this.weapon,
-        weaponName: def ? def.name : 'Longbow',
-        weaponIcon: def ? def.icon : '🏹',
+        weaponName: def ? def.name : musket ? 'Matchlock Musket' : 'Longbow',
+        weaponIcon: def ? def.icon : musket ? '🔫' : '🏹',
         arrows: this.arrows,
         quiverMax: this.quiverMax,
         drawPct: this.drawPct,
