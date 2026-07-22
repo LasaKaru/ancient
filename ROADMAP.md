@@ -334,8 +334,17 @@ Browser + no-build-step makes this the hardest pillar; staged to keep each relea
    a guest **input** message (move / facing / action bits). Verified headless: two peers
    connect with no signalling server, a live in-engine snapshot crosses host→guest with
    the guest's mirror matching the host's NPC transforms exactly, and guest input
-   round-trips intact (0 page errors). ☐ Remaining: wire the guest's mirror into the R3F
-   render loop and apply guest input to the possessed Giant on the host; a co-op lobby UI.
+   round-trips intact (0 page errors).
+   ✅ **Co-op lobby shipped & verified** — `js/ui/coopLobby.jsx` (a "Co-op · Connect a
+   Friend" entry on the main menu): a no-server Host/Join flow — the host mints a
+   copy-paste **invite** code, the guest pastes it and mints a **reply**, the host pastes
+   that back and connects. On link the peers exchange names and run a 2 s heartbeat, so
+   the lobby shows "⚔ Linked with &lt;name&gt; · &lt;latency&gt; ms". Verified **end to end
+   across two independent headless browsers** trading codes through the real UI (7/7:
+   both open the lobby, host mints the invite, guest mints the reply, both reach Linked,
+   names are exchanged, and round-trip latency is reported) — 0 page errors.
+   ☐ Remaining: wire the guest's mirror into the R3F render loop and apply guest input to
+   the possessed Giant on the host, launched from the lobby into a shared mission.
 3. ☐ **Phase M3 — PvP duels:** 1v1 parry-duel arenas (Elara-kit movesets), best-of-five,
    with era-champion cosmetics.
 4. ☐ **Phase M4 (stretch):** 4-player siege co-op (attack/defend Vijithapura).

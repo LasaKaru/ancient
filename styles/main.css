@@ -500,6 +500,27 @@ button { font-family: inherit; cursor: pointer; }
 }
 .map-eras-h { font-size: 12px; letter-spacing: 4px; color: var(--gold); margin-bottom: 12px; }
 
+/* co-op lobby (Brothers-in-Arms M2) */
+.coop-screen .panel { text-align: center; }
+.coop-step { font-size: 12px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; margin: 14px 0 6px; text-align: left; }
+.coop-note { font-size: 13px; color: #cbbb93; line-height: 1.6; margin: 6px 0 14px; }
+.coop-code {
+  width: 100%; height: 76px; resize: none; box-sizing: border-box;
+  font-family: 'Courier New', monospace; font-size: 10.5px; line-height: 1.35; color: #d9c9a4;
+  background: rgba(0,0,0,0.42); border: 1px solid rgba(216,169,78,0.3); border-radius: 4px;
+  padding: 8px 10px; margin-bottom: 8px; word-break: break-all;
+}
+.coop-code:focus { outline: none; border-color: var(--gold-bright); }
+.coop-status { font-size: 13px; margin: 10px 0; letter-spacing: 0.5px; color: #b3a175; }
+.coop-status.ok { color: var(--gold-bright); font-size: 16px; letter-spacing: 1px; }
+.coop-status.bad { color: #d98a6a; }
+.coop-linked-badge {
+  width: 62px; height: 62px; margin: 6px auto 12px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 32px; color: #1a1206;
+  background: radial-gradient(circle at 40% 35%, var(--gold-bright), var(--gold));
+  box-shadow: 0 0 26px rgba(216,169,78,0.5); animation: capstoneIn 0.5s ease;
+}
+
 /* campaign-wide progress: wars of the island won */
 .map-progress {
   margin: 0 0 16px; padding: 10px 12px; border-radius: 4px;

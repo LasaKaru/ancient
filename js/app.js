@@ -1229,6 +1229,7 @@
         },
         onMap: () => setScreen('map'),
         onLegends: () => setScreen('legends'),
+        onCoop: G.UI.CoopLobby ? () => setScreen('coop') : null,
         onNewGame: (profile) => { G.GameState.resetCampaign(profile); startLevel(G.Levels.order[0]); },
         onContinue: () => {
           const idx = Math.min(G.GameState.unlocked, 5) - 1;
@@ -1241,6 +1242,10 @@
         onDeleteSlot: (s) => { G.Saves.del(s); if (G.GameState.slot === s) G.Saves.use(s); force(); },
         activeSlot: G.GameState.slot,
       }));
+    }
+
+    if (screen === 'coop' && G.UI.CoopLobby) {
+      children.push(h(G.UI.CoopLobby, { key: 'coop', onBack: () => setScreen('menu') }));
     }
 
     if (screen === 'brief' && levelId) {
