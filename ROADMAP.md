@@ -321,10 +321,21 @@ Browser + no-build-step makes this the hardest pillar; staged to keep each relea
    weapon and action at 8 Hz, and beating the stored score overwrites the ghost. Take the
    same code again and a translucent cyan spectre of your best run fights the identical
    waves beside you (keyed by code in localStorage, so a ghost only haunts its own fight).
-2. ☐ **Phase M2 — P2P co-op (WebRTC):** 2-player co-op in wave-defense and Chronicles
+2. ◐ **Phase M2 — P2P co-op (WebRTC):** 2-player co-op in wave-defense and Chronicles
    missions via WebRTC DataChannels; manual copy-paste signalling keeps the no-server
    promise, an optional tiny signalling relay (documented, self-hostable) makes it
    one-click. Host-authoritative sim, second player possesses an ally Giant.
+   ✅ **Networking foundation shipped & verified** — `js/net/webrtc.js` (`G.Net` /
+   `G.NetPeer`): a no-server, manual-signalling WebRTC transport that opens an ordered
+   DataChannel from a single copy-paste invite/reply code (non-trickle ICE bakes the
+   candidates into the code; a public STUN aids NAT traversal, none needed on LAN/
+   loopback). `js/net/coopSession.js` (`G.Coop`): the host-authoritative wire protocol —
+   a compact battle **snapshot** (host player + every NPC transform / hp / liveness) and
+   a guest **input** message (move / facing / action bits). Verified headless: two peers
+   connect with no signalling server, a live in-engine snapshot crosses host→guest with
+   the guest's mirror matching the host's NPC transforms exactly, and guest input
+   round-trips intact (0 page errors). ☐ Remaining: wire the guest's mirror into the R3F
+   render loop and apply guest input to the possessed Giant on the host; a co-op lobby UI.
 3. ☐ **Phase M3 — PvP duels:** 1v1 parry-duel arenas (Elara-kit movesets), best-of-five,
    with era-champion cosmetics.
 4. ☐ **Phase M4 (stretch):** 4-player siege co-op (attack/defend Vijithapura).
