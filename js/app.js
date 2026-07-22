@@ -936,12 +936,23 @@
       const engine = new GameEngine({ scene, camera, gl, levelId, bridge });
       engineRef.current = engine;
       bridge.onEngineReady(engine);
-      return () => { engine.dispose(); engineRef.current = null; };
+      return () => {
+        // tell a co-op guest the battle is over, then tear down
+        if (G.coopHosting && G.coopPeer) { try { G.coopPeer.send({ t: 'end' }); } catch (_) {} }
+        G.coopHosting = false;
+        engine.dispose(); engineRef.current = null;
+      };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [levelId]);
     useFrame((state, dt) => {
       const engine = engineRef.current;
-      if (engine) { engine.update(dt); engine.render(dt); }
+      if (!engine) return;
+      engine.update(dt); engine.render(dt);
+      // host-authoritative co-op: stream the battle snapshot to the guest at ~15 Hz
+      if (G.coopHosting && G.coopPeer && G.coopPeer.connected && G.Coop) {
+        engine.__coopAcc = (engine.__coopAcc || 0) + dt;
+        if (engine.__coopAcc >= 1 / 15) { engine.__coopAcc = 0; try { G.coopPeer.send(G.Coop.snapshot(engine)); } catch (_) {} }
+      }
     }, 1);
     return null;
   }
@@ -1165,6 +1176,18 @@
       G.audio.setAmbience('none');
       G.audio.setMusicMode('menu');
     };
+    // co-op: host drops straight into the shared battle (broadcasts snapshots);
+    // guest drops into the spectate view fed by that stream.
+    const startCoopHost = (id) => {
+      G.coopHosting = true;
+      setLevelId(id); setSession((s) => s + 1);
+      setSummary(null); setDeath(null); setPaused(false);
+      setScreen('game');
+    };
+    const joinCoopGuest = (id, hostName) => {
+      G.coopGuestLevel = id; G.coopGuestHost = hostName || null;
+      setScreen('coopGuest');
+    };
 
     const children = [];
 
@@ -1245,7 +1268,23 @@
     }
 
     if (screen === 'coop' && G.UI.CoopLobby) {
-      children.push(h(G.UI.CoopLobby, { key: 'coop', onBack: () => setScreen('menu') }));
+      children.push(h(G.UI.CoopLobby, {
+        key: 'coop',
+        onBack: () => setScreen('menu'),
+        onHostStart: startCoopHost,
+        onGuestJoin: joinCoopGuest,
+      }));
+    }
+
+    if (screen === 'coopGuest' && G.UI.CoopGuestView) {
+      const def = G.Levels.defs[G.coopGuestLevel] || {};
+      children.push(h(G.UI.CoopGuestView, {
+        key: 'coopGuest',
+        atmo: def.atmosphere || null,
+        hostName: G.coopGuestHost,
+        levelTitle: def.title || '',
+        onLeave: () => { try { G.coopPeer && G.coopPeer.close(); } catch (_) {} G.coopPeer = null; setScreen('menu'); },
+      }));
     }
 
     if (screen === 'brief' && levelId) {

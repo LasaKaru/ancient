@@ -21,7 +21,9 @@
   const h = React.createElement;
   const { useState, useRef, useEffect } = React;
 
-  function CoopLobby({ onBack }) {
+  const COOP_LEVEL = 'stupa';   // the shared battle the host launches (a wave defence)
+
+  function CoopLobby({ onBack, onHostStart, onGuestJoin }) {
     const [mode, setMode] = useState('choose');        // choose | host | join
     const [status, setStatus] = useState('idle');      // idle | working | awaiting | connecting | linked | failed
     const [myCode, setMyCode] = useState('');          // the code THIS side shares
@@ -30,11 +32,14 @@
     const [latency, setLatency] = useState(null);
     const peerRef = useRef(null);
     const beatRef = useRef(null);
+    const keepRef = useRef(false);                     // keep the link alive when launching into a battle
+    const joinRef = useRef(onGuestJoin);               // latest onGuestJoin for the message handler
+    joinRef.current = onGuestJoin;
     const myName = (G.GameState && G.GameState.profile && G.GameState.profile.name) || 'Warrior';
 
     const stopBeat = () => { if (beatRef.current) { clearInterval(beatRef.current); beatRef.current = null; } };
     const teardown = () => { stopBeat(); try { peerRef.current && peerRef.current.close(); } catch (_) {} peerRef.current = null; };
-    useEffect(() => teardown, []);   // close the link if the screen unmounts
+    useEffect(() => () => { if (!keepRef.current) teardown(); else stopBeat(); }, []);   // keep the peer if launching a battle
 
     const startBeat = (peer) => {
       stopBeat();
@@ -55,6 +60,7 @@
         if (m.t === G.Coop.MSG.HELLO) setPeerName(m.name || 'Ally');
         else if (m.t === 'ping') peer.send({ t: 'pong', ts: m.ts });
         else if (m.t === 'pong') setLatency(Math.max(0, (performance.now() | 0) - m.ts));
+        else if (m.t === 'start' && joinRef.current) { keepRef.current = true; joinRef.current(m.level, peerName || m.host); }
       });
       peer.on('close', () => { stopBeat(); setStatus('idle'); setPeerName(null); setLatency(null); });
     };
@@ -99,12 +105,22 @@
 
     let body;
     if (status === 'linked') {
+      const isHost = peerRef.current && peerRef.current.isHost;
+      const beginBattle = () => {
+        keepRef.current = true;
+        const peer = peerRef.current;
+        if (peer) peer.send({ t: 'start', level: COOP_LEVEL, host: myName });
+        if (onHostStart) onHostStart(COOP_LEVEL);
+      };
       body = h(React.Fragment, null,
         h('div', { className: 'coop-linked-badge' }, '✓'),
         statusLine(),
         h('div', { className: 'coop-note' },
           'Your peer-to-peer link is open and healthy — no server between you. ',
-          'The shared co-op battle (a second warrior possessing an ally Giant) rides this link and arrives in the next update.'),
+          isHost
+            ? 'Begin the battle and your ally will spectate your fight live; guest possession of an ally Giant rides this same link and arrives next.'
+            : 'Waiting for ' + (peerName || 'the host') + ' to begin the battle — you\'ll drop straight into their fight to watch it live.'),
+        isHost && onHostStart ? h('button', { className: 'menu-btn primary', onClick: beginBattle }, 'Begin Co-op Battle') : null,
         h('button', { className: 'menu-btn small', onClick: () => { teardown(); onBack(); } }, 'Leave'));
     } else if (mode === 'host') {
       body = h(React.Fragment, null,

@@ -343,8 +343,16 @@ Browser + no-build-step makes this the hardest pillar; staged to keep each relea
    across two independent headless browsers** trading codes through the real UI (7/7:
    both open the lobby, host mints the invite, guest mints the reply, both reach Linked,
    names are exchanged, and round-trip latency is reported) — 0 page errors.
-   ☐ Remaining: wire the guest's mirror into the R3F render loop and apply guest input to
-   the possessed Giant on the host, launched from the lobby into a shared mission.
+   ✅ **Co-op spectate shipped & verified** — from the lobby the host clicks *Begin Co-op
+   Battle* (launches a wave defence as host, streaming snapshots at ~15 Hz via a hook in
+   the R3F engine loop); the guest drops into `js/ui/coopGuestView.jsx` — a live 3D view
+   that rebuilds the host's battle from the snapshot stream (one `HumanoidRig` mirror per
+   netId, lightly interpolated) with the camera trailing the host. Verified **end to end
+   across two headless browsers** (6/6): host + guest link, host launches and hosts,
+   guest drops into spectate, the host battle streams into the guest mirror (host player +
+   every NPC), and the stream stays live and continuous — 0 page errors.
+   ☐ Remaining: possession — apply guest input to an ally Giant on the host so the guest
+   plays rather than only watches; then PvP (M3).
 3. ☐ **Phase M3 — PvP duels:** 1v1 parry-duel arenas (Elara-kit movesets), best-of-five,
    with era-champion cosmetics.
 4. ☐ **Phase M4 (stretch):** 4-player siege co-op (attack/defend Vijithapura).
