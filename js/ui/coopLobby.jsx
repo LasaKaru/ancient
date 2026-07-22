@@ -108,6 +108,7 @@
       const isHost = peerRef.current && peerRef.current.isHost;
       const beginBattle = () => {
         keepRef.current = true;
+        G.coopGuestName = peerName || 'Ally';    // the host labels the guest's Giant
         const peer = peerRef.current;
         if (peer) peer.send({ t: 'start', level: COOP_LEVEL, host: myName });
         if (onHostStart) onHostStart(COOP_LEVEL);

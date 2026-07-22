@@ -929,6 +929,51 @@
     }
   }
 
+  /* ---- co-op host: spawn + drive the ally Giant the guest possesses ---- */
+  function coopDriveHost(engine, dt) {
+    const peer = G.coopPeer;
+    if (!peer) return;
+    // spawn the guest's Giant once the host battle is underway, and tell the
+    // guest which entity (netId) it commands
+    if (!engine.__coopGiant && engine.player && engine.player.pos) {
+      const p = engine.player.pos;
+      const g = engine.enemies.spawn({
+        faction: 'ally', type: 'elite', pos: [p.x + 2, p.z + 1.5],
+        palette: 'royal', cape: true, plume: true, hp: 320,
+        name: (G.coopGuestName || 'Ally') + ' (co-op)', showName: true, followPlayer: false,
+      });
+      if (g) {
+        g.ai = null; g.possessed = true; engine.__coopGiant = g;
+        try { peer.send({ t: 'possess', id: G.Coop.netId(g), name: G.coopGuestName || 'Ally' }); } catch (_) {}
+      }
+    }
+    const gi = engine.__coopGiant;
+    if (!gi) return;
+    if (gi.__atkCd) gi.__atkCd = Math.max(0, gi.__atkCd - dt);
+    if (!gi.alive) return;
+    const inp = G.__coopInput;
+    if (!inp) { gi.setMove(null, dt); return; }
+    gi.yaw = inp.y || 0;
+    const mv = inp.m || [0, 0];
+    if (Math.hypot(mv[0], mv[1]) > 0.05) {
+      const fwd = new THREE.Vector3(Math.sin(gi.yaw), 0, Math.cos(gi.yaw));
+      const right = new THREE.Vector3(Math.cos(gi.yaw), 0, -Math.sin(gi.yaw));
+      const dir = fwd.multiplyScalar(mv[0]).add(right.multiplyScalar(mv[1]));
+      if (dir.lengthSq() > 0.001) {
+        dir.normalize();
+        const gp = gi.group.position;
+        gi.setMove(new THREE.Vector3(gp.x + dir.x * 3, 0, gp.z + dir.z * 3), dt, 4.2);
+      } else gi.setMove(null, dt);
+    } else gi.setMove(null, dt);
+    if ((inp.a & 1) && !gi.__atkCd) {
+      gi.__atkCd = 0.55;
+      gi.rig.playStrike && gi.rig.playStrike();
+      for (const e of engine.enemies.npcs) {
+        if (e.alive && e.faction === 'enemy' && U.flatDist(e.pos, gi.pos) < 2.6) { e.takeDamage(34, { type: 'melee', from: gi }); break; }
+      }
+    }
+  }
+
   /* ===================== R3F engine mount ===================== */
   function EngineMount({ levelId, bridge, engineRef }) {
     const { scene, camera, gl } = useThree();
@@ -948,8 +993,10 @@
       const engine = engineRef.current;
       if (!engine) return;
       engine.update(dt); engine.render(dt);
-      // host-authoritative co-op: stream the battle snapshot to the guest at ~15 Hz
+      // host-authoritative co-op: drive the guest's Giant, then stream the
+      // battle snapshot back to the guest at ~15 Hz
       if (G.coopHosting && G.coopPeer && G.coopPeer.connected && G.Coop) {
+        coopDriveHost(engine, dt);
         engine.__coopAcc = (engine.__coopAcc || 0) + dt;
         if (engine.__coopAcc >= 1 / 15) { engine.__coopAcc = 0; try { G.coopPeer.send(G.Coop.snapshot(engine)); } catch (_) {} }
       }
@@ -1180,6 +1227,8 @@
     // guest drops into the spectate view fed by that stream.
     const startCoopHost = (id) => {
       G.coopHosting = true;
+      G.__coopInput = null;
+      if (G.coopPeer) G.coopPeer.on('message', (m) => { if (m && m.t === 'i') G.__coopInput = m; });
       setLevelId(id); setSession((s) => s + 1);
       setSummary(null); setDeath(null); setPaused(false);
       setScreen('game');

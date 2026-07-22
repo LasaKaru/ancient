@@ -351,8 +351,17 @@ Browser + no-build-step makes this the hardest pillar; staged to keep each relea
    across two headless browsers** (6/6): host + guest link, host launches and hosts,
    guest drops into spectate, the host battle streams into the guest mirror (host player +
    every NPC), and the stream stays live and continuous — 0 page errors.
-   ☐ Remaining: possession — apply guest input to an ally Giant on the host so the guest
-   plays rather than only watches; then PvP (M3).
+   ✅ **Co-op possession shipped & verified** — on *Begin Co-op Battle* the host spawns an
+   ally Giant (its AI nulled), assigns it to the guest (a `possess` message with the
+   netId), and drives it each host frame from the guest's `input` message (move / turn /
+   strike) via `coopDriveHost` in the engine loop; the guest captures WASD-move / A/D-turn
+   / Space-strike, sends input at ~20 Hz, and its camera trails the Giant it commands.
+   Verified **end to end across two separate browsers** (5/5): the host assigns a
+   matching-netId Giant, the guest's *forward* input moves that Giant ~6 m forward in the
+   host's authoritative sim, and the guest's mirror reflects the new position — 0 errors.
+   So M2 co-op is genuinely two-player: one hosts and plays, the other joins by code and
+   commands an ally Giant in the same fight, no server between them.
+   ☐ Remaining: richer guest combat parity + a co-op summary; then PvP duels (M3).
 3. ☐ **Phase M3 — PvP duels:** 1v1 parry-duel arenas (Elara-kit movesets), best-of-five,
    with era-champion cosmetics.
 4. ☐ **Phase M4 (stretch):** 4-player siege co-op (attack/defend Vijithapura).
