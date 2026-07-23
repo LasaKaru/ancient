@@ -60,6 +60,8 @@
       this.loaded = true;
       this.reloadT = 0;
       this.RELOAD = 2.4;
+      this._muzzleFx = [];         // live muzzle-blast / smoke effects at the fire point
+      this._up = new THREE.Vector3(0, 1, 0);
 
       this._buildArrowPool();
     }
@@ -231,9 +233,56 @@
         damage: 82 * (G.Realism ? G.Realism().damageDealt : 1),
         bullet: true,
       });
+      // the fire point: a muzzle blast, drifting powder-smoke and a flash of
+      // light at the barrel's mouth — visible in the world (third person / co-op)
+      const right = new THREE.Vector3().crossVectors(dir, this._up).normalize();
+      const muzzle = from.clone().addScaledVector(dir, 0.34).addScaledVector(right, 0.12).addScaledVector(this._up, -0.1);
+      this._spawnMuzzleFx(muzzle, dir);
     }
 
     addShots(n) { this.shots = Math.min(this.shotMax, this.shots + n); }
+
+    /* a self-contained muzzle-blast effect (flash + blast cone + powder smoke +
+       a brief point light) that lives on the scene and fades itself out */
+    _spawnMuzzleFx(pos, dir) {
+      const scene = this.engine.scene;
+      const nd = dir.clone().normalize();
+      const flash = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), G.Mats.std({ color: 0xffe89a, emissive: 0xffbe30, emissiveIntensity: 3.6, rough: 1 }));
+      flash.position.copy(pos);
+      const blast = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.44, 7), G.Mats.std({ color: 0xffd25a, emissive: 0xffa020, emissiveIntensity: 3, rough: 1 }));
+      blast.position.copy(pos).addScaledVector(nd, 0.22);
+      blast.quaternion.setFromUnitVectors(this._up, nd);
+      const light = new THREE.PointLight(0xffb257, 7, 9, 2);
+      light.position.copy(pos);
+      const puffs = [];
+      for (let i = 0; i < 4; i++) {
+        const p = new THREE.Mesh(new THREE.SphereGeometry(0.07, 6, 5), G.Mats.std({ color: 0x9b948b, rough: 1, flat: true }));
+        p.material.transparent = true;
+        p.position.copy(pos).addScaledVector(nd, 0.08 + i * 0.13).add(new THREE.Vector3(U.rand(-0.07, 0.07), U.rand(-0.05, 0.07), U.rand(-0.07, 0.07)));
+        puffs.push(p);
+      }
+      scene.add(flash, blast, light);
+      for (const p of puffs) scene.add(p);
+      this._muzzleFx.push({ t: 0, flash, blast, light, puffs });
+    }
+
+    _updateMuzzleFx(dt) {
+      const scene = this.engine.scene;
+      for (let i = this._muzzleFx.length - 1; i >= 0; i--) {
+        const fx = this._muzzleFx[i]; fx.t += dt; const f = fx.t;
+        const flashOn = f < 0.06;
+        fx.flash.visible = flashOn; fx.blast.visible = flashOn;
+        if (flashOn) { const s = 1 - f / 0.06; fx.flash.scale.setScalar(0.5 + s * 0.9); fx.blast.scale.setScalar(0.5 + s * 0.7); }
+        fx.light.intensity = Math.max(0, 7 * (1 - f / 0.08));
+        for (const p of fx.puffs) { p.position.y += dt * 0.5; p.scale.multiplyScalar(1 + dt * 1.7); p.material.opacity = Math.max(0, 0.75 * (1 - f / 1.1)); }
+        if (f > 1.15) {
+          scene.remove(fx.flash, fx.blast, fx.light);
+          for (const p of fx.puffs) { scene.remove(p); p.geometry.dispose(); p.material.dispose(); }
+          fx.flash.geometry.dispose(); fx.flash.material.dispose(); fx.blast.geometry.dispose(); fx.blast.material.dispose();
+          this._muzzleFx.splice(i, 1);
+        }
+      }
+    }
 
     /* -------- finisher (v0.5): the emphasised kill flourish shared by stealth
        assassinations and parry ripostes (a strike into a staggered foe) -------- */
@@ -506,6 +555,7 @@
     update(dt) {
       const eng = this.engine, player = eng.player;
       if (this._bashCd > 0) this._bashCd -= dt;
+      if (this._muzzleFx.length) this._updateMuzzleFx(dt);
 
       // melee swing lifecycle (timings come from the equipped weapon)
       if (this.attacking) {
